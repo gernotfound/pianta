@@ -1,8 +1,35 @@
 // ==========================================
-// VARIABILI MAPPE
+// VARIABILI MAPPE E GRAFICI
 // ==========================================
 let formMap = null;
 let formMarker = null;
+
+// ==========================================
+// GARBAGE COLLECTION MAPPE (Salva RAM & Batteria)
+// ==========================================
+function cleanupDetailMap() {
+    if (typeof map !== 'undefined' && map) {
+        map.remove();
+        map = null;
+        marker = null;
+    }
+}
+
+function cleanupFormMap() {
+    if (typeof formMap !== 'undefined' && formMap) {
+        formMap.remove();
+        formMap = null;
+        formMarker = null;
+    }
+}
+
+function cleanupGlobalMap() {
+    if (typeof globalMap !== 'undefined' && globalMap) {
+        globalMap.remove();
+        globalMap = null;
+        globalMapMarkers = null;
+    }
+}
 
 // ==========================================
 // MAPPE LEAFLET (Posizionamento Piante)
@@ -52,7 +79,7 @@ function updateMapMarker(lat, lng, hasLocation = true) {
 }
 
 // ==========================================
-// NUOVA FUNZIONE: Mappa interattiva nel Form 
+// MAPPA INTERATTIVA NEL FORM
 // ==========================================
 function initFormMap() {
     if (typeof L === 'undefined') {
@@ -374,7 +401,6 @@ function updateYearDropdown(plant) {
 function updateChartsFromDropdown() { 
     if (typeof plantsDatabase === 'undefined' || typeof currentPlantId === 'undefined' || currentPlantId === null) return;
     
-    // FIX BUG 4: Strict Comparison (===) convertendo entrambi in Stringhe UUID
     const plant = plantsDatabase.find(p => String(p.id) === String(currentPlantId)); 
     if(plant) renderCharts(plant); 
 }
@@ -452,7 +478,7 @@ function renderCharts(plant) {
                 plugins: { 
                     title: { display: true, text: `🌸 Fasi fenologiche ed eventi${selectedYear !== 'all' ? ' - '+selectedYear : ''}` }, 
                     legend: { display: false }, 
-                    tooltip: { callbacks: { label: function(context) { return `Nota: ${context.raw.note}`; } } } 
+                    tooltip: { callbacks: { label: function(context) { return `Nota: ${context.raw.note ? context.raw.note : 'Nessuna nota aggiuntiva'}`; } } } 
                 }, 
                 scales: { x: { type: 'category', labels: eventLabels }, y: { type: 'category', labels: yCategories } } 
             }
@@ -522,7 +548,7 @@ function renderGlobalChart() {
         options: { 
             responsive: true, 
             maintainAspectRatio: false, 
-            plugins: { tooltip: { callbacks: { label: function(context) { return `${context.raw.y}: ${context.raw.note || context.raw.x}`; } } } }, 
+            plugins: { tooltip: { callbacks: { label: function(context) { return `${context.raw.y} - Nota: ${context.raw.note ? context.raw.note : 'Nessuna nota aggiuntiva'}`; } } } }, 
             scales: { x: { type: 'category', labels: dateLabels, title: { display: true, text: 'Data' } }, y: { type: 'category', labels: plantLabels } } 
         } 
     });

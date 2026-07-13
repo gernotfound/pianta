@@ -14,9 +14,7 @@ function initRouter(hasData) {
         let intendedState = e.state;
         let intendedHash = window.location.hash;
 
-        // FIX FASE 3: Pulizia modali bloccanti.
-        // Se l'utente usa la gesture "indietro" del telefono, dobbiamo assicurarci
-        // di distruggere i popup (Cropper, Immagini Fullscreen) liberando la UI e la RAM.
+        // Pulizia modali bloccanti al back nativo del telefono
         if (typeof closeCropper === 'function') closeCropper();
         
         const imgModal = document.getElementById('fullscreen-image-modal');
@@ -207,6 +205,44 @@ function executeTabSwitch(view, param = null) {
     window.appInitialized = true; 
     currentAppRoute = window.location.hash; 
 
+    // ==========================================
+    // HARD KILL: FOTOCAMERA (BATTERY SAVER)
+    // ==========================================
+    if (view !== 'scanner') {
+        if (typeof html5QrcodeScanner !== 'undefined' && html5QrcodeScanner) {
+            try {
+                html5QrcodeScanner.clear().then(() => {
+                    html5QrcodeScanner = null;
+                }).catch(() => {
+                    html5QrcodeScanner = null;
+                });
+            } catch (e) {
+                html5QrcodeScanner = null;
+            }
+        }
+        // Force kill a livello DOM per device ostici (iOS Safari)
+        document.querySelectorAll('video').forEach(video => {
+            if (video.srcObject) {
+                const tracks = video.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+                video.srcObject = null;
+            }
+        });
+    }
+
+    // ==========================================
+    // GARBAGE COLLECTION: RAM MAPPE
+    // ==========================================
+    if (view !== 'plant-detail' && typeof cleanupDetailMap === 'function') {
+        cleanupDetailMap();
+    }
+    if (view !== 'add-plant' && view !== 'edit-plant' && typeof cleanupFormMap === 'function') {
+        cleanupFormMap();
+    }
+    if (view !== 'map' && typeof cleanupGlobalMap === 'function') {
+        cleanupGlobalMap();
+    }
+
     const views = [
         'startup-screen', 'dashboard', 'my-data-page', 'expenses-view', 'wishlist-view', 
         'gallery-view', 'archive-page', 'plant-detail-view',
@@ -217,23 +253,6 @@ function executeTabSwitch(view, param = null) {
         const el = document.getElementById(v);
         if(el) el.classList.add('hidden');
     });
-
-    if (view !== 'scanner' && typeof html5QrcodeScanner !== 'undefined' && html5QrcodeScanner) {
-        try {
-            if (html5QrcodeScanner.getState && html5QrcodeScanner.getState() !== 1) { 
-                html5QrcodeScanner.clear().then(() => {
-                    html5QrcodeScanner = null;
-                }).catch(e => {
-                    console.warn("Spegnimento hardware forzato fotocamera ignorato", e);
-                    html5QrcodeScanner = null;
-                });
-            } else {
-                html5QrcodeScanner = null;
-            }
-        } catch (e) {
-            html5QrcodeScanner = null;
-        }
-    }
 
     document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
     if (currentTab === 'home') { document.getElementById('nav-btn-dashboard')?.classList.add('active'); }

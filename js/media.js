@@ -39,15 +39,15 @@ function handleSmartUpload(event, type) {
         }
         
         compressImageAsync(file).then(blob => {
-            cropType = type;
-            if (window.smartCropBlobs && window.smartCropBlobs[cropType] && typeof revokeBlob === 'function') {
-                revokeBlob(window.smartCropBlobs[cropType]);
+            // FIX RACE CONDITION: Utilizziamo 'type' dallo scope locale invece della variabile globale cropType
+            if (window.smartCropBlobs && window.smartCropBlobs[type] && typeof revokeBlob === 'function') {
+                revokeBlob(window.smartCropBlobs[type]);
             }
-            if (window.smartCropBlobs) window.smartCropBlobs[cropType] = blob;
+            if (window.smartCropBlobs) window.smartCropBlobs[type] = blob;
             
-            const preview = document.getElementById('preview-' + cropType);
-            const placeholder = document.getElementById('placeholder-' + cropType);
-            const removeBtn = document.getElementById('remove-btn-' + cropType);
+            const preview = document.getElementById('preview-' + type);
+            const placeholder = document.getElementById('placeholder-' + type);
+            const removeBtn = document.getElementById('remove-btn-' + type);
             
             if (preview && placeholder && removeBtn) {
                 // FIX MEMORY LEAK: Revoca URL precedente
@@ -62,8 +62,8 @@ function handleSmartUpload(event, type) {
                 removeBtn.style.display = 'block';
             }
             
-            if(cropType === 'main') mainPhotoRemoved = false;
-            if(cropType === 'fruit') fruitPhotoRemoved = false;
+            if(type === 'main') mainPhotoRemoved = false;
+            if(type === 'fruit') fruitPhotoRemoved = false;
             
             isFormDirty = true;
         }).catch(err => {

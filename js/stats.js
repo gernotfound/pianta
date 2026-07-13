@@ -24,7 +24,6 @@ function initMap(plant) {
     let lat = plant.lat !== null && plant.lat !== undefined ? (typeof parseLocalFloat === 'function' ? parseLocalFloat(plant.lat) : parseFloat(String(plant.lat).replace(',', '.'))) : APP_CONFIG.MAP_DEFAULT_LAT; 
     let lng = plant.lng !== null && plant.lng !== undefined ? (typeof parseLocalFloat === 'function' ? parseLocalFloat(plant.lng) : parseFloat(String(plant.lng).replace(',', '.'))) : APP_CONFIG.MAP_DEFAULT_LNG; 
     
-    // Fallback sicuro se il parse restituisce NaN
     if (isNaN(lat) || lat < -90 || lat > 90) lat = APP_CONFIG.MAP_DEFAULT_LAT;
     if (isNaN(lng) || lng < -180 || lng > 180) lng = APP_CONFIG.MAP_DEFAULT_LNG;
 
@@ -341,6 +340,7 @@ function showMapPlantsList(plantsList) {
     container.appendChild(fragment);
 }
 
+
 // ==========================================
 // GRAFICI CHART.JS (Timeline Pianta & Globale)
 // ==========================================
@@ -372,8 +372,10 @@ function updateYearDropdown(plant) {
 }
 
 function updateChartsFromDropdown() { 
-    if (typeof plantsDatabase === 'undefined' || typeof currentPlantId === 'undefined') return;
-    const plant = plantsDatabase.find(p => p.id == currentPlantId); 
+    if (typeof plantsDatabase === 'undefined' || typeof currentPlantId === 'undefined' || currentPlantId === null) return;
+    
+    // FIX BUG 4: Strict Comparison (===) convertendo entrambi in Stringhe UUID
+    const plant = plantsDatabase.find(p => String(p.id) === String(currentPlantId)); 
     if(plant) renderCharts(plant); 
 }
 

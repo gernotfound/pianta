@@ -55,20 +55,21 @@ function renderMacroSelectionGrid() {
     const fallbackSrc = typeof OFFLINE_PLACEHOLDER !== 'undefined' ? OFFLINE_PLACEHOLDER : '';
 
     activePlants.forEach(p => {
+        const pIdStr = String(p.id);
         const card = document.createElement('div');
-        card.className = `macro-mini-card ${selectedBatchPlants.has(p.id) ? 'selected' : ''}`;
+        card.className = `macro-mini-card ${selectedBatchPlants.has(pIdStr) ? 'selected' : ''}`;
         
         card.setAttribute('role', 'option');
-        card.setAttribute('aria-selected', selectedBatchPlants.has(p.id).toString());
+        card.setAttribute('aria-selected', selectedBatchPlants.has(pIdStr).toString());
         card.setAttribute('tabindex', '0');
         
         const toggleSelection = () => {
-            if (selectedBatchPlants.has(p.id)) {
-                selectedBatchPlants.delete(p.id);
+            if (selectedBatchPlants.has(pIdStr)) {
+                selectedBatchPlants.delete(pIdStr);
                 card.classList.remove('selected');
                 card.setAttribute('aria-selected', 'false');
             } else {
-                selectedBatchPlants.add(p.id);
+                selectedBatchPlants.add(pIdStr);
                 card.classList.add('selected');
                 card.setAttribute('aria-selected', 'true');
             }
@@ -122,8 +123,8 @@ function renderMacroInputs() {
     const fallbackSrc = typeof OFFLINE_PLACEHOLDER !== 'undefined' ? OFFLINE_PLACEHOLDER : '';
 
     selectedBatchPlants.forEach(pid => {
-        // FIX HIGH 4: Strict comparison
-        const p = plantsDatabase.find(x => x.id === parseInt(pid, 10));
+        // FIX CRITICO: Strict comparison con stringhe UUID
+        const p = plantsDatabase.find(x => String(x.id) === String(pid));
         if (!p) return;
 
         let specificInput = '';
@@ -143,7 +144,7 @@ function renderMacroInputs() {
 
         const row = document.createElement('div');
         row.className = 'macro-input-row';
-        row.dataset.id = p.id;
+        row.dataset.id = String(p.id);
         
         row.style.display = 'flex';
         row.style.flexDirection = 'column';
@@ -191,8 +192,8 @@ async function saveMacroV2() {
         let errors = 0;
 
         rows.forEach((row) => {
-            const pid = parseInt(row.dataset.id, 10);
-            const p = plantsDatabase.find(x => x.id === pid);
+            const pid = String(row.dataset.id);
+            const p = plantsDatabase.find(x => String(x.id) === pid);
             if (!p) return;
 
             const noteEl = row.querySelector('.m-note');
@@ -203,7 +204,6 @@ async function saveMacroV2() {
 
             const valEl = row.querySelector('.m-val');
             
-            // VALIDAZIONI RIGOROSE
             if (type === 'Misurazione') { 
                 height = typeof parseLocalFloat === 'function' ? parseLocalFloat(valEl.value) : parseFloat(valEl.value); 
                 if ((height === null || isNaN(height)) && !note) isRowValid = false; 
@@ -238,8 +238,7 @@ async function saveMacroV2() {
             if (isRowValid) {
                 if (!Array.isArray(p.logs)) p.logs = [];
                 p.logs.push({
-                    // FIX CRITICAL 1: Utilizzo pulito della funzione garantita
-                    id: typeof generateNumericId === 'function' ? generateNumericId() : Date.now() + Math.floor(Math.random()*1000),
+                    id: typeof generateId === 'function' ? generateId() : crypto.randomUUID(),
                     date: date, type: type, note: note, height: height, harvest: harvest, ph: ph, placement: newPlacement, potSize: newPotSize, graftName: graftName, photos: []
                 });
                 successCount++;
@@ -274,7 +273,6 @@ async function saveMacroV2() {
         console.error("Errore Macro:", err);
         if (typeof Swal !== 'undefined') Swal.fire({icon: 'error', title: 'Errore', text: 'Si è verificato un errore durante il salvataggio.', confirmButtonColor: '#d32f2f'});
     } finally {
-        // FIX MEDIUM 8: Ripristino garantito del bottone anche in caso di eccezioni JavaScript
         if (saveBtn) {
             saveBtn.disabled = false;
             saveBtn.innerText = "💾 Salva Eventi";
@@ -354,13 +352,14 @@ function renderExpenses() {
     sortedExp.forEach(exp => {
         total += (exp.cost || 0);
         const li = document.createElement('li');
+        // FIX CRITICO: Apici singoli per l'ID in formato stringa
         li.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
                     <span class="timeline-date">${typeof formatDateIt === 'function' ? formatDateIt(exp.date) : escapeHTML(exp.date)}</span>
                     <span class="timeline-type" style="background:var(--purple);">${escapeHTML(exp.category)}</span>
                 </div>
-                <button class="btn-text btn-text-danger" aria-label="Elimina spesa" style="padding:0; font-size:16px;" onclick="deleteExpense(${exp.id})">✖</button>
+                <button class="btn-text btn-text-danger" aria-label="Elimina spesa" style="padding:0; font-size:16px;" onclick="deleteExpense('${exp.id}')">✖</button>
             </div>
             <p style="margin: 8px 0 0 0; font-size: 14px;">
                 <strong>${escapeHTML(exp.desc)}</strong> 
@@ -401,7 +400,7 @@ async function addExpense() {
     try {
         if (!generalExpenses) generalExpenses = [];
         generalExpenses.push({ 
-            id: typeof generateNumericId === 'function' ? generateNumericId() : Date.now(), 
+            id: typeof generateId === 'function' ? generateId() : crypto.randomUUID(), 
             date, category, desc, cost 
         });
         
@@ -416,15 +415,14 @@ async function addExpense() {
     } catch (err) {
         console.error("Errore aggiunta spesa:", err);
     } finally {
-        // FIX MEDIUM 8
         if (addBtn) { addBtn.disabled = false; addBtn.innerText = "➕ Aggiungi spesa"; }
     }
 }
 
 async function deleteExpense(id) {
     if (!generalExpenses) return;
-    // FIX HIGH 4
-    generalExpenses = generalExpenses.filter(e => e.id === parseInt(id, 10) ? false : true);
+    const targetId = String(id);
+    generalExpenses = generalExpenses.filter(e => String(e.id) !== targetId);
     unsavedChanges = true;
     
     if(typeof saveToLocal === 'function') await saveToLocal();
@@ -497,13 +495,14 @@ function renderWishlist() {
         let imgSrc = (typeof getImageUrl === 'function' && item.photo) ? getImageUrl(item.photo) : fallbackSrc;
         let priceStr = item.price ? (typeof formatLocalFloat === 'function' ? formatLocalFloat(item.price) : item.price) + ' €' : 'N/D';
 
+        // FIX CRITICO: Apici singoli per l'ID in formato stringa
         card.innerHTML = `
             <img src="${imgSrc}" onerror="this.onerror=null; this.src='${fallbackSrc}';" loading="lazy" alt="Foto Desiderio">
             <h3 style="margin:0 0 5px 0; color:var(--accent); font-size:18px;">${escapeHTML(item.name)}</h3>
             <p style="margin:0; font-size:14px; color:#555;">💰 Prezzo stimato: <strong>${priceStr}</strong></p>
             <p style="margin:5px 0 10px 0; font-size:13px; color:#666;">📝 ${escapeHTML(item.notes) || 'Nessuna nota aggiuntiva'}</p>
             <div style="margin-top:auto;">
-                <button class="btn btn-danger" style="width:100%; padding:8px;" onclick="deleteWishlistItem(${item.id})">🗑️ Rimuovi</button>
+                <button class="btn btn-danger" style="width:100%; padding:8px;" onclick="deleteWishlistItem('${item.id}')">🗑️ Rimuovi</button>
             </div>
         `;
         fragment.appendChild(card);
@@ -545,7 +544,7 @@ async function addWishlistItem() {
 
         if (!wishlist) wishlist = [];
         wishlist.push({ 
-            id: typeof generateNumericId === 'function' ? generateNumericId() : Date.now(), 
+            id: typeof generateId === 'function' ? generateId() : crypto.randomUUID(), 
             name, price, notes, photo: photoBlob 
         });
         
@@ -569,11 +568,10 @@ async function addWishlistItem() {
 
 async function deleteWishlistItem(id) {
     if (!wishlist) return;
-    // FIX HIGH 4
-    const parsedId = parseInt(id, 10);
-    const item = wishlist.find(w => w.id === parsedId);
+    const targetId = String(id);
+    const item = wishlist.find(w => String(w.id) === targetId);
     if (item && item.photo && typeof revokeBlob === 'function') revokeBlob(item.photo);
-    wishlist = wishlist.filter(w => w.id !== parsedId);
+    wishlist = wishlist.filter(w => String(w.id) !== targetId);
     unsavedChanges = true;
     
     if(typeof saveToLocal === 'function') await saveToLocal();
@@ -652,7 +650,9 @@ async function renderWeatherDashboard() {
                 const windSpeed = weather.wind_speed_10m_max ? weather.wind_speed_10m_max[i] : 0;
                 const minTemp = weather.temperature_2m_min ? weather.temperature_2m_min[i] : 99;
 
-                if (windSpeed > 40) {
+                const windThreshold = typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.WIND_ALERT_KMH : 40;
+
+                if (windSpeed > windThreshold) {
                     const alreadyHasWindAlert = windAlerts.some(wa => wa.locationName === loc.name && wa.date === dateStr);
                     if (!alreadyHasWindAlert) {
                         windAlerts.push({
@@ -671,7 +671,7 @@ async function renderWeatherDashboard() {
                             if (p.minTemp !== null && p.minTemp !== undefined) {
                                 const plantMin = parseFloat(p.minTemp.toString().replace(',', '.'));
                                 if (!isNaN(plantMin) && minTemp < plantMin) {
-                                    const existingAlert = frostAlerts.find(a => a.plant.id === p.id);
+                                    const existingAlert = frostAlerts.find(a => String(a.plant.id) === String(p.id));
                                     if (!existingAlert) {
                                         frostAlerts.push({ plant: p, forecast: minTemp, date: dateStr });
                                     } else if (minTemp < existingAlert.forecast) {
@@ -713,7 +713,7 @@ async function renderWeatherDashboard() {
             let imgSrc = (typeof getImageUrl === 'function' && rawPhoto) ? getImageUrl(rawPhoto) : fallbackSrc;
             
             html += `
-                <div class="weather-plant-card" onclick="if(typeof navigateTo === 'function') navigateTo('plant-detail', ${p.id})" style="cursor:pointer; background:white; border-radius:10px; border:1px solid #ffcdd2; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); transition:transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column;">
+                <div class="weather-plant-card" onclick="if(typeof navigateTo === 'function') navigateTo('plant-detail', '${p.id}')" style="cursor:pointer; background:white; border-radius:10px; border:1px solid #ffcdd2; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); transition:transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column;">
                     <img src="${imgSrc}" onerror="this.onerror=null; this.src='${fallbackSrc}';" style="width:100%; height:90px; object-fit:cover;" alt="Foto pianta">
                     <div style="padding:10px; text-align:center; display: flex; flex-direction: column; justify-content: space-between; flex-grow: 1;">
                         <div style="font-weight:bold; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--primary);">${escapeHTML(p.name)}</div>

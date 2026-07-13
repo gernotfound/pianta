@@ -123,7 +123,6 @@ async function loadZipProfile(file) {
             return typeof sanitizeImageSource === 'function' ? sanitizeImageSource(imgPath) : imgPath; 
         }
 
-        // ARCHITETTURA PULITA: Niente più migrazioni per dati preistorici
         for (let p of loadedPlants) {
             if(p.photo) p.photo = await restoreImage(p.photo); 
             if(p.fruitPhoto) p.fruitPhoto = await restoreImage(p.fruitPhoto);
@@ -137,7 +136,7 @@ async function loadZipProfile(file) {
                     } else {
                         log.photos = [];
                     }
-                    // ID evento Strict (UUID/Stringa)
+                    // FIX CRITICO: Forza gli ID a stringa (UUID compatibilità)
                     if (!log.id) log.id = typeof generateId === 'function' ? generateId() : crypto.randomUUID();
                     else log.id = String(log.id);
                 } 
@@ -147,7 +146,7 @@ async function loadZipProfile(file) {
             
             if(!p.status) p.status = 'active';
             
-            // ID pianta Strict (UUID/Stringa) per compatibilità e Strict Comparison (===)
+            // FIX CRITICO: Gli ID delle piante DEVONO essere stringhe
             if (!p.id) p.id = typeof generateId === 'function' ? generateId() : crypto.randomUUID();
             else p.id = String(p.id);
             
@@ -174,6 +173,7 @@ async function loadZipProfile(file) {
             let loadedWishlist = Array.isArray(loadedData.wishlist) ? loadedData.wishlist : [];
             for (let w of loadedWishlist) {
                 if(w.photo) w.photo = await restoreImage(w.photo);
+                // FIX CRITICO: Forza stringa anche per la Wishlist
                 if(!w.id) w.id = typeof generateId === 'function' ? generateId() : crypto.randomUUID();
                 else w.id = String(w.id);
             }
@@ -184,7 +184,6 @@ async function loadZipProfile(file) {
             wishlist = [];
         }
         
-        // Svuotiamo le vecchie impronte digitali (Hash) prima del ripristino per forzare il salvataggio completo sul nuovo DB
         if (typeof dbSyncHashes !== 'undefined') {
             dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} };
         }
@@ -280,7 +279,6 @@ async function exportData() {
             if(cp.logs && Array.isArray(cp.logs)) { 
                 cp.logs = cp.logs.map(log => {
                     let clog = { ...log };
-                    // ARCHITETTURA PULITA: Niente delete clog.photo perché non esiste più
                     if(clog.photos && Array.isArray(clog.photos) && clog.photos.length > 0) {
                         clog.photos = clog.photos.map((ph, idx) => processImage(ph, `log_${clog.id}_${idx}`));
                     } else {
@@ -316,7 +314,6 @@ async function exportData() {
         
         zip.file("data.json", jsonString);
 
-        // Manteniamo "STORE": Le immagini WebP sono già compresse. 
         const content = await zip.generateAsync({
             type: "blob", 
             compression: "STORE" 
@@ -387,15 +384,15 @@ function exportToCSV() {
         }
 
         let motherName = "";
-        if (p.mother !== undefined && p.mother !== null && p.mother !== "") {
-            // Strict Comparison (===) con l'ID trattato come stringa
-            let m = plantsDatabase.find(x => x.id === String(p.mother));
+        if (p.mother) {
+            // FIX CSV: String interpolation sicura per l'ID parentela
+            let m = plantsDatabase.find(x => String(x.id) === String(p.mother));
             if (m) motherName = m.name;
         }
 
         let fatherName = "";
-        if (p.father !== undefined && p.father !== null && p.father !== "") {
-            let f = plantsDatabase.find(x => x.id === String(p.father));
+        if (p.father) {
+            let f = plantsDatabase.find(x => String(x.id) === String(p.father));
             if (f) fatherName = f.name;
         }
 

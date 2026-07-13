@@ -1,4 +1,35 @@
 // ==========================================
+// HELPER FORMATTAZIONE DATI E COSTANTI
+// ==========================================
+
+function parseLocalFloat(value) {
+    if (!value || value.toString().trim() === "") return null;
+    let str = value.toString().replace(',', '.');
+    let parsed = parseFloat(str);
+    return isNaN(parsed) ? null : parsed;
+}
+
+function formatLocalFloat(value) {
+    if (value === null || value === undefined || value === "") return "";
+    return value.toString().replace('.', ',');
+}
+
+function getModernFertility(val) {
+    if (!val) return 'Sconosciuta';
+    if (val === 'Sì' || val === 'Autofertile') return 'Autofertile';
+    if (val === 'No' || val === 'Autosterile') return 'Autosterile';
+    if (val === 'Parzialmente autofertile' || val === 'Incerto') return 'Parzialmente autofertile';
+    return 'Sconosciuta';
+}
+
+function safeCloneImage(img) {
+    if (!img) return null;
+    if (img instanceof Blob) return new Blob([img], { type: img.type });
+    if (typeof img === 'string') return img; 
+    return img;
+}
+
+// ==========================================
 // GESTIONE FORM PIANTE (UI Dinamica)
 // ==========================================
 function toggleFidelityField() {
@@ -147,17 +178,19 @@ function populateFormHelpers() {
     if (motherSelect) motherSelect.innerHTML = '<option value="">-- Nessuna / Sconosciuta --</option>'; 
     if (fatherSelect) fatherSelect.innerHTML = '<option value="">-- Nessuno / Sconosciuto --</option>';
     
-    const availableParents = plantsDatabase.filter(p => p.id !== currentPlantId).sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+    const currentPlantIdStr = currentPlantId ? String(currentPlantId) : '';
+    const availableParents = plantsDatabase.filter(p => String(p.id) !== currentPlantIdStr).sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+    
     availableParents.forEach(p => {
         if (motherSelect) {
             const optM = document.createElement('option'); 
-            optM.value = p.id; 
+            optM.value = String(p.id); 
             optM.innerText = escapeHTML(p.name) + (p.status === 'archived' ? ' (archiviata)' : ''); 
             motherSelect.appendChild(optM);
         }
         if (fatherSelect) {
             const optF = document.createElement('option'); 
-            optF.value = p.id; 
+            optF.value = String(p.id); 
             optF.innerText = escapeHTML(p.name) + (p.status === 'archived' ? ' (archiviata)' : ''); 
             fatherSelect.appendChild(optF);
         }
@@ -335,8 +368,9 @@ async function savePlant() {
 
     if (!plantsDatabase) plantsDatabase = [];
 
-    // STRICT ID
-    let nameExists = plantsDatabase.some(p => p.name.toLowerCase() === newName.toLowerCase() && p.id !== currentPlantId);
+    const currentPlantIdStr = currentPlantId ? String(currentPlantId) : null;
+
+    let nameExists = plantsDatabase.some(p => (p.name || '').toLowerCase() === newName.toLowerCase() && String(p.id) !== currentPlantIdStr);
     if (nameExists) {
         if (typeof Swal !== 'undefined') return Swal.fire({icon: 'error', title: 'Nome Duplicato', text: `Esiste già una pianta salvata con il nome "${escapeHTML(newName)}". Scegli un nome diverso.`, confirmButtonColor: '#2e7d32'});
         else return alert(`Esiste già una pianta con il nome "${newName}".`);
@@ -406,9 +440,8 @@ async function savePlant() {
     try {
         let finalMainPhoto = ""; let finalFruitPhoto = "";
 
-        // STRICT ID Cleanup
-        if (editingMode && currentPlantId !== null) {
-            let plantToClean = plantsDatabase.find(x => x.id === currentPlantId);
+        if (editingMode && currentPlantIdStr !== null) {
+            let plantToClean = plantsDatabase.find(x => String(x.id) === currentPlantIdStr);
             if (plantToClean) {
                 if ((window.smartCropBlobs && window.smartCropBlobs['main']) || mainPhotoRemoved) {
                     if (plantToClean.photo && typeof revokeBlob === 'function') revokeBlob(plantToClean.photo);
@@ -421,33 +454,32 @@ async function savePlant() {
 
         if (window.smartCropBlobs && window.smartCropBlobs['main']) { 
             finalMainPhoto = window.smartCropBlobs['main']; 
-        } else if (editingMode && currentPlantId !== null && !mainPhotoRemoved) { 
-            let p = plantsDatabase.find(x => x.id === currentPlantId);
+        } else if (editingMode && currentPlantIdStr !== null && !mainPhotoRemoved) { 
+            let p = plantsDatabase.find(x => String(x.id) === currentPlantIdStr);
             finalMainPhoto = p ? p.photo || "" : ""; 
         }
         
         if (window.smartCropBlobs && window.smartCropBlobs['fruit']) { 
             finalFruitPhoto = window.smartCropBlobs['fruit']; 
-        } else if (editingMode && currentPlantId !== null && !fruitPhotoRemoved) { 
-            let p = plantsDatabase.find(x => x.id === currentPlantId);
+        } else if (editingMode && currentPlantIdStr !== null && !fruitPhotoRemoved) { 
+            let p = plantsDatabase.find(x => String(x.id) === currentPlantIdStr);
             finalFruitPhoto = p ? p.fruitPhoto || "" : ""; 
         }
 
-        let savedPlantId = (editingMode && currentPlantId !== null) ? currentPlantId : (typeof generateId === 'function' ? generateId() : crypto.randomUUID());
+        let savedPlantId = (editingMode && currentPlantIdStr !== null) ? currentPlantIdStr : (typeof generateId === 'function' ? generateId() : crypto.randomUUID());
         
         const originVal = document.getElementById('p-origin') ? document.getElementById('p-origin').value : 'Da seme';
         const fidelityVal = document.getElementById('p-genetic-fidelity') ? document.getElementById('p-genetic-fidelity').value : 'Non ancora valutato';
         const placementVal = document.getElementById('p-placement') ? document.getElementById('p-placement').value : 'Vaso';
         const sowingDateVal = document.getElementById('p-sowing-date') ? document.getElementById('p-sowing-date').value : '';
         
-        // Parentela via UUID Strings (Nessun parseInt)
         const motherEl = document.getElementById('p-mother');
-        let motherVal = motherEl && motherEl.value ? motherEl.value : '';
+        let motherVal = motherEl && motherEl.value ? String(motherEl.value) : '';
         const fatherEl = document.getElementById('p-father');
-        let fatherVal = fatherEl && fatherEl.value ? fatherEl.value : '';
+        let fatherVal = fatherEl && fatherEl.value ? String(fatherEl.value) : '';
 
-        if (editingMode && currentPlantId !== null) {
-            let index = plantsDatabase.findIndex(p => p.id === currentPlantId);
+        if (editingMode && currentPlantIdStr !== null) {
+            let index = plantsDatabase.findIndex(p => String(p.id) === currentPlantIdStr);
             if (index > -1) {
                 plantsDatabase[index].name = newName; 
                 plantsDatabase[index].scientific = finalScientific; 
@@ -473,10 +505,33 @@ async function savePlant() {
             }
         } else {
             const plantData = {
-                id: savedPlantId, name: newName, scientific: finalScientific, price: finalPrice, origin: originVal, autofertile: autofertileVal,
-                sowingDate: sowingDateVal, geneticFidelity: fidelityVal, placement: placementVal, 
-                potSize: potSize, soil: finalSoil, phOttimale: phOttimale, vendor: finalVendor, location: finalLocation, notes: '', speciesNotes: '', 
-                lat: lat, lng: lng, photo: finalMainPhoto, fruitPhoto: finalFruitPhoto, status: 'active', logs: [], mother: motherVal, father: fatherVal, minTemp: minTemp, maxTemp: maxTemp
+                id: savedPlantId, 
+                createdAt: Date.now(), 
+                name: newName, 
+                scientific: finalScientific, 
+                price: finalPrice, 
+                origin: originVal, 
+                autofertile: autofertileVal,
+                sowingDate: sowingDateVal, 
+                geneticFidelity: fidelityVal, 
+                placement: placementVal, 
+                potSize: potSize, 
+                soil: finalSoil, 
+                phOttimale: phOttimale, 
+                vendor: finalVendor, 
+                location: finalLocation, 
+                notes: '', 
+                speciesNotes: '', 
+                lat: lat, 
+                lng: lng, 
+                photo: finalMainPhoto, 
+                fruitPhoto: finalFruitPhoto, 
+                status: 'active', 
+                logs: [], 
+                mother: motherVal, 
+                father: fatherVal, 
+                minTemp: minTemp, 
+                maxTemp: maxTemp
             };
             plantsDatabase.push(plantData);
         }
@@ -511,14 +566,15 @@ function editCurrentPlant() { navigateTo('edit-plant', currentPlantId); }
 
 function _internalEditPlant(id) {
     if (!plantsDatabase) return;
-    const plant = plantsDatabase.find(p => p.id === id);
+    const parsedId = String(id);
+    const plant = plantsDatabase.find(p => String(p.id) === parsedId);
     if(!plant) { 
         if(typeof goToHomeTab === 'function') goToHomeTab(); 
         else window.history.back(); 
         return; 
     }
     
-    currentPlantId = plant.id; 
+    currentPlantId = String(plant.id); 
     editingMode = true; 
     isFormDirty = false; 
     
@@ -534,8 +590,8 @@ function _internalEditPlant(id) {
         'p-sowing-date': plant.sowingDate || '',
         'p-genetic-fidelity': plant.geneticFidelity || 'Non ancora valutato',
         'p-autofertile': getModernFertility(plant.autofertile),
-        'p-mother': plant.mother !== undefined && plant.mother !== null ? plant.mother : '',
-        'p-father': plant.father !== undefined && plant.father !== null ? plant.father : '',
+        'p-mother': plant.mother !== undefined && plant.mother !== null ? String(plant.mother) : '',
+        'p-father': plant.father !== undefined && plant.father !== null ? String(plant.father) : '',
         'p-min-temp': formatLocalFloat(plant.minTemp),
         'p-max-temp': formatLocalFloat(plant.maxTemp),
         'p-placement': plant.placement || 'Vaso',
@@ -665,19 +721,19 @@ async function deleteCurrentPlant() {
         }
 
         try {
-            const plantToDelete = plantsDatabase.find(p => p.id === currentPlantId);
+            const currentPlantIdStr = String(currentPlantId);
+            const plantToDelete = plantsDatabase.find(p => String(p.id) === currentPlantIdStr);
             
             if (plantToDelete && typeof cleanupPlantImages === 'function') {
                 cleanupPlantImages(plantToDelete); 
             }
 
-            // Messa in sicurezza parentele senza parseInt
             plantsDatabase.forEach(p => {
-                if (p.mother === currentPlantId) p.mother = '';
-                if (p.father === currentPlantId) p.father = '';
+                if (String(p.mother) === currentPlantIdStr) p.mother = '';
+                if (String(p.father) === currentPlantIdStr) p.father = '';
             });
 
-            plantsDatabase = plantsDatabase.filter(p => p.id !== currentPlantId); 
+            plantsDatabase = plantsDatabase.filter(p => String(p.id) !== currentPlantIdStr); 
             unsavedChanges = true; 
             
             if(typeof saveToLocal === 'function') await saveToLocal(); 
@@ -712,7 +768,8 @@ async function deleteCurrentPlant() {
 // ==========================================
 async function toggleArchiveStatus() {
     if (typeof Swal === 'undefined' || !plantsDatabase) return;
-    const plant = plantsDatabase.find(p => p.id === currentPlantId);
+    const parsedId = String(currentPlantId);
+    const plant = plantsDatabase.find(p => String(p.id) === parsedId);
     if (!plant) return;
     
     const btn = document.getElementById('btn-archive-toggle');
@@ -760,7 +817,8 @@ async function toggleArchiveStatus() {
 
 function openDuplicateModal() {
     if (!plantsDatabase) return;
-    const plantToCopy = plantsDatabase.find(p => p.id === currentPlantId); 
+    const parsedId = String(currentPlantId);
+    const plantToCopy = plantsDatabase.find(p => String(p.id) === parsedId); 
     if (!plantToCopy) return;
     
     const baseNameEl = document.getElementById('dup-base-name');
@@ -782,7 +840,8 @@ function closeDuplicateModal() {
 
 async function confirmDuplicate() {
     if (!plantsDatabase) return;
-    const plantToCopy = plantsDatabase.find(p => p.id === currentPlantId); 
+    const parsedId = String(currentPlantId);
+    const plantToCopy = plantsDatabase.find(p => String(p.id) === parsedId); 
     if (!plantToCopy) return;
     
     const baseNameEl = document.getElementById('dup-base-name');
@@ -833,6 +892,7 @@ async function confirmDuplicate() {
 
             const newPlant = {
                 id: newPlantId, 
+                createdAt: Date.now(),
                 name: newName, 
                 scientific: plantToCopy.scientific, 
                 price: plantToCopy.price, 
@@ -854,8 +914,8 @@ async function confirmDuplicate() {
                 fruitPhoto: safeCloneImage(plantToCopy.fruitPhoto), 
                 status: 'active', 
                 logs: clonedLogs, 
-                mother: plantToCopy.mother !== undefined && plantToCopy.mother !== null ? plantToCopy.mother : '', 
-                father: plantToCopy.father !== undefined && plantToCopy.father !== null ? plantToCopy.father : '', 
+                mother: plantToCopy.mother !== undefined && plantToCopy.mother !== null ? String(plantToCopy.mother) : '', 
+                father: plantToCopy.father !== undefined && plantToCopy.father !== null ? String(plantToCopy.father) : '', 
                 minTemp: plantToCopy.minTemp, 
                 maxTemp: plantToCopy.maxTemp          
             };
@@ -971,15 +1031,14 @@ function renderPlants() {
     filteredPlants.sort((a, b) => {
         if (sortMode === 'name') return (a.name || '').localeCompare(b.name || '');
         else if (sortMode === 'newest') {
-            // Se sono stringhe numeriche non si può fare b.id - a.id
-            if (a.id > b.id) return -1;
-            if (a.id < b.id) return 1;
-            return 0;
+            const timeA = a.createdAt || 0;
+            const timeB = b.createdAt || 0;
+            return timeB - timeA;
         }
         else if (sortMode === 'oldest') {
-            if (a.id > b.id) return 1;
-            if (a.id < b.id) return -1;
-            return 0;
+            const timeA = a.createdAt || 0;
+            const timeB = b.createdAt || 0;
+            return timeA - timeB;
         }
         else if (sortMode === 'last_updated') {
             let lastA = 0; 
@@ -1136,7 +1195,6 @@ let currentArchiveChunkIndex = 0;
 const ARCHIVE_CHUNK_SIZE = 25;
 let currentArchivedPlants = [];
 let archiveObserver = null;
-let isArchiveInitialized = false;
 
 function renderArchive() {
     const grid = document.getElementById('archive-grid'); 
@@ -1251,14 +1309,15 @@ if(typeof AppState !== 'undefined') {
 // ==========================================
 function _internalOpenPlantDetail(id) {
     if (!plantsDatabase) return;
-    const plant = plantsDatabase.find(p => p.id === id);
+    const parsedId = String(id);
+    const plant = plantsDatabase.find(p => String(p.id) === parsedId);
     if(!plant) { 
         if(typeof goToHomeTab === 'function') goToHomeTab(); 
         else window.history.back(); 
         return; 
     }
     
-    currentPlantId = plant.id; 
+    currentPlantId = String(plant.id); 
     
     const detailTitle = document.getElementById('detail-title');
     if (detailTitle) detailTitle.innerText = escapeHTML(plant.name) + (plant.scientific ? ` (${escapeHTML(plant.scientific)})` : '');
@@ -1283,11 +1342,11 @@ function _internalOpenPlantDetail(id) {
 
     let parentStr = '';
     if(plant.mother !== undefined && plant.mother !== null && plant.mother !== '') { 
-        let m = plantsDatabase.find(x => x.id === plant.mother); 
+        let m = plantsDatabase.find(x => String(x.id) === String(plant.mother)); 
         if(m) parentStr += `Madre: <a href="javascript:void(0);" style="color:var(--blue); font-weight:bold;" onclick="navigateTo('plant-detail', '${m.id}')">${escapeHTML(m.name)}</a><br>`; 
     }
     if(plant.father !== undefined && plant.father !== null && plant.father !== '') { 
-        let f = plantsDatabase.find(x => x.id === plant.father); 
+        let f = plantsDatabase.find(x => String(x.id) === String(plant.father)); 
         if(f) parentStr += `Padre: <a href="javascript:void(0);" style="color:var(--blue); font-weight:bold;" onclick="navigateTo('plant-detail', '${f.id}')">${escapeHTML(f.name)}</a>`; 
     }
     if(parentStr) parentStr = `<div style="background:#e3f2fd; padding:10px; border-radius:5px; margin-bottom:10px; font-size:14px;"><strong>🧬 Genealogia:</strong><br>${parentStr}</div>`;
@@ -1407,7 +1466,8 @@ function _internalOpenPlantDetail(id) {
 
 async function saveNotesFromDetail() {
     if (!currentPlantId || !plantsDatabase) return;
-    const plant = plantsDatabase.find(p => p.id === currentPlantId);
+    const parsedId = String(currentPlantId);
+    const plant = plantsDatabase.find(p => String(p.id) === parsedId);
     if (!plant) return;
 
     const plantNotesEl = document.getElementById('detail-plant-notes');

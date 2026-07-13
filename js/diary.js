@@ -114,6 +114,9 @@ async function addDiaryLog() {
             return;
         }
     }
+    
+    // FIX FASE 1: Usiamo la stringa per gli ID (niente parseInt)
+    const currentPlantIdStr = String(currentPlantId);
 
     if (type === 'Innesto') {
         graftName = document.getElementById('log-graft-name') ? document.getElementById('log-graft-name').value.trim() : ''; 
@@ -123,13 +126,13 @@ async function addDiaryLog() {
         }
         
         // Strict Comparison (UUID)
-        let nameExists = plantsDatabase.some(p => (p.name || '').toLowerCase() === graftName.toLowerCase() && p.id !== currentPlantId); 
+        let nameExists = plantsDatabase.some(p => (p.name || '').toLowerCase() === graftName.toLowerCase() && String(p.id) !== currentPlantIdStr); 
         if (nameExists) {
             if (typeof Swal !== 'undefined') return Swal.fire({icon: 'error', title: 'Errore', text: `Esiste già una pianta salvata con il nome "${escapeHTML(graftName)}".`, confirmButtonColor: '#2e7d32'});
             return;
         }
         
-        const plant = plantsDatabase.find(p => p.id === currentPlantId); 
+        const plant = plantsDatabase.find(p => String(p.id) === currentPlantIdStr); 
         if(plant) {
             plant.name = graftName; 
             plant.origin = 'Innesto';
@@ -141,7 +144,7 @@ async function addDiaryLog() {
         const potVal = document.getElementById('log-pot-size') ? document.getElementById('log-pot-size').value : '';
         newPotSize = typeof parseLocalFloat === 'function' ? parseLocalFloat(potVal) : parseFloat(potVal); 
         
-        const plant = plantsDatabase.find(p => p.id === currentPlantId); 
+        const plant = plantsDatabase.find(p => String(p.id) === currentPlantIdStr); 
         if(plant) {
             plant.placement = newPlacement; 
             plant.potSize = newPotSize; 
@@ -194,13 +197,14 @@ async function addDiaryLog() {
 
 async function finalizeDiaryLog(date, type, note, height, harvest, ph, placement, potSize, graftName, photosArray) {
     if (!plantsDatabase) return;
-    const plant = plantsDatabase.find(p => p.id === currentPlantId);
+    const currentPlantIdStr = String(currentPlantId);
+    const plant = plantsDatabase.find(p => String(p.id) === currentPlantIdStr);
     if (!plant) return;
     
     if (!Array.isArray(plant.logs)) plant.logs = [];
 
     plant.logs.push({ 
-        // L'ID del diario diventa ora un UUID sicuro
+        // FIX FASE 1: L'ID del diario diventa ora un UUID sicuro (Niente matematica debole)
         id: typeof generateId === 'function' ? generateId() : crypto.randomUUID(), 
         date: date, 
         type: type, 
@@ -231,7 +235,7 @@ async function finalizeDiaryLog(date, type, note, height, harvest, ph, placement
     }
     
     if (type === 'Innesto' || type === 'Rinvaso / Sistemazione') {
-        if(typeof _internalOpenPlantDetail === 'function') _internalOpenPlantDetail(currentPlantId); 
+        if(typeof _internalOpenPlantDetail === 'function') _internalOpenPlantDetail(currentPlantIdStr); 
     } else {
         if(typeof renderTimeline === 'function') renderTimeline(plant); 
         if(typeof updateYearDropdown === 'function') updateYearDropdown(plant); 
@@ -266,11 +270,13 @@ async function deleteLog(logId) {
     
     if(res.isConfirmed) {
         if (!plantsDatabase) return;
-        const plant = plantsDatabase.find(p => p.id === currentPlantId); 
+        const currentPlantIdStr = String(currentPlantId);
+        const plant = plantsDatabase.find(p => String(p.id) === currentPlantIdStr); 
         if (!plant || !plant.logs) return;
 
-        // Strict Comparison (UUID come stringhe, addio parseInt)
-        const logToDelete = plant.logs.find(l => l.id === logId);
+        // FIX FASE 1: Strict Comparison (UUID come stringhe, addio parseInt)
+        const targetLogId = String(logId);
+        const logToDelete = plant.logs.find(l => String(l.id) === targetLogId);
         
         if (logToDelete && typeof revokeBlob === 'function') {
             if (logToDelete.photos && Array.isArray(logToDelete.photos)) {
@@ -278,7 +284,7 @@ async function deleteLog(logId) {
             }
         }
 
-        plant.logs = plant.logs.filter(l => l.id !== logId); 
+        plant.logs = plant.logs.filter(l => String(l.id) !== targetLogId); 
         unsavedChanges = true; 
         
         if(typeof saveToLocal === 'function') await saveToLocal(); 
@@ -326,7 +332,6 @@ function renderTimeline(plant) {
         let imgStr = ''; 
         const fallbackSrc = typeof OFFLINE_PLACEHOLDER !== 'undefined' ? OFFLINE_PLACEHOLDER : '';
 
-        // Niente più fallback a vecchie `log.photo`, lavoriamo solo con l'architettura pura
         const validPhotos = (log.photos && Array.isArray(log.photos)) ? log.photos : [];
 
         if (validPhotos.length > 0) {
@@ -340,7 +345,6 @@ function renderTimeline(plant) {
             imgStr += '</div>';
         }
         
-        // FIX CRITICO PER GLI UUID: Aggiunti gli apici singoli all'id nel bottone onclick ('${log.id}')
         li.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                 <div><span class="timeline-date">${displayDate}</span><span class="timeline-type">${escapeHTML(log.type)}</span></div>

@@ -101,6 +101,11 @@ async function loadZipProfile(file) {
         if (!loadedData || (typeof loadedData !== 'object' && !Array.isArray(loadedData))) {
             throw new Error('Il backup non contiene un formato JSON valido.');
         }
+        
+        const schemaVer = loadedData.schemaVersion || 0;
+        if (schemaVer > 1) {
+            console.warn("Backup generato da una versione più recente dell'app. Potrebbero esserci incongruenze.");
+        }
 
         let loadedPlants = Array.isArray(loadedData) ? loadedData : (Array.isArray(loadedData.plants) ? loadedData.plants : []);
         if (!Array.isArray(loadedPlants)) {
@@ -136,7 +141,7 @@ async function loadZipProfile(file) {
                     } else {
                         log.photos = [];
                     }
-                    // FIX CRITICO: Forza gli ID a stringa (UUID compatibilità)
+                    // FIX AUDIT FASE 1: Rispetto degli UUID
                     if (!log.id) log.id = typeof generateId === 'function' ? generateId() : crypto.randomUUID();
                     else log.id = String(log.id);
                 } 
@@ -146,7 +151,7 @@ async function loadZipProfile(file) {
             
             if(!p.status) p.status = 'active';
             
-            // FIX CRITICO: Gli ID delle piante DEVONO essere stringhe
+            // FIX AUDIT FASE 1: Nessun parseInt! Manteniamo le stringhe UUID
             if (!p.id) p.id = typeof generateId === 'function' ? generateId() : crypto.randomUUID();
             else p.id = String(p.id);
             
@@ -173,7 +178,7 @@ async function loadZipProfile(file) {
             let loadedWishlist = Array.isArray(loadedData.wishlist) ? loadedData.wishlist : [];
             for (let w of loadedWishlist) {
                 if(w.photo) w.photo = await restoreImage(w.photo);
-                // FIX CRITICO: Forza stringa anche per la Wishlist
+                // FIX AUDIT FASE 1: Nessun parseInt per la wishlist
                 if(!w.id) w.id = typeof generateId === 'function' ? generateId() : crypto.randomUUID();
                 else w.id = String(w.id);
             }
@@ -384,14 +389,14 @@ function exportToCSV() {
         }
 
         let motherName = "";
-        if (p.mother) {
-            // FIX CSV: String interpolation sicura per l'ID parentela
+        if (p.mother !== undefined && p.mother !== null && p.mother !== "") {
+            // Strict Comparison e garanzia formato stringa
             let m = plantsDatabase.find(x => String(x.id) === String(p.mother));
             if (m) motherName = m.name;
         }
 
         let fatherName = "";
-        if (p.father) {
+        if (p.father !== undefined && p.father !== null && p.father !== "") {
             let f = plantsDatabase.find(x => String(x.id) === String(p.father));
             if (f) fatherName = f.name;
         }

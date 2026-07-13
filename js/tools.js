@@ -123,7 +123,6 @@ function renderMacroInputs() {
     const fallbackSrc = typeof OFFLINE_PLACEHOLDER !== 'undefined' ? OFFLINE_PLACEHOLDER : '';
 
     selectedBatchPlants.forEach(pid => {
-        // FIX CRITICO: Strict comparison con stringhe UUID
         const p = plantsDatabase.find(x => String(x.id) === String(pid));
         if (!p) return;
 
@@ -191,7 +190,7 @@ async function saveMacroV2() {
         let successCount = 0;
         let errors = 0;
 
-        rows.forEach((row) => {
+        rows.forEach((row, idx) => {
             const pid = String(row.dataset.id);
             const p = plantsDatabase.find(x => String(x.id) === pid);
             if (!p) return;
@@ -352,7 +351,6 @@ function renderExpenses() {
     sortedExp.forEach(exp => {
         total += (exp.cost || 0);
         const li = document.createElement('li');
-        // FIX CRITICO: Apici singoli per l'ID in formato stringa
         li.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
@@ -405,8 +403,10 @@ async function addExpense() {
         });
         
         unsavedChanges = true;
-        
         if(typeof saveToLocal === 'function') await saveToLocal();
+        
+        // FIX FASE 4: Sblocco del form per evitare il popup "Dati non salvati" alla navigazione
+        isFormDirty = false;
         
         if (descEl) descEl.value = '';
         if (costEl) costEl.value = '';
@@ -495,7 +495,6 @@ function renderWishlist() {
         let imgSrc = (typeof getImageUrl === 'function' && item.photo) ? getImageUrl(item.photo) : fallbackSrc;
         let priceStr = item.price ? (typeof formatLocalFloat === 'function' ? formatLocalFloat(item.price) : item.price) + ' €' : 'N/D';
 
-        // FIX CRITICO: Apici singoli per l'ID in formato stringa
         card.innerHTML = `
             <img src="${imgSrc}" onerror="this.onerror=null; this.src='${fallbackSrc}';" loading="lazy" alt="Foto Desiderio">
             <h3 style="margin:0 0 5px 0; color:var(--accent); font-size:18px;">${escapeHTML(item.name)}</h3>
@@ -549,8 +548,10 @@ async function addWishlistItem() {
         });
         
         unsavedChanges = true;
-        
         if(typeof saveToLocal === 'function') await saveToLocal();
+
+        // FIX FASE 4: Sblocco del form per evitare avvisi di chiusura
+        isFormDirty = false;
 
         if (nameEl) nameEl.value = '';
         if (priceEl) priceEl.value = '';

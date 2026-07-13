@@ -11,16 +11,29 @@ let currentAppRoute = window.location.hash || '#/dashboard';
 // ==========================================
 function initRouter(hasData) {
     window.addEventListener('popstate', async (e) => {
-        // Salviamo la rotta in cui l'utente *voleva* andare prima del nostro blocco
         let intendedState = e.state;
         let intendedHash = window.location.hash;
 
+        // FIX FASE 3: Pulizia modali bloccanti.
+        // Se l'utente usa la gesture "indietro" del telefono, dobbiamo assicurarci
+        // di distruggere i popup (Cropper, Immagini Fullscreen) liberando la UI e la RAM.
+        if (typeof closeCropper === 'function') closeCropper();
+        
+        const imgModal = document.getElementById('fullscreen-image-modal');
+        if (imgModal && imgModal.style.display !== 'none') {
+            imgModal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+        
+        const dupModal = document.getElementById('duplicate-modal-overlay');
+        if (dupModal && dupModal.style.display !== 'none') {
+            dupModal.style.display = 'none';
+        }
+
         if (isFormDirty && currentTab === 'add-plant') {
-            // FIX UX: Il browser ha già cambiato l'URL nella barra. 
-            // Lo forziamo immediatamente a tornare al form per evitare "scivolamenti" visivi
             history.pushState({ view: 'add-plant' }, '', currentAppRoute);
 
-            if (typeof Swal === 'undefined') return; // Fallback di sicurezza
+            if (typeof Swal === 'undefined') return; 
 
             const res = await Swal.fire({
                 title: 'Dati non salvati!',
@@ -34,14 +47,11 @@ function initRouter(hasData) {
             });
             
             if (!res.isConfirmed) {
-                // L'utente vuole restare. L'URL è già stato corretto dallo step precedente.
                 return;
             } else {
-                // L'utente vuole uscire. Svuotiamo il form.
                 isFormDirty = false;
                 if(typeof clearForm === 'function') clearForm();
                 
-                // Lo riportiamo alla rotta che aveva cliccato originariamente
                 history.replaceState(intendedState, '', intendedHash);
                 if (intendedState && intendedState.view) {
                     restoreTabState(intendedState.view, intendedState.param);
@@ -53,7 +63,6 @@ function initRouter(hasData) {
             }
         }
 
-        // Flusso normale se il form non è sporco
         if (e.state && e.state.view) {
             restoreTabState(e.state.view, e.state.param);
             executeTabSwitch(e.state.view, e.state.param);
@@ -158,7 +167,6 @@ function navigateTab(tab) {
 }
 
 function navigateTo(view, param = null) {
-    // Guard clause: verifichiamo che l'elemento esista prima di leggerne le classi
     const dashboardEl = document.getElementById('dashboard');
     if (dashboardEl && !dashboardEl.classList.contains('hidden')) {
         lastScrollPosition = window.scrollY || document.documentElement.scrollTop;
@@ -199,23 +207,20 @@ function executeTabSwitch(view, param = null) {
     window.appInitialized = true; 
     currentAppRoute = window.location.hash; 
 
-    // Elenco di tutte le viste disponibili (corrispondenti agli ID in index.html)
     const views = [
         'startup-screen', 'dashboard', 'my-data-page', 'expenses-view', 'wishlist-view', 
         'gallery-view', 'archive-page', 'plant-detail-view',
         'form-container', 'global-map-page', 'labels-scanner-view', 'events-view', 'macro-view'
     ];
     
-    // 1. Hide all views safely
     views.forEach(v => {
         const el = document.getElementById(v);
         if(el) el.classList.add('hidden');
     });
 
-    // 2. FIX HARDWARE: Chiusura rigorosa fotocamera
     if (view !== 'scanner' && typeof html5QrcodeScanner !== 'undefined' && html5QrcodeScanner) {
         try {
-            if (html5QrcodeScanner.getState && html5QrcodeScanner.getState() !== 1) { // 1 = UNKNOWN/NOT_STARTED
+            if (html5QrcodeScanner.getState && html5QrcodeScanner.getState() !== 1) { 
                 html5QrcodeScanner.clear().then(() => {
                     html5QrcodeScanner = null;
                 }).catch(e => {
@@ -230,7 +235,6 @@ function executeTabSwitch(view, param = null) {
         }
     }
 
-    // 3. Gestione bottoni barra di navigazione in basso
     document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
     if (currentTab === 'home') { document.getElementById('nav-btn-dashboard')?.classList.add('active'); }
     else if (currentTab === 'add-plant') { document.getElementById('nav-btn-add-plant')?.classList.add('active'); }
@@ -239,7 +243,6 @@ function executeTabSwitch(view, param = null) {
     else if (currentTab === 'map') { document.getElementById('nav-btn-map')?.classList.add('active'); }
     else if (currentTab === 'macro') { document.getElementById('nav-btn-macro')?.classList.add('active'); }
 
-    // 4. FIX BUG "Pagina Bianca": Switch rigoroso per assegnare il parametro 'view' all'ID corretto nell'HTML
     let targetId = '';
     switch (view) {
         case 'startup': targetId = 'startup-screen'; break;
@@ -251,7 +254,6 @@ function executeTabSwitch(view, param = null) {
         case 'map': targetId = 'global-map-page'; break;
         case 'scanner': targetId = 'labels-scanner-view'; break;
         default: 
-            // Copre: events-view, macro-view, expenses-view, wishlist-view, gallery-view, plant-detail-view
             targetId = view + '-view'; 
             break;
     }
@@ -259,11 +261,8 @@ function executeTabSwitch(view, param = null) {
     const targetViewEl = document.getElementById(targetId);
     if (targetViewEl) {
         targetViewEl.classList.remove('hidden');
-    } else {
-        console.error(`Impossibile trovare la vista nel DOM per l'ID: ${targetId}`);
     }
 
-    // 5. Esecuzione logica specifica per la view aperta
     switch(view) {
         case 'dashboard':
             if (typeof renderPlants === 'function') renderPlants();
@@ -340,10 +339,6 @@ function executeTabSwitch(view, param = null) {
             if(param && typeof _internalOpenPlantDetail === 'function') _internalOpenPlantDetail(param);
             setTimeout(() => { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }, 10);
             setTimeout(() => { if (typeof map !== 'undefined' && map) map.invalidateSize(); }, 450);
-            break;
-
-        case 'startup':
-            // Gestito da switch precedente (non richiede funzioni aggiuntive al momento)
             break;
     }
 }

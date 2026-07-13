@@ -1,35 +1,4 @@
 // ==========================================
-// HELPER FORMATTAZIONE DATI E COSTANTI
-// ==========================================
-
-function parseLocalFloat(value) {
-    if (!value || value.toString().trim() === "") return null;
-    let str = value.toString().replace(',', '.');
-    let parsed = parseFloat(str);
-    return isNaN(parsed) ? null : parsed;
-}
-
-function formatLocalFloat(value) {
-    if (value === null || value === undefined || value === "") return "";
-    return value.toString().replace('.', ',');
-}
-
-function getModernFertility(val) {
-    if (!val) return 'Sconosciuta';
-    if (val === 'Sì' || val === 'Autofertile') return 'Autofertile';
-    if (val === 'No' || val === 'Autosterile') return 'Autosterile';
-    if (val === 'Parzialmente autofertile' || val === 'Incerto') return 'Parzialmente autofertile';
-    return 'Sconosciuta';
-}
-
-function safeCloneImage(img) {
-    if (!img) return null;
-    if (img instanceof Blob) return new Blob([img], { type: img.type });
-    if (typeof img === 'string') return img; 
-    return img;
-}
-
-// ==========================================
 // GESTIONE FORM PIANTE (UI Dinamica)
 // ==========================================
 function toggleFidelityField() {
@@ -566,8 +535,8 @@ function editCurrentPlant() { navigateTo('edit-plant', currentPlantId); }
 
 function _internalEditPlant(id) {
     if (!plantsDatabase) return;
-    const parsedId = String(id);
-    const plant = plantsDatabase.find(p => String(p.id) === parsedId);
+    const targetId = String(id);
+    const plant = plantsDatabase.find(p => String(p.id) === targetId);
     if(!plant) { 
         if(typeof goToHomeTab === 'function') goToHomeTab(); 
         else window.history.back(); 
@@ -768,8 +737,8 @@ async function deleteCurrentPlant() {
 // ==========================================
 async function toggleArchiveStatus() {
     if (typeof Swal === 'undefined' || !plantsDatabase) return;
-    const parsedId = String(currentPlantId);
-    const plant = plantsDatabase.find(p => String(p.id) === parsedId);
+    const targetId = String(currentPlantId);
+    const plant = plantsDatabase.find(p => String(p.id) === targetId);
     if (!plant) return;
     
     const btn = document.getElementById('btn-archive-toggle');
@@ -817,8 +786,8 @@ async function toggleArchiveStatus() {
 
 function openDuplicateModal() {
     if (!plantsDatabase) return;
-    const parsedId = String(currentPlantId);
-    const plantToCopy = plantsDatabase.find(p => String(p.id) === parsedId); 
+    const targetId = String(currentPlantId);
+    const plantToCopy = plantsDatabase.find(p => String(p.id) === targetId); 
     if (!plantToCopy) return;
     
     const baseNameEl = document.getElementById('dup-base-name');
@@ -840,8 +809,8 @@ function closeDuplicateModal() {
 
 async function confirmDuplicate() {
     if (!plantsDatabase) return;
-    const parsedId = String(currentPlantId);
-    const plantToCopy = plantsDatabase.find(p => String(p.id) === parsedId); 
+    const targetId = String(currentPlantId);
+    const plantToCopy = plantsDatabase.find(p => String(p.id) === targetId); 
     if (!plantToCopy) return;
     
     const baseNameEl = document.getElementById('dup-base-name');
@@ -1309,8 +1278,8 @@ if(typeof AppState !== 'undefined') {
 // ==========================================
 function _internalOpenPlantDetail(id) {
     if (!plantsDatabase) return;
-    const parsedId = String(id);
-    const plant = plantsDatabase.find(p => String(p.id) === parsedId);
+    const targetId = String(id);
+    const plant = plantsDatabase.find(p => String(p.id) === targetId);
     if(!plant) { 
         if(typeof goToHomeTab === 'function') goToHomeTab(); 
         else window.history.back(); 
@@ -1466,8 +1435,8 @@ function _internalOpenPlantDetail(id) {
 
 async function saveNotesFromDetail() {
     if (!currentPlantId || !plantsDatabase) return;
-    const parsedId = String(currentPlantId);
-    const plant = plantsDatabase.find(p => String(p.id) === parsedId);
+    const targetId = String(currentPlantId);
+    const plant = plantsDatabase.find(p => String(p.id) === targetId);
     if (!plant) return;
 
     const plantNotesEl = document.getElementById('detail-plant-notes');

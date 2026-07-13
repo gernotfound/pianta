@@ -101,11 +101,6 @@ async function loadZipProfile(file) {
         if (!loadedData || (typeof loadedData !== 'object' && !Array.isArray(loadedData))) {
             throw new Error('Il backup non contiene un formato JSON valido.');
         }
-        
-        const schemaVer = loadedData.schemaVersion || 0;
-        if (schemaVer > 1) {
-            console.warn("Backup generato da una versione più recente dell'app. Potrebbero esserci incongruenze.");
-        }
 
         let loadedPlants = Array.isArray(loadedData) ? loadedData : (Array.isArray(loadedData.plants) ? loadedData.plants : []);
         if (!Array.isArray(loadedPlants)) {
@@ -141,7 +136,6 @@ async function loadZipProfile(file) {
                     } else {
                         log.photos = [];
                     }
-                    // FIX AUDIT FASE 1: Rispetto degli UUID
                     if (!log.id) log.id = typeof generateId === 'function' ? generateId() : crypto.randomUUID();
                     else log.id = String(log.id);
                 } 
@@ -151,7 +145,6 @@ async function loadZipProfile(file) {
             
             if(!p.status) p.status = 'active';
             
-            // FIX AUDIT FASE 1: Nessun parseInt! Manteniamo le stringhe UUID
             if (!p.id) p.id = typeof generateId === 'function' ? generateId() : crypto.randomUUID();
             else p.id = String(p.id);
             
@@ -178,7 +171,6 @@ async function loadZipProfile(file) {
             let loadedWishlist = Array.isArray(loadedData.wishlist) ? loadedData.wishlist : [];
             for (let w of loadedWishlist) {
                 if(w.photo) w.photo = await restoreImage(w.photo);
-                // FIX AUDIT FASE 1: Nessun parseInt per la wishlist
                 if(!w.id) w.id = typeof generateId === 'function' ? generateId() : crypto.randomUUID();
                 else w.id = String(w.id);
             }
@@ -367,9 +359,10 @@ function exportToCSV() {
         return;
     }
 
+    // AGGIORNATO: Sostituito pH Ottimale con pH Minimo e Massimo
     const headers = [
         "Nome", "Nome Scientifico", "Costo (€)", "Origine/Propagazione", "Madre", "Padre", "Fertilità", "Data Semina/Inizio",
-        "Fedeltà Varietale", "Sistemazione", "Litri Vaso", "Substrato", "pH ottimale",
+        "Fedeltà Varietale", "Sistemazione", "Litri Vaso", "Substrato", "pH Minimo", "pH Massimo",
         "Temp. Minima", "Temp. Massima", "Fornitore", "Luogo", "Latitudine", "Longitudine",
         "Stato", "Ultima Altezza (cm)", "Ultimo pH Misurato", "Cronologia Eventi", "Note Pianta", "Note Specie"
     ];
@@ -390,7 +383,6 @@ function exportToCSV() {
 
         let motherName = "";
         if (p.mother !== undefined && p.mother !== null && p.mother !== "") {
-            // Strict Comparison e garanzia formato stringa
             let m = plantsDatabase.find(x => String(x.id) === String(p.mother));
             if (m) motherName = m.name;
         }
@@ -423,11 +415,15 @@ function exportToCSV() {
         let safeFertility = typeof getModernFertility === 'function' ? getModernFertility(p.autofertile) : (p.autofertile || "Sconosciuta");
         let safeMin = p.minTemp !== null && p.minTemp !== undefined ? p.minTemp.toString().replace('.', ',') : "";
         let safeMax = p.maxTemp !== null && p.maxTemp !== undefined ? p.maxTemp.toString().replace('.', ',') : "";
+        
+        // Formattazione per Excel dei due nuovi campi pH
+        let safePhMin = p.phMin !== null && p.phMin !== undefined ? p.phMin.toString().replace('.', ',') : "";
+        let safePhMax = p.phMax !== null && p.phMax !== undefined ? p.phMax.toString().replace('.', ',') : "";
 
         let row = [
             p.name, p.scientific, safePrice, p.origin, motherName, fatherName, safeFertility, p.sowingDate,
             p.geneticFidelity, p.placement, safePotSize, p.soil, 
-            p.phOttimale !== null && p.phOttimale !== undefined ? p.phOttimale.toString().replace('.', ',') : "",
+            safePhMin, safePhMax,
             safeMin, safeMax, p.vendor, p.location, p.lat, p.lng,
             p.status === 'archived' ? 'Archiviata' : 'Attiva',
             latestHeight !== "" ? latestHeight.toString().replace('.', ',') : "", 

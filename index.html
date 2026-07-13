@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="it" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>Gestione piante</title>
+    <meta name="description" content="App gestionale per collezionisti di piante tropicali. Traccia la crescita, eventi e cura del tuo giardino.">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥑</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥑</text></svg>">
+    
+    <!-- FIX PWA: Tag Avanzati per iOS e Android -->
+    <meta name="theme-color" content="#2e7d32">
+    <meta name="apple-mobile-web-app-title" content="Pianta">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-touch-fullscreen" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Animate.css per animazioni fluide UI -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" integrity="sha512-c42qZA51frwO44A5Nq7OkEtrR1qO7fX5XnEw2XmXwT5A0Aof0U++z1U5wD+r5yE3jK7zN9V0GvXz0aQG0w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.29/sweetalert2.all.min.js" integrity="sha512-cgolxBUBvc5yorfBxXYQCvGEaTbZDdRMDjGrMw8h4G01gm/BfHlN8CO3amP68GbNbw8LY5uj/CFW4qpY9lHyPQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" integrity="sha512-mQ77VzAakzdpWdgfL/lM1ksNy89uFgibRQANsNneSTMD/bj0Y/8+94XMwYhnbzx8eki2hrbPpDm0vD0CiT2lcg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" integrity="sha512-6ZCLMiYwTeli2rVh3XAPxy3YoR5fVxGdH/pz+KMCzRY2M65Emgkw00Yqmhh8qLGeYQ3LbVZGdmOX9KUjSKr0TA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js" integrity="sha512-OFs3W4DIZ5ZkrDhBFtsCP6JXtMEDGmhl0QPlmWYBJay40TT1n3gt2Xuw8Pf/iezgW9CdabjkNChRqozl/YADmg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js" integrity="sha512-ZwR1/gSZM3ai6vCdI+LVF1zSq/5HznD3ZSTk7kajkaj4D292NLuduDCO1c/NT8Id+jE58KYLKT7hXnbtryGmMg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.4/html5-qrcode.min.js" integrity="sha512-k/KAe4Yff9EUdYI5/IAHlwUswqeipP+Cp5qnrsUjTPCgl51La2/JhyyjNciztD7mWNKLSXci48m7cctATKfLlQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" rel="stylesheet" integrity="sha512-UtLOu9C7NuThQhuXXrGwx9Jb/z9zPQJctuAgNUBK3Z6kkSYT9wJ+2+dh6klS+TDBCV9kNPBbAxbVD+vCcfGPaA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js" integrity="sha512-JyCZjCOZoyeQZSd5+YEAcFgz2fowJ1F1hyJOXgtKu4llIa0KneLcidn5bwfutiehUTiOuK87A986BZJMko0eWQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <link rel="stylesheet" href="style.css">
+    
+    <script>
+        // Funzione di Sicurezza Globale per evitare riavvii accidentali durante la compilazione
+        function safeReload() {
+            if (typeof isFormDirty !== 'undefined' && isFormDirty) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Attenzione!',
+                        text: 'Hai dei dati non salvati. Ricaricando l\'app perderai le modifiche in corso. Vuoi procedere comunque?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d32f2f',
+                        cancelButtonColor: '#607d8b',
+                        confirmButtonText: 'Sì, ricarica',
+                        cancelButtonText: 'Annulla'
+                    }).then((res) => {
+                        if (res.isConfirmed) window.location.reload();
+                    });
+                } else {
+                    if (confirm('Hai dei dati non salvati. Sicuro di voler ricaricare l\'app?')) window.location.reload();
+                }
+            } else {
+                window.location.reload();
+            }
+        }
+
+        // FIX UX: Gestione nativa del bottone Installa PWA (Chrome/Android/Edge)
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const installBtn = document.getElementById('btn-install-pwa');
+            if(installBtn) installBtn.style.display = 'inline-block';
+        });
+
+        async function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('btn-install-pwa').style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        }
+    </script>
+</head>
+<body>
+
+<noscript>
+    <div style="background-color: #d32f2f; color: white; padding: 20px; text-align: center; font-family: sans-serif; position: fixed; top: 0; width: 100%; z-index: 999999;">
+        <h2>JavaScript disabilitato</h2>
+        <p>Questa applicazione richiede JavaScript per funzionare. Per favore, abilitalo nelle impostazioni del tuo browser.</p>
+    </div>
+</noscript>
+
+<div id="autosave-toast" class="hidden" aria-live="polite">
+    <span class="toast-icon">💾</span>
+    <span class="toast-label">Salvato</span>
+</div>
+<div id="update-toast" class="hidden" role="button" tabindex="0" aria-label="Aggiorna applicazione" style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background-color: var(--blue); color: white; padding: 12px 20px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 99999; font-size: 14px; font-weight: bold; cursor: pointer;" onclick="safeReload();" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); safeReload();}">🔄 Aggiornamento disponibile! Tocca qui</div>
+
+<div class="container main-content-padding">
+    
+    <div id="startup-screen" class="hidden fade-in">
+        <h1 class="startup-title"><span class="startup-icon">🌿</span>Gestione piante</h1>
+        <h2>Benvenuto nel tuo giardino virtuale</h2>
+        
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px;">
+            <button class="btn btn-add-main" onclick="createNewGarden()" aria-label="Crea nuovo giardino">🌱 Crea nuovo giardino</button>
+            <button id="btn-install-pwa" class="btn btn-purple" style="display: none;" onclick="installPWA()" aria-label="Installa applicazione">📱 Installa App sul telefono</button>
+        </div>
+
+        <div style="margin-top: 30px; text-align: center; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+            <p style="margin-top: 0; color: var(--grey); font-weight: bold;">Oppure ripristina un vecchio salvataggio ZIP:</p>
+            <input type="file" accept=".zip" onchange="loadProfile(event)" aria-label="Ripristina backup">
+        </div>
+    </div>
+
+    <!-- DASHBOARD PRINCIPALE -->
+    <div id="dashboard" class="hidden fade-in">
+        <div class="dashboard-panel" id="dashboard-controls" style="padding: 20px 25px; margin-bottom: 10px;">
+            <div class="dashboard-topbar">
+                <h1 class="garden-title">
+                    <span id="main-title">🌿 Il mio giardino</span>
+                    <button class="edit-title-btn" onclick="editMainTitle()" title="Modifica il nome" aria-label="Modifica nome giardino">✏️</button>
+                </h1>
+                <div class="sys-buttons">
+                    <button id="btn-export" class="btn-text btn-text-danger" onclick="exportData()" aria-label="Esporta backup">💾 Backup</button>
+                    <button class="btn-text" onclick="logout()" aria-label="Esci dall'applicazione">🚪 Esci</button>
+                </div>
+            </div>
+
+            <hr class="ui-divider">
+
+            <div class="search-sort-bar">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-plant" placeholder="Cerca pianta..." oninput="handleSearchInput()" aria-label="Cerca pianta">
+                    <span id="clear-search-btn" role="button" tabindex="0" aria-label="Cancella ricerca" onclick="clearSearch()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); clearSearch();}" style="display:none; position:absolute; right:15px; top:50%; transform:translateY(-50%); background:#ddd; color:#555; border-radius:50%; width:22px; height:22px; text-align:center; line-height:22px; font-size:12px; cursor:pointer; font-weight:bold;">✖</span>
+                </div>
+                <button class="btn btn-blue" style="margin: 0; white-space: nowrap;" onclick="openFilterSidebar()" aria-label="Apri filtri">Filtri 🛠️</button>
+            </div>
+        </div>
+
+        <div id="dashboard-stats" aria-live="polite">
+            🌿 Piante: <span id="count-plants">0</span> | 🧬 Specie uniche: <span id="count-species">0</span>
+        </div>
+
+        <!-- STATO VUOTO (EMPTY STATE) -->
+        <div id="dashboard-empty-state" class="hidden" style="text-align: center; padding: 50px 20px; background: white; border-radius: 12px; border: 2px dashed #ccc; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+            <span style="font-size: 50px;" aria-hidden="true">🌱</span>
+            <h3 style="color: var(--primary); margin-bottom: 10px;">Il tuo giardino è vuoto</h3>
+            <p style="color: #666; font-size: 15px; margin-bottom: 25px;">Inizia ad aggiungere le tue piante per tenere traccia della loro crescita e degli eventi.</p>
+            <button class="btn" style="font-size: 16px; padding: 12px 25px;" onclick="navigateTab('add-plant')">➕ Aggiungi la prima Pianta</button>
+        </div>
+
+        <!-- GRIGLIA PIANTE -->
+        <div id="plants-grid"></div>
+    </div> 
+
+    <!-- SIDEBAR FILTRI AVANZATI -->
+    <div id="filter-sidebar" class="sidebar-overlay hidden" role="dialog" aria-label="Filtri e Ordine">
+        <div class="sidebar-content">
+            <div class="sidebar-header">
+                <h3 style="margin: 0; color: var(--primary);">🛠️ Filtri e Ordine</h3>
+                <button class="btn btn-grey" style="margin:0; padding: 5px 10px;" onclick="closeFilterSidebar()" aria-label="Chiudi filtri">✖ Chiudi</button>
+            </div>
+            
+            <div class="sidebar-body">
+                <label for="sort-plants">🔀 Ordina l'elenco per:</label>
+                <select id="sort-plants">
+                    <option value="name">🔤 Nome (A-Z)</option>
+                    <option value="newest">🆕 Aggiunte di recente</option>
+                    <option value="oldest">🕰️ Meno recenti</option>
+                    <option value="last_updated">🔄 Ultimi eventi</option>
+                    <option value="temp_desc">🌡️ Temp. min (decrescente)</option>
+                    <option value="ph_desc">🧪 pH (decrescente)</option>
+                    <option value="price_desc">💰 Prezzo (decrescente)</option>
+                </select>
+
+                <hr style="border:0.5px solid #eee; margin:10px 0 20px 0; width:100%;">
+
+                <label for="filter-placement">🪴 Sistemazione:</label>
+                <select id="filter-placement">
+                    <option value="all">Tutte</option>
+                    <option value="Vaso">In Vaso</option>
+                    <option value="Piena terra">Piena terra</option>
+                    <option value="Idroponica">Idroponica</option>
+                </select>
+
+                <label for="filter-origin" style="margin-top: 10px;">🌱 Origine / Propagazione:</label>
+                <select id="filter-origin">
+                    <option value="all">Tutte</option>
+                    <option value="Da seme">Da Seme</option>
+                    <option value="Da talea">Da Talea</option>
+                    <option value="Innesto">Innestate</option>
+                    <option value="Margotta">Da Margotta</option>
+                </select>
+
+                <label for="filter-fertility" style="margin-top: 10px;">🌸 Fertilità:</label>
+                <select id="filter-fertility">
+                    <option value="all">Tutte</option>
+                    <option value="Autofertile">Autofertili</option>
+                    <option value="Parzialmente autofertile">Parz. Autofertili</option>
+                    <option value="Autosterile">Autosterili</option>
+                </select>
+
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+                    <label for="filter-survival-temp">🌡️ Verifica Sopravvivenza a (°C):</label>
+                    <p style="font-size: 12px; color: #666; margin-top: 2px;">Mostra le piante in grado di tollerare questa temperatura.</p>
+                    <input type="text" inputmode="decimal" id="filter-survival-temp" placeholder="es. 0">
+                </div>
+
+                <div style="margin-top: 25px; display: flex; gap: 10px;">
+                    <button class="btn btn-primary" style="flex:2; margin:0;" onclick="applyFiltersAndClose()">✅ Conferma</button>
+                    <button class="btn btn-danger" style="flex:1; margin:0;" onclick="resetAllFilters()">🔄 Azzera</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FORM AGGIUNGI/MODIFICA PIANTA -->
+    <div id="form-container" class="hidden fade-in">
+        <h2 id="form-title" style="margin-top:0; color:var(--primary); padding-bottom:5px;">Aggiungi nuova pianta</h2>
+        <div class="accordion-group">
+            
+            <div class="accordion-item open">
+                <div class="accordion-header" onclick="toggleAccordion(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); toggleAccordion(this);}" aria-expanded="true" role="button" tabindex="0">
+                    <h3>📋 Dati principali & Foto</h3>
+                    <span class="acc-icon" aria-hidden="true">▼</span>
+                </div>
+                <div class="accordion-content" aria-hidden="false">
+                    <div class="form-grid">
+                        
+                        <div style="grid-column: span 2; display: flex; gap: 15px;">
+                            <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                                <label for="p-photo-hidden" style="align-self: flex-start; margin-bottom: 5px;">Foto della pianta:</label>
+                                <div class="smart-upload-container" id="smart-upload-main" role="button" tabindex="0" aria-label="Aggiungi foto pianta" onclick="triggerSmartUpload('main')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); triggerSmartUpload('main');}">
+                                    <div class="upload-placeholder" id="placeholder-main">📸 Tocca per foto</div>
+                                    <img id="preview-main" class="smart-preview" style="display: none;" alt="Anteprima pianta">
+                                    <button type="button" class="remove-photo-btn" id="remove-btn-main" onclick="removeSmartPhoto(event, 'main')" style="display: none;">✖ Rimuovi</button>
+                                </div>
+                                <input type="file" id="p-photo-hidden" accept="image/*" style="display:none" onchange="handleSmartUpload(event, 'main')">
+                            </div>
+                            
+                            <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                                <label for="p-fruit-photo-hidden" style="align-self: flex-start; margin-bottom: 5px;">Foto frutto:</label>
+                                <div class="smart-upload-container" id="smart-upload-fruit" role="button" tabindex="0" aria-label="Aggiungi foto frutto" onclick="triggerSmartUpload('fruit')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); triggerSmartUpload('fruit');}">
+                                    <div class="upload-placeholder" id="placeholder-fruit">🍋 Tocca per dettaglio</div>
+                                    <img id="preview-fruit" class="smart-preview" style="display: none;" alt="Anteprima frutto">
+                                    <button type="button" class="remove-photo-btn" id="remove-btn-fruit" onclick="removeSmartPhoto(event, 'fruit')" style="display: none;">✖ Rimuovi</button>
+                                </div>
+                                <input type="file" id="p-fruit-photo-hidden" accept="image/*" style="display:none" onchange="handleSmartUpload(event, 'fruit')">
+                            </div>
+                        </div>
+
+                        <div style="grid-column: span 2;"><label for="p-name">Nome (obbligatorio):</label><input type="text" id="p-name" placeholder="es. Yellow pitahaya 1"></div>
+                        
+                        <div style="grid-column: span 2;">
+                            <label for="p-scientific-select">Nome scientifico:</label>
+                            <div style="display: flex; gap: 5px;">
+                                <select id="p-scientific-select" style="flex: 1;" onchange="syncSpeciesNotes()" aria-label="Seleziona nome scientifico"></select>
+                                <input type="text" id="p-scientific-input" placeholder="es. Monstera deliciosa" style="flex: 1; display: none;" aria-label="Inserisci nome scientifico" onblur="syncSpeciesNotes()">
+                                <button class="btn btn-warning" type="button" id="btn-toggle-scientific" onclick="toggleScientificMode()" style="margin: 0; padding: 5px 10px;">➕ Nuovo</button>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); toggleAccordion(this);}" aria-expanded="false" role="button" tabindex="0">
+                    <h3>🌱 Genetica & Origine</h3>
+                    <span class="acc-icon" aria-hidden="true">▼</span>
+                </div>
+                <div class="accordion-content" style="display: none;" aria-hidden="true">
+                    <div class="form-grid">
+                        <div>
+                            <label for="p-origin">Origine / Propagazione:</label>
+                            <select id="p-origin" onchange="toggleFidelityField()">
+                                <option value="Da seme">Da seme</option><option value="Da talea">Da talea</option><option value="Innesto">Innesto</option><option value="Margotta">Margotta</option><option value="Non so / Altro">Non so / Altro</option>
+                            </select>
+                        </div>
+                        <div><label for="p-sowing-date">Data semina / Inizio:</label><input type="date" id="p-sowing-date"></div>
+                        <div id="fidelity-container" style="grid-column: span 2; display: none;">
+                            <label for="p-genetic-fidelity">🧬 Fedeltà al seme:</label>
+                            <select id="p-genetic-fidelity"><option value="Non ancora valutato">Non ancora valutato</option><option value="Identico alla madre">Identico alla madre</option><option value="Molto simile">Molto simile</option><option value="Diverso">Diverso</option></select>
+                        </div>
+                        <div style="grid-column: span 2;">
+                            <div style="margin-bottom: 5px; font-weight: bold;">🧬 Albero genealogico:</div>
+                            <div style="display:flex; gap:15px; flex-wrap: wrap; margin-top: 5px;">
+                                <div style="flex:1; min-width: 200px;"><label for="p-mother">Pianta madre:</label><select id="p-mother"></select></div>
+                                <div style="flex:1; min-width: 200px;"><label for="p-father">Pianta padre:</label><select id="p-father"></select></div>
+                            </div>
+                        </div>
+                        <div style="grid-column: span 2;">
+                            <label for="p-autofertile">🌸 Fertilità:</label>
+                            <select id="p-autofertile">
+                                <option value="Sconosciuta">Sconosciuta</option>
+                                <option value="Autofertile">Autofertili</option>
+                                <option value="Parzialmente autofertile">Parzialmente autofertile</option>
+                                <option value="Autosterile">Autosterili</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); toggleAccordion(this);}" aria-expanded="false" role="button" tabindex="0">
+                    <h3>🌍 Posizione & Ambiente</h3>
+                    <span class="acc-icon" aria-hidden="true">▼</span>
+                </div>
+                <div class="accordion-content" style="display: none;" aria-hidden="true">
+                    <div class="form-grid">
+                        <div id="form-placement-section" style="grid-column: span 2;">
+                            <label for="p-placement">Sistemazione iniziale:</label>
+                            <div style="display: flex; gap: 10px;">
+                                <select id="p-placement" onchange="togglePotSizeField()" style="flex: 1;"><option value="Vaso">Vaso</option><option value="Piena terra">Piena terra</option><option value="Idroponica">Idroponica</option></select>
+                                <div id="pot-size-container" style="display: flex; align-items: center; gap: 5px; flex: 1;">
+                                    <input type="text" inputmode="decimal" id="p-pot-size" placeholder="es. 15" style="width: 100%;" aria-label="Dimensione vaso in litri"><span style="font-size: 14px;">Litri</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="grid-column: span 2;">
+                            <label for="p-soil-select">Substrato / Terriccio:</label>
+                            <div style="display: flex; gap: 5px;">
+                                <select id="p-soil-select" style="flex: 1;" aria-label="Seleziona substrato"></select>
+                                <input type="text" id="p-soil-input" placeholder="es. Torba e perlite" style="flex: 1; display: none;" aria-label="Inserisci substrato">
+                                <button class="btn btn-warning" type="button" id="btn-toggle-soil" onclick="toggleSoilMode()" style="margin: 0; padding: 5px 10px;">➕ Nuovo</button>
+                            </div>
+                        </div>
+
+                        <div><label for="p-ph">pH ottimale:</label><input type="text" inputmode="decimal" id="p-ph" placeholder="es. 6,5"></div>
+
+                        <div style="grid-column: span 2; display: flex; gap: 15px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 150px;"><label for="p-min-temp">Temp. minima (°C):</label><input type="text" inputmode="decimal" id="p-min-temp" placeholder="es. 5"></div>
+                            <div style="flex: 1; min-width: 150px;"><label for="p-max-temp">Temp. massima (°C):</label><input type="text" inputmode="decimal" id="p-max-temp" placeholder="es. 38"></div>
+                        </div>
+                        
+                        <!-- MAPPA INSERITA NEL FORM -->
+                        <div style="grid-column: span 2;">
+                            <label for="p-location-select" style="margin-bottom: 5px; display: block;">📍 Posizione e coordinate:</label>
+                            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                                <select id="p-location-select" style="flex: 1;" onchange="fillSavedLocation()" aria-label="Seleziona posizione"></select>
+                                <input type="text" id="p-location-input" placeholder="Luogo (es. serra, balcone)" style="flex: 1; display: none;" aria-label="Inserisci luogo">
+                                <button class="btn btn-warning" type="button" id="btn-toggle-location" onclick="toggleLocationMode()" style="margin: 0; padding: 5px 10px;">➕ Nuovo</button>
+                            </div>
+                            <div id="coords-inputs-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
+                                <input type="text" inputmode="decimal" id="p-lat" placeholder="Latitudine" aria-label="Latitudine" onchange="updateFormMapFromInputs()">
+                                <input type="text" inputmode="decimal" id="p-lng" placeholder="Longitudine" aria-label="Longitudine" onchange="updateFormMapFromInputs()">
+                            </div>
+                            <div id="form-map-container" style="width: 100%; height: 200px; border-radius: 8px; border: 1px solid #ccc; z-index: 1;"></div>
+                            <p id="map-instructions" style="font-size: 12px; color: #666; margin-top: 5px;">Tocca la mappa per impostare automaticamente le coordinate.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); toggleAccordion(this);}" aria-expanded="false" role="button" tabindex="0">
+                    <h3>💰 Economia</h3>
+                    <span class="acc-icon" aria-hidden="true">▼</span>
+                </div>
+                <div class="accordion-content" style="display: none;" aria-hidden="true">
+                    <div class="form-grid">
+                        <div><label for="p-price">Costo / Prezzo d'acquisto (€):</label><input type="text" inputmode="decimal" id="p-price" placeholder="es. 15,50"></div>
+                        <div style="grid-column: span 2;">
+                            <label for="p-vendor-select">Fornitore (Link o nome):</label>
+                            <div style="display: flex; gap: 5px;">
+                                <select id="p-vendor-select" style="flex: 1;" aria-label="Seleziona fornitore"></select>
+                                <input type="text" id="p-vendor-input" placeholder="es. www.sito.it" style="flex: 1; display: none;" aria-label="Inserisci fornitore">
+                                <button class="btn btn-warning" type="button" id="btn-toggle-vendor" onclick="toggleVendorMode()" style="margin: 0; padding: 5px 10px;">➕ Nuovo</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div> 
+        
+        <div style="margin-top: 25px; display: flex; gap: 10px; position: sticky; bottom: 80px; z-index: 10; background: white; padding: 10px 0; border-top: 1px solid #eee;">
+            <button class="btn" style="flex:1; padding: 15px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 10px rgba(46,125,50,0.3);" onclick="savePlant()">💾 Salva pianta</button>
+            <button class="btn btn-warning" style="flex:1; padding: 15px; font-size: 16px; font-weight: bold;" onclick="cancelAddPlant()">❌ Annulla</button>
+        </div>
+    </div>
+
+    <!-- VISTA EVENTI GLOBALI & METEO -->
+    <div id="events-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; margin-bottom: 20px;">
+        
+        <div class="detail-header" style="border-bottom: none; margin-bottom: 10px;">
+            <h2 style="margin:0; color: var(--purple);">📊 Eventi e Allerta Meteo</h2>
+        </div>
+
+        <div id="weather-alerts-container" style="margin-bottom: 30px; display: none;" aria-live="polite"></div>
+
+        <hr style="border: 0; height: 2px; background: #eee; margin-bottom: 25px;">
+        
+        <div id="events-empty-state" class="hidden" style="text-align: center; padding: 40px 20px; background: #f9f9f9; border-radius: 8px; border: 1px dashed #ccc; margin-top: 20px;">
+            <span style="font-size: 40px;" aria-hidden="true">🌸</span>
+            <h3 style="color: var(--primary);">Nessuna fioritura/raccolto</h3>
+            <p style="color: #666; font-size: 14px;">Questa pagina mostrerà una mappa temporale bellissima.<br><br>Per popolarla, vai nella scheda di una pianta e aggiungi al diario un evento di tipo <strong>"Fioritura"</strong>, <strong>"Fruttificazione"</strong> o <strong>"Raccolto"</strong>.</p>
+        </div>
+
+        <div id="events-chart-container">
+            <h3 style="color: var(--purple); margin-top:0;">Cronologia Fioriture e Raccolti</h3>
+            <p style="font-size:14px; margin-top:0;">Visualizza in un'unica mappa temporale i periodi di fioritura e raccolto di tutto il tuo giardino.</p>
+            <div class="global-chart-wrapper" style="height: 50vh;">
+                <canvas id="globalEventsChart" aria-label="Grafico Eventi" role="img"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- VISTA MAPPA GLOBALE DEDICATA -->
+    <div id="global-map-page" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+        <div class="detail-header">
+            <h2 style="margin:0; color: var(--blue);">🗺️ Mappa globale</h2>
+        </div>
+        <div id="global-map-fullscreen" style="height: 60vh; width: 100%; border-radius: 8px; border: 2px solid var(--blue); z-index: 1;"></div>
+        <div style="margin-top: 25px; border-top: 2px solid #eee; padding-top: 20px;">
+            <h3 style="margin-top:0; color: var(--primary);">📍 Piante in questa posizione:</h3>
+            <div id="map-plants-list" class="my-data-grid"><p style="color: #666; grid-column: 1 / -1;">Tocca un indicatore sulla mappa per vederle qui sotto.</p></div>
+        </div>
+    </div>
+
+    <!-- VISTA MACRO V2 -->
+    <div id="macro-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #e0e0e0;">
+        <div class="detail-header">
+            <h2 style="margin:0; color: var(--accent);">☑️ Azioni di Massa (Macro)</h2>
+        </div>
+        
+        <div id="macro-step-1">
+            <h3 style="color: var(--primary);">Passo 1: Scegli l'evento</h3>
+            <p style="font-size: 14px; color: #555;">Seleziona il tipo di azione che vuoi applicare a più piante contemporaneamente.</p>
+            <select id="macro-type-select" style="font-size: 16px; padding: 12px; margin-bottom: 20px;" aria-label="Scegli tipo di evento macro">
+                <option value="Misurazione">📏 Misurazione altezza</option>
+                <option value="Misurazione pH">🧪 Misurazione pH</option>
+                <option value="Concimazione">🧪 Concimazione / Nutrimento</option>
+                <option value="Stato di Salute">Stato di salute</option>
+                <option value="Fioritura">🌸 Fioritura</option>
+                <option value="Fruttificazione">🍋 Fruttificazione</option>
+                <option value="Raccolto">🧺 Raccolto</option>
+                <option value="Rinvaso / Sistemazione">🪴 Rinvaso / Cambio sistemazione</option>
+                <option value="Irrigazione">💧 Irrigazione speciale</option>
+                <option value="Trattamento">🛡️ Trattamento fitosanitario</option>
+            </select>
+            <button class="btn btn-accent" style="width: 100%; font-size: 16px; padding: 12px;" onclick="goToMacroStep2()">Continua ➡️</button>
+        </div>
+
+        <div id="macro-step-2" class="hidden">
+            <h3 style="color: var(--primary);">Passo 2: Seleziona le piante</h3>
+            <p style="font-size: 14px; color: #555;">Tocca le piante a cui vuoi applicare l'evento.</p>
+            
+            <div class="search-input-wrapper" style="margin-bottom: 15px;">
+                <span class="search-icon" aria-hidden="true">🔍</span>
+                <input type="text" id="macro-search" placeholder="Cerca pianta..." oninput="renderMacroSelectionGrid()" aria-label="Cerca pianta per azione di massa">
+            </div>
+
+            <div id="macro-selection-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; max-height: 40vh; overflow-y: auto; padding: 5px;" role="listbox" aria-multiselectable="true"></div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-grey" style="flex:1;" onclick="backToMacroStep1()">⬅️ Indietro</button>
+                <button class="btn btn-accent" style="flex:2;" onclick="goToMacroStep3()">Compila Dati (<span id="macro-selected-count">0</span>) ➡️</button>
+            </div>
+        </div>
+
+        <div id="macro-step-3" class="hidden">
+            <h3 style="color: var(--primary);">Passo 3: Inserisci i dati</h3>
+            <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd;">
+                <label for="macro-global-date" style="font-weight: bold;">📅 Data per tutte le piante:</label>
+                <input type="date" id="macro-global-date" style="margin-top: 5px;">
+            </div>
+
+            <div id="macro-inputs-container" style="display: flex; flex-direction: column; gap: 15px; max-height: 40vh; overflow-y: auto; padding-right: 5px;">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-grey" style="flex:1;" onclick="backToMacroStep2()">⬅️ Indietro</button>
+                <button class="btn" style="flex:2; font-weight: bold;" onclick="saveMacroV2()">💾 Salva Eventi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VISTA "I MIEI DATI" -->
+    <div id="my-data-page" class="hidden fade-in">
+        <div class="detail-header">
+            <h2 style="margin:0; color: var(--grey); display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
+                📂 Il mio centro dati
+                <span id="connection-status-indicator" style="font-size: 13px; font-weight: bold; padding: 4px 12px; border-radius: 20px; color: white; background: #2e7d32; display: inline-block; transition: background 0.3s;">Online</span>
+            </h2>
+        </div>
+        
+        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-top: 4px solid var(--purple); margin-bottom: 20px;">
+            <h3 style="margin-top:0; color:var(--purple); border-bottom: 2px solid #eee; padding-bottom: 10px;">✨ Funzionalità</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
+                <button class="btn btn-purple" onclick="navigateTab('expenses')">💰 Tracciamento Spese</button>
+                <button class="btn btn-warning" onclick="navigateTab('wishlist')">🛒 Wishlist Piante</button>
+                <button class="btn btn-blue" onclick="navigateTab('gallery')">🖼️ Archivio foto</button>
+                <button class="btn" style="background:#1565c0;" onclick="navigateTab('scanner')">🏷️ Scanner QR</button>
+            </div>
+        </div>
+
+        <div class="detail-grid">
+            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-top: 4px solid var(--grey);">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="margin:0; color:var(--grey);">📊 Dati e statistiche</h3>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="btn" style="background-color: #217346; margin: 0; font-size: 13px;" onclick="exportToCSV()">📊 Esporta Excel</button>
+                        <button class="btn btn-blue" style="margin: 0; font-size: 13px;" onclick="toggleGeneralList()" aria-expanded="false">📋 Mostra elenco</button>
+                    </div>
+                </div>
+                <div id="general-list-container" class="hidden" style="margin-bottom: 20px;">
+                    <label for="general-list-textarea" style="font-size: 14px; font-weight: bold; color: var(--primary);">Elenco completo delle tue piante (Copia e incolla):</label>
+                    <textarea id="general-list-textarea" readonly style="width: 100%; height: 150px; font-family: monospace; font-size: 14px; padding: 10px; margin-top: 5px; resize: vertical; border: 1px solid var(--secondary); border-radius: 5px;"></textarea>
+                </div>
+                <div id="my-data-content"></div>
+            </div>
+
+            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-top: 4px solid var(--accent); display: flex; flex-direction: column;">
+                <label for="global-garden-notes"><h3 style="margin:0; color:var(--accent); border-bottom: 2px solid #eee; padding-bottom: 10px;">📝 Note generali del giardino</h3></label>
+                <p style="font-size: 14px; color: #555; margin-top: 0;">Appunta qui idee o promemoria. Il salvataggio avviene automaticamente quando chiudi la pagina.</p>
+                <textarea id="global-garden-notes" style="flex-grow: 1; min-height: 250px; border: 1px solid #ccc; border-radius: 5px; padding: 10px; resize: vertical;"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- VISTA SCANNER QR -->
+    <div id="labels-scanner-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; text-align: center;">
+        <div class="detail-header">
+            <h2 style="margin:0; color: var(--blue);">🏷️ Scanner QR</h2>
+            <button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button>
+        </div>
+        <p style="font-size: 14px; color: #555;">Inquadra il QR Code o carica un'immagine dalla tua galleria per aprire subito la scheda della pianta.</p>
+        <div id="reader-container" style="margin-top: 20px;">
+            <div id="reader" style="width: 100%; max-width: 400px; margin: 0 auto;"></div>
+        </div>
+    </div>
+
+    <!-- VISTA SPESE -->
+    <div id="expenses-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; margin-bottom: 20px;">
+        <div class="detail-header">
+            <h2 style="margin:0; color: var(--purple);">💰 Tracciamento Spese</h2>
+            <button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button>
+        </div>
+        <div class="form-grid" style="background: #f3e5f5; padding: 15px; border-radius: 8px; border: 1px solid #e1bee7; margin-bottom: 20px;">
+            <div><label for="exp-date">Data:</label><input type="date" id="exp-date"></div>
+            <div>
+                <label for="exp-category">Categoria:</label>
+                <select id="exp-category">
+                    <option value="Terriccio / Substrato">🪨 Terriccio</option>
+                    <option value="Vasi / Contenitori">🪴 Vasi</option>
+                    <option value="Concimi / Trattamenti">🧪 Concimi</option>
+                    <option value="Attrezzatura">⛏️ Attrezzatura</option>
+                    <option value="Altro">Altro</option>
+                </select>
+            </div>
+            <div><label for="exp-desc">Descrizione:</label><input type="text" id="exp-desc" placeholder="es. Sacco torba 50L"></div>
+            <div><label for="exp-cost">Costo (€):</label><input type="text" inputmode="decimal" id="exp-cost" placeholder="es. 10,00"></div>
+            <div style="grid-column: span 2;"><button class="btn btn-purple" style="width:100%" onclick="addExpense()">➕ Aggiungi spesa</button></div>
+        </div>
+        <div id="expenses-summary" style="background: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px; text-align: center;">
+            <h3 style="margin:0;">Totale Spese Giardino: <span id="total-expenses-cost" style="color:var(--danger);">0,00 €</span></h3>
+            <h4 style="margin:5px 0 0 0; font-size: 14px;">(Costo Piante: <span id="total-plants-cost" style="color:var(--primary);">0,00 €</span>)</h4>
+        </div>
+        <ul class="timeline" id="expenses-list"></ul>
+    </div>
+
+    <!-- VISTA WISHLIST -->
+    <div id="wishlist-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e0e0e0;">
+        <div class="detail-header"><h2 style="margin:0; color: var(--accent);">🛒 Wishlist Piante</h2><button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button></div>
+        <div class="form-grid" style="background: #fff8e1; padding: 15px; border-radius: 8px; border: 1px solid #ffecb3; margin-bottom: 20px;">
+            <div><label for="wl-name">Nome Pianta:</label><input type="text" id="wl-name"></div>
+            <div><label for="wl-price">Prezzo stimato (€):</label><input type="text" inputmode="decimal" id="wl-price"></div>
+            <div style="grid-column: span 2;"><label for="wl-notes">Link / Note:</label><input type="text" id="wl-notes"></div>
+            <div style="grid-column: span 2;"><label for="wl-photo">Foto:</label><input type="file" id="wl-photo" accept="image/*"></div>
+            <div style="grid-column: span 2;"><button class="btn btn-warning" style="width:100%" onclick="addWishlistItem()">➕ Aggiungi</button></div>
+        </div>
+        <div id="wishlist-grid" class="my-data-grid"></div>
+    </div>
+
+    <!-- VISTA GALLERIA (Ora Archivio Foto) -->
+    <div id="gallery-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e0e0e0;">
+        <div class="detail-header"><h2 style="margin:0; color: var(--blue);">🖼️ Archivio Foto</h2><button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button></div>
+        <div id="gallery-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:10px;"></div>
+    </div>
+
+    <!-- VISTA ARCHIVIO STORICO -->
+    <div id="archive-page" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e0e0e0;">
+        <div class="detail-header"><h2 style="margin:0; color: var(--danger);">🥀 Archivio piante perse</h2><button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button></div>
+        <div id="archive-grid"></div>
+    </div>
+
+    <!-- Vista Dettaglio Pianta -->
+    <div id="plant-detail-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #e0e0e0;">
+        <div class="detail-header">
+            <h2 id="detail-title" style="margin:0;">Nome pianta</h2>
+            <div>
+                <button class="btn btn-blue" onclick="openDuplicateModal()">📑 Duplica</button>
+                <button class="btn btn-warning" onclick="editCurrentPlant()">✏️ Modifica</button>
+                <button class="btn btn-danger" onclick="deleteCurrentPlant()">🗑️ Elimina</button>
+                <button class="btn" onclick="goToHomeTab()">⬅️ Chiudi</button>
+            </div>
+        </div>
+
+        <div class="info-map-container">
+            <div style="flex: 3; display: flex; flex-direction: column; gap: 10px;">
+                <div id="detail-info" style="background:#f9f9f9; padding:15px; border-radius:5px; border: 1px solid #e0e0e0; font-size: 15px;"></div>
+                <div class="photos-container" id="detail-photos-container"></div>
+            </div>
+
+            <div style="flex: 1; background:#f9f9f9; padding:10px; border-radius:5px; border: 1px solid #e0e0e0; display: flex; flex-direction: column;">
+                <h4 style="margin: 0 0 8px 0; font-size: 13px; color: var(--primary);">📍 Mappa</h4>
+                <div id="map-container" style="flex: 1; min-height: 110px; border-radius: 5px; border: 1px solid #ccc; z-index: 1;"></div>
+            </div>
+        </div>
+
+        <div class="detail-grid">
+            <div>
+                <div class="diary-section">
+                    <h3 style="margin:0 0 15px 0;">📝 Aggiungi evento al diario</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                        <div><label for="log-date">Data:</label><input type="date" id="log-date"></div>
+                        <div>
+                            <label for="log-type">Tipo di evento:</label>
+                            <select id="log-type" onchange="toggleDynamicFields()">
+                                <option value="Misurazione">📏 Misurazione altezza</option><option value="Misurazione pH">🧪 Misurazione pH</option><option value="Concimazione">🧪 Concimazione / Nutrimento</option><option value="Stato di Salute">Stato di salute</option><option value="Fioritura">🌸 Fioritura</option><option value="Fruttificazione">🍋 Fruttificazione</option><option value="Raccolto">🧺 Raccolto</option><option value="Rinvaso / Sistemazione">🪴 Rinvaso / Cambio sistemazione</option><option value="Innesto">🔪 Innesto (cambio varietà)</option><option value="Spostamento">🚚 Spostamento</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="height-container" style="margin-bottom: 10px;"><label for="log-height">Altezza:</label><div style="display: flex; align-items: center; gap: 8px;"><input type="text" inputmode="decimal" id="log-height" style="width: auto; flex-grow: 1;"><span style="font-weight: bold; color: var(--primary); font-size: 16px;">cm</span></div></div>
+                    <div id="ph-container" style="display:none; margin-bottom: 10px;"><label for="log-ph">Valore pH (da 0 a 14):</label><div style="display: flex; align-items: center; gap: 8px;"><input type="text" inputmode="decimal" id="log-ph" style="width: auto; flex-grow: 1;"><span style="font-weight: bold; color: var(--primary); font-size: 16px;">pH</span></div></div>
+                    <div id="harvest-container" style="display:none; margin-bottom: 10px;"><label for="log-harvest">Quantità raccolto:</label><input type="text" id="log-harvest" placeholder="es. 2 kg, 15 frutti..."></div>
+                    <div id="repot-container" style="display:none; margin-bottom: 10px; background: #e8f5e9; padding: 10px; border-radius: 5px; border: 1px solid var(--secondary);"><label style="color: var(--primary); font-weight: bold;" for="log-placement">Nuova sistemazione:</label><div style="display: flex; gap: 10px; margin-top: 5px;"><select id="log-placement" onchange="toggleLogPotSize()" style="flex: 1;"><option value="Vaso">Vaso</option><option value="Piena terra">Piena terra</option><option value="Idroponica">Idroponica</option></select><div id="log-pot-container" style="display: flex; align-items: center; gap: 5px; flex: 1;"><input type="text" inputmode="decimal" id="log-pot-size" placeholder="es. 20" style="width: 100%;" aria-label="Litri"><span style="font-size: 14px;">Litri</span></div></div></div>
+                    <div id="graft-container" style="display:none; margin-bottom: 10px; background: #fff3e0; padding: 10px; border-radius: 5px; border: 1px solid var(--accent);"><label style="color: var(--accent); font-weight: bold;" for="log-graft-name">Nuovo nome pianta:</label><input type="text" id="log-graft-name" style="width: 100%; margin-top: 5px;" placeholder="es. Avocado Beacon"></div>
+                    <label for="log-note">Note sull'evento:</label><textarea id="log-note" rows="2"></textarea>
+                    <div style="margin-top: 10px;"><label for="log-photos">Foto evento:</label><input type="file" id="log-photos" accept="image/*" multiple></div>
+                    <button class="btn" style="width: 100%; margin-top: 15px;" onclick="addDiaryLog()">➕ Salva nel diario</button>
+                </div>
+                <div class="timeline-wrapper"><ul class="timeline" id="detail-timeline"></ul></div>
+            </div>
+
+            <div>
+                <div class="charts-header">
+                    <h3 style="margin: 0;">📊 Analisi grafica</h3>
+                    <div><label for="chart-year-filter" style="font-size: 14px; font-weight: bold;">Filtra per anno:</label><select id="chart-year-filter" onchange="updateChartsFromDropdown()" style="padding: 4px; border-radius: 4px; border: 1px solid var(--secondary);"><option value="all">Tutti gli anni</option></select></div>
+                </div>
+                <div class="charts-wrapper"><div class="chart-container"><canvas id="growthChart" aria-label="Grafico crescita" role="img"></canvas></div><div class="chart-container"><canvas id="eventsChart" aria-label="Grafico eventi" role="img"></canvas></div></div>
+            </div>
+        </div>
+
+        <div id="notes-section" style="margin-top: 30px; padding: 20px; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 8px;">
+            <h3 style="margin-top: 0; color: var(--primary);"><span role="img" aria-label="note">📝</span> Note della pianta e della specie</h3>
+            <div style="margin-bottom: 15px;">
+                <label for="detail-plant-notes" style="font-weight: bold; display: block; margin-bottom: 5px;">📝 Note Pianta (singola):</label>
+                <textarea id="detail-plant-notes" rows="3" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;" placeholder="Appunti su questa singola pianta..."></textarea>
+            </div>
+            <div>
+                <label for="detail-species-notes" style="font-weight: bold; display: block; margin-bottom: 5px;">🧬 Note Specie (condivise):</label>
+                <textarea id="detail-species-notes" rows="3" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;" placeholder="Caratteristiche comuni alla specie..."></textarea>
+            </div>
+            <button class="btn btn-blue" style="margin-top: 10px; width: 100%;" onclick="saveNotesFromDetail()">💾 Salva Note</button>
+        </div>
+
+        <div id="archive-section" style="margin-top: 30px; padding: 20px; background: #ffebee; border: 1px solid #ffcdd2; border-radius: 8px; text-align: center;">
+            <h4 style="margin-top: 0; margin-bottom: 5px; color: var(--danger);">🥀 Archivio storico</h4>
+            <p style="font-size: 14px; color: #555; margin-top: 0;">Sposta la pianta nell'archivio per conservarne la storia.</p>
+            <button id="btn-archive-toggle" class="btn btn-danger" onclick="toggleArchiveStatus()">Archivia pianta</button>
+        </div>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid var(--secondary); text-align: center;">
+            <h3 style="color: var(--primary);">🏷️ Etichetta stampabile</h3>
+            <button class="btn btn-blue" onclick="window.print()">🖨️ Stampa questa etichetta</button>
+            <div style="margin-top: 20px;">
+                <div id="print-area" class="print-label">
+                    <h3 id="label-name">Nome Pianta</h3>
+                    <p><em id="label-scientific">Specie</em></p>
+                    <p><strong>Origine:</strong> <span id="label-origin">Seme</span></p>
+                    <div class="qrcode-container" id="detail-qr-code"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE DUPLICAZIONE PIANTA -->
+    <div id="duplicate-modal-overlay" class="fade-in" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center;">
+        <div style="background:white; padding:25px; border-radius:8px; max-width:400px; width:90%; box-shadow: 0 4px 15px rgba(0,0,0,0.3);" role="dialog" aria-modal="true" aria-labelledby="dup-modal-title">
+            <h3 id="dup-modal-title" style="margin-top:0; color:var(--primary);">📑 Duplica pianta</h3>
+            <p style="font-size:14px; margin-bottom:15px; color:#444;">Imposta il nome base e quante copie vuoi creare.</p>
+            <label for="dup-base-name" style="font-weight:bold;">Nome nuova pianta (base):</label>
+            <input type="text" id="dup-base-name" style="margin-bottom:15px; border: 1px solid var(--secondary); width: 100%; padding: 8px; border-radius: 4px;">
+            
+            <label for="dup-qty" style="font-weight:bold;">Quantità da clonare:</label>
+            <input type="number" id="dup-qty" min="1" value="1" style="margin-bottom:15px; border: 1px solid var(--secondary); width: 100%; padding: 8px; border-radius: 4px;">
+            
+            <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px; background: #f9f9f9; padding: 10px; border-radius: 6px; border: 1px solid #eee;">
+                <input type="checkbox" id="dup-copy-diary" style="width: auto; margin: 0; transform: scale(1.2); cursor: pointer;">
+                <label for="dup-copy-diary" style="font-size: 14px; cursor: pointer; color: var(--primary); font-weight: bold;">Duplica anche diario e foto eventi</label>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-blue" style="flex:1;" onclick="confirmDuplicate()">Clona piante</button>
+                <button class="btn btn-warning" style="flex:1;" onclick="closeDuplicateModal()">Annulla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE CROPPER.JS -->
+    <div id="cropper-modal" class="fade-in" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:100000; flex-direction:column; align-items:center; justify-content:center;" role="dialog" aria-modal="true" aria-label="Taglia foto">
+        <h3 style="color:white; margin-top:0; margin-bottom: 20px;">Centra la foto</h3>
+        <div style="width: 90%; max-width: 400px; height: 50vh; background: #333;">
+            <img id="cropper-img" style="display: block; max-width: 100%;" alt="Immagine da ritagliare">
+        </div>
+        <div style="display:flex; gap:15px; margin-top:30px; width: 90%; max-width: 400px;">
+            <button class="btn btn-grey" style="flex:1; padding: 12px; font-weight: bold;" onclick="closeCropper()">Annulla</button>
+            <button class="btn" style="flex:1; padding: 12px; font-weight: bold;" onclick="confirmCropper()">✂️ Ritaglia</button>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION BAR -->
+    <nav class="bottom-nav" id="bottom-nav" aria-label="Menu principale">
+        <button class="nav-item active" id="nav-btn-dashboard" onclick="navigateTab('home')">
+            <span class="nav-icon" aria-hidden="true">🏠</span>
+            <span class="nav-text">Home</span>
+        </button>
+        <button class="nav-item" id="nav-btn-add-plant" onclick="navigateTab('add-plant')">
+            <span class="nav-icon" aria-hidden="true">➕</span>
+            <span class="nav-text">Aggiungi</span>
+        </button>
+        <button class="nav-item" id="nav-btn-data" onclick="navigateTab('data')">
+            <span class="nav-icon" aria-hidden="true">📂</span>
+            <span class="nav-text">Dati</span>
+        </button>
+        <button class="nav-item" id="nav-btn-events" onclick="navigateTab('events')">
+            <span class="nav-icon" aria-hidden="true">📊</span>
+            <span class="nav-text">Eventi</span>
+        </button>
+        <button class="nav-item" id="nav-btn-map" onclick="navigateTab('map')">
+            <span class="nav-icon" aria-hidden="true">🗺️</span>
+            <span class="nav-text">Mappa</span>
+        </button>
+        <button class="nav-item nav-item-macro" id="nav-btn-macro" onclick="navigateTab('macro')">
+            <span class="nav-icon" aria-hidden="true">☑️</span>
+            <span class="nav-text">Macro</span>
+        </button>
+    </nav>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then(reg => {
+                    reg.update();
+                    reg.onupdatefound = () => {
+                        const installingWorker = reg.installing;
+                        installingWorker.onstatechange = () => {
+                            if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                const toast = document.getElementById('update-toast');
+                                if(toast) toast.classList.remove('hidden');
+                            }
+                        };
+                    };
+                }).catch(err => console.error(err));
+            });
+        }
+    </script>
+
+    <!-- Script inclusi -->
+    <script src="js/globals.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/media.js"></script>
+    <script src="js/plants.js"></script>
+    <script src="js/diary.js"></script>
+    <script src="js/stats.js"></script>
+    <script src="js/tools.js"></script>
+    <script src="js/io.js"></script>
+
+</body>
+</html>

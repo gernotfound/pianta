@@ -335,9 +335,8 @@ async function savePlant() {
 
     if (!plantsDatabase) plantsDatabase = [];
 
-    const currentPlantIdNum = currentPlantId ? parseInt(currentPlantId, 10) : null;
-
-    let nameExists = plantsDatabase.some(p => p.name.toLowerCase() === newName.toLowerCase() && p.id !== currentPlantIdNum);
+    // STRICT ID
+    let nameExists = plantsDatabase.some(p => p.name.toLowerCase() === newName.toLowerCase() && p.id !== currentPlantId);
     if (nameExists) {
         if (typeof Swal !== 'undefined') return Swal.fire({icon: 'error', title: 'Nome Duplicato', text: `Esiste già una pianta salvata con il nome "${escapeHTML(newName)}". Scegli un nome diverso.`, confirmButtonColor: '#2e7d32'});
         else return alert(`Esiste già una pianta con il nome "${newName}".`);
@@ -407,8 +406,9 @@ async function savePlant() {
     try {
         let finalMainPhoto = ""; let finalFruitPhoto = "";
 
-        if (editingMode && currentPlantIdNum !== null) {
-            let plantToClean = plantsDatabase.find(x => x.id === currentPlantIdNum);
+        // STRICT ID Cleanup
+        if (editingMode && currentPlantId !== null) {
+            let plantToClean = plantsDatabase.find(x => x.id === currentPlantId);
             if (plantToClean) {
                 if ((window.smartCropBlobs && window.smartCropBlobs['main']) || mainPhotoRemoved) {
                     if (plantToClean.photo && typeof revokeBlob === 'function') revokeBlob(plantToClean.photo);
@@ -421,32 +421,33 @@ async function savePlant() {
 
         if (window.smartCropBlobs && window.smartCropBlobs['main']) { 
             finalMainPhoto = window.smartCropBlobs['main']; 
-        } else if (editingMode && currentPlantIdNum !== null && !mainPhotoRemoved) { 
-            let p = plantsDatabase.find(x => x.id === currentPlantIdNum);
+        } else if (editingMode && currentPlantId !== null && !mainPhotoRemoved) { 
+            let p = plantsDatabase.find(x => x.id === currentPlantId);
             finalMainPhoto = p ? p.photo || "" : ""; 
         }
         
         if (window.smartCropBlobs && window.smartCropBlobs['fruit']) { 
             finalFruitPhoto = window.smartCropBlobs['fruit']; 
-        } else if (editingMode && currentPlantIdNum !== null && !fruitPhotoRemoved) { 
-            let p = plantsDatabase.find(x => x.id === currentPlantIdNum);
+        } else if (editingMode && currentPlantId !== null && !fruitPhotoRemoved) { 
+            let p = plantsDatabase.find(x => x.id === currentPlantId);
             finalFruitPhoto = p ? p.fruitPhoto || "" : ""; 
         }
 
-        let savedPlantId = (editingMode && currentPlantIdNum !== null) ? currentPlantIdNum : (typeof generateNumericId === 'function' ? generateNumericId() : Date.now());
+        let savedPlantId = (editingMode && currentPlantId !== null) ? currentPlantId : (typeof generateId === 'function' ? generateId() : crypto.randomUUID());
         
         const originVal = document.getElementById('p-origin') ? document.getElementById('p-origin').value : 'Da seme';
         const fidelityVal = document.getElementById('p-genetic-fidelity') ? document.getElementById('p-genetic-fidelity').value : 'Non ancora valutato';
         const placementVal = document.getElementById('p-placement') ? document.getElementById('p-placement').value : 'Vaso';
         const sowingDateVal = document.getElementById('p-sowing-date') ? document.getElementById('p-sowing-date').value : '';
         
+        // Parentela via UUID Strings (Nessun parseInt)
         const motherEl = document.getElementById('p-mother');
-        let motherVal = motherEl && motherEl.value ? parseInt(motherEl.value, 10) : '';
+        let motherVal = motherEl && motherEl.value ? motherEl.value : '';
         const fatherEl = document.getElementById('p-father');
-        let fatherVal = fatherEl && fatherEl.value ? parseInt(fatherEl.value, 10) : '';
+        let fatherVal = fatherEl && fatherEl.value ? fatherEl.value : '';
 
-        if (editingMode && currentPlantIdNum !== null) {
-            let index = plantsDatabase.findIndex(p => p.id === currentPlantIdNum);
+        if (editingMode && currentPlantId !== null) {
+            let index = plantsDatabase.findIndex(p => p.id === currentPlantId);
             if (index > -1) {
                 plantsDatabase[index].name = newName; 
                 plantsDatabase[index].scientific = finalScientific; 
@@ -491,9 +492,6 @@ async function savePlant() {
 
         if(typeof AppState !== 'undefined') AppState.emit('plantsUpdated');
         
-        // IL POPUP SWEETALERT DI SUCCESSO È STATO RIMOSSO PER EVITARE DUPLICATI
-        // CI PENSERÀ IL TOAST PWA "SALVATO" A DARE IL FEEDBACK!
-        
         if(typeof navigateTo === 'function') {
             navigateTo('plant-detail', savedPlantId);
         }
@@ -513,8 +511,7 @@ function editCurrentPlant() { navigateTo('edit-plant', currentPlantId); }
 
 function _internalEditPlant(id) {
     if (!plantsDatabase) return;
-    const parsedId = parseInt(id, 10);
-    const plant = plantsDatabase.find(p => p.id === parsedId);
+    const plant = plantsDatabase.find(p => p.id === id);
     if(!plant) { 
         if(typeof goToHomeTab === 'function') goToHomeTab(); 
         else window.history.back(); 
@@ -555,7 +552,7 @@ function _internalEditPlant(id) {
     
     const originSelect = document.getElementById('p-origin'); 
     if (originSelect) {
-        let oldOrigin = plant.origin || plant.type || 'Da seme'; 
+        let oldOrigin = plant.origin || 'Da seme'; 
         originSelect.value = Array.from(originSelect.options).some(opt => opt.value === oldOrigin) ? oldOrigin : 'Non so / Altro'; 
         toggleFidelityField();
     }
@@ -668,19 +665,19 @@ async function deleteCurrentPlant() {
         }
 
         try {
-            const currentPlantIdNum = parseInt(currentPlantId, 10);
-            const plantToDelete = plantsDatabase.find(p => p.id === currentPlantIdNum);
+            const plantToDelete = plantsDatabase.find(p => p.id === currentPlantId);
             
             if (plantToDelete && typeof cleanupPlantImages === 'function') {
                 cleanupPlantImages(plantToDelete); 
             }
 
+            // Messa in sicurezza parentele senza parseInt
             plantsDatabase.forEach(p => {
-                if (p.mother === currentPlantIdNum) p.mother = '';
-                if (p.father === currentPlantIdNum) p.father = '';
+                if (p.mother === currentPlantId) p.mother = '';
+                if (p.father === currentPlantId) p.father = '';
             });
 
-            plantsDatabase = plantsDatabase.filter(p => p.id !== currentPlantIdNum); 
+            plantsDatabase = plantsDatabase.filter(p => p.id !== currentPlantId); 
             unsavedChanges = true; 
             
             if(typeof saveToLocal === 'function') await saveToLocal(); 
@@ -715,8 +712,7 @@ async function deleteCurrentPlant() {
 // ==========================================
 async function toggleArchiveStatus() {
     if (typeof Swal === 'undefined' || !plantsDatabase) return;
-    const parsedId = parseInt(currentPlantId, 10);
-    const plant = plantsDatabase.find(p => p.id === parsedId);
+    const plant = plantsDatabase.find(p => p.id === currentPlantId);
     if (!plant) return;
     
     const btn = document.getElementById('btn-archive-toggle');
@@ -764,8 +760,7 @@ async function toggleArchiveStatus() {
 
 function openDuplicateModal() {
     if (!plantsDatabase) return;
-    const parsedId = parseInt(currentPlantId, 10);
-    const plantToCopy = plantsDatabase.find(p => p.id === parsedId); 
+    const plantToCopy = plantsDatabase.find(p => p.id === currentPlantId); 
     if (!plantToCopy) return;
     
     const baseNameEl = document.getElementById('dup-base-name');
@@ -787,8 +782,7 @@ function closeDuplicateModal() {
 
 async function confirmDuplicate() {
     if (!plantsDatabase) return;
-    const parsedId = parseInt(currentPlantId, 10);
-    const plantToCopy = plantsDatabase.find(p => p.id === parsedId); 
+    const plantToCopy = plantsDatabase.find(p => p.id === currentPlantId); 
     if (!plantToCopy) return;
     
     const baseNameEl = document.getElementById('dup-base-name');
@@ -796,7 +790,7 @@ async function confirmDuplicate() {
     if (!baseName) baseName = plantToCopy.name;
     
     const qtyEl = document.getElementById('dup-qty');
-    let qty = qtyEl ? parseInt(qtyEl.value) : 1; 
+    let qty = qtyEl ? parseInt(qtyEl.value, 10) : 1; 
     
     if (isNaN(qty) || qty < 1) {
         if (typeof Swal !== 'undefined') return Swal.fire({icon: 'error', title: 'Errore', text: 'Inserisci una quantità valida (minimo 1).', confirmButtonColor: '#2e7d32'});
@@ -825,9 +819,9 @@ async function confirmDuplicate() {
             
             let clonedLogs = [];
             if (copyDiary && plantToCopy.logs && Array.isArray(plantToCopy.logs)) { 
-                clonedLogs = plantToCopy.logs.map((log, logIdx) => {
+                clonedLogs = plantToCopy.logs.map((log) => {
                     return {
-                        id: typeof generateNumericId === 'function' ? generateNumericId() + logIdx : Date.now() + Math.floor(Math.random() * 1000000),
+                        id: typeof generateId === 'function' ? generateId() : crypto.randomUUID(),
                         date: log.date, type: log.type, height: log.height, harvest: log.harvest, ph: log.ph, placement: log.placement, potSize: log.potSize, graftName: log.graftName, note: log.note,
                         photo: safeCloneImage(log.photo), 
                         photos: log.photos && Array.isArray(log.photos) ? log.photos.map(ph => safeCloneImage(ph)) : [] 
@@ -835,7 +829,7 @@ async function confirmDuplicate() {
                 });
             }
 
-            const newPlantId = typeof generateNumericId === 'function' ? generateNumericId() : Date.now() + i;
+            const newPlantId = typeof generateId === 'function' ? generateId() : crypto.randomUUID();
 
             const newPlant = {
                 id: newPlantId, 
@@ -959,7 +953,7 @@ function renderPlants() {
         filteredPlants = filteredPlants.filter(p => p.placement === filterPlacement || (!p.placement && filterPlacement==='Vaso' && p.potSize));
     }
     if (filterOrigin !== 'all') {
-        filteredPlants = filteredPlants.filter(p => p.origin === filterOrigin || p.type === filterOrigin);
+        filteredPlants = filteredPlants.filter(p => p.origin === filterOrigin);
     }
     if (filterFertility !== 'all') {
         filteredPlants = filteredPlants.filter(p => getModernFertility(p.autofertile) === filterFertility);
@@ -976,14 +970,23 @@ function renderPlants() {
 
     filteredPlants.sort((a, b) => {
         if (sortMode === 'name') return (a.name || '').localeCompare(b.name || '');
-        else if (sortMode === 'newest') return b.id - a.id;
-        else if (sortMode === 'oldest') return a.id - b.id;
+        else if (sortMode === 'newest') {
+            // Se sono stringhe numeriche non si può fare b.id - a.id
+            if (a.id > b.id) return -1;
+            if (a.id < b.id) return 1;
+            return 0;
+        }
+        else if (sortMode === 'oldest') {
+            if (a.id > b.id) return 1;
+            if (a.id < b.id) return -1;
+            return 0;
+        }
         else if (sortMode === 'last_updated') {
-            let lastA = a.id; 
+            let lastA = 0; 
             if (a.logs && Array.isArray(a.logs) && a.logs.length > 0) { 
                 lastA = Math.max(...a.logs.map(l => new Date(l.date).getTime() || 0)); 
             }
-            let lastB = b.id; 
+            let lastB = 0; 
             if (b.logs && Array.isArray(b.logs) && b.logs.length > 0) { 
                 lastB = Math.max(...b.logs.map(l => new Date(l.date).getTime() || 0)); 
             }
@@ -1069,7 +1072,7 @@ function renderPlantsChunk(customSize = null) {
         let vol = plant.potSize; 
         if (basePlacement === 'Vaso' && vol) sistemazioneLabel += ` (${formatLocalFloat(vol)} L)`;
         
-        let origLabel = plant.origin || plant.type || 'Non so / Altro';
+        let origLabel = plant.origin || 'Non so / Altro';
         
         let tempBadge = plant.minTemp !== undefined && plant.minTemp !== null ? `<span style="background:#e3f2fd; color:#1565c0; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:bold;">❄️ Min: ${formatLocalFloat(plant.minTemp)}°C</span>` : '';
         let maxTempBadge = plant.maxTemp !== undefined && plant.maxTemp !== null ? `<span style="background:#ffebee; color:#d32f2f; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:bold;">🔥 Max: ${formatLocalFloat(plant.maxTemp)}°C</span>` : '';
@@ -1193,7 +1196,7 @@ function renderArchiveChunk(customSize = null) {
         
         let rawPhoto = plant.fruitPhoto || plant.photo;
         let imgSrc = (typeof getImageUrl === 'function' && rawPhoto) ? getImageUrl(rawPhoto) : fallbackSrc;
-        let origLabel = plant.origin || plant.type || 'Non so / Altro';
+        let origLabel = plant.origin || 'Non so / Altro';
         
         card.innerHTML = `
             <img src="${imgSrc}" onerror="this.onerror=null; this.src='${fallbackSrc}';" class="grayscale-img" loading="lazy" alt="${escapeHTML(plant.name)}">
@@ -1248,8 +1251,7 @@ if(typeof AppState !== 'undefined') {
 // ==========================================
 function _internalOpenPlantDetail(id) {
     if (!plantsDatabase) return;
-    const parsedId = parseInt(id, 10);
-    const plant = plantsDatabase.find(p => p.id === parsedId);
+    const plant = plantsDatabase.find(p => p.id === id);
     if(!plant) { 
         if(typeof goToHomeTab === 'function') goToHomeTab(); 
         else window.history.back(); 
@@ -1265,10 +1267,10 @@ function _internalOpenPlantDetail(id) {
     let sistemazioneLabel = basePlacement; 
     let vol = plant.potSize; 
     if (basePlacement === 'Vaso' && vol) sistemazioneLabel += ` (${formatLocalFloat(vol)} L)`;
-    let origLabel = escapeHTML(plant.origin || plant.type || 'N/D');
+    let origLabel = escapeHTML(plant.origin || 'N/D');
 
     let fidelityHtml = '';
-    if (plant.origin === 'Da seme' || plant.type === 'Pianta da seme') { 
+    if (plant.origin === 'Da seme') { 
         let fidelityLabel = plant.geneticFidelity || 'Non ancora valutato'; 
         fidelityHtml = `<p><strong>🧬 Fedeltà varietale:</strong> <span style="color:#e65100; font-weight:bold;">${escapeHTML(fidelityLabel)}</span></p>`; 
     }
@@ -1281,12 +1283,12 @@ function _internalOpenPlantDetail(id) {
 
     let parentStr = '';
     if(plant.mother !== undefined && plant.mother !== null && plant.mother !== '') { 
-        let m = plantsDatabase.find(x => x.id === parseInt(plant.mother, 10)); 
-        if(m) parentStr += `Madre: <a href="javascript:void(0);" style="color:var(--blue); font-weight:bold;" onclick="navigateTo('plant-detail', ${m.id})">${escapeHTML(m.name)}</a><br>`; 
+        let m = plantsDatabase.find(x => x.id === plant.mother); 
+        if(m) parentStr += `Madre: <a href="javascript:void(0);" style="color:var(--blue); font-weight:bold;" onclick="navigateTo('plant-detail', '${m.id}')">${escapeHTML(m.name)}</a><br>`; 
     }
     if(plant.father !== undefined && plant.father !== null && plant.father !== '') { 
-        let f = plantsDatabase.find(x => x.id === parseInt(plant.father, 10)); 
-        if(f) parentStr += `Padre: <a href="javascript:void(0);" style="color:var(--blue); font-weight:bold;" onclick="navigateTo('plant-detail', ${f.id})">${escapeHTML(f.name)}</a>`; 
+        let f = plantsDatabase.find(x => x.id === plant.father); 
+        if(f) parentStr += `Padre: <a href="javascript:void(0);" style="color:var(--blue); font-weight:bold;" onclick="navigateTo('plant-detail', '${f.id}')">${escapeHTML(f.name)}</a>`; 
     }
     if(parentStr) parentStr = `<div style="background:#e3f2fd; padding:10px; border-radius:5px; margin-bottom:10px; font-size:14px;"><strong>🧬 Genealogia:</strong><br>${parentStr}</div>`;
 
@@ -1392,7 +1394,7 @@ function _internalOpenPlantDetail(id) {
         
         if (labelName) labelName.innerText = plant.name; 
         if (labelScientific) labelScientific.innerText = plant.scientific || 'Specie Sconosciuta'; 
-        if (labelOrigin) labelOrigin.innerText = plant.origin || plant.type || 'N/D';
+        if (labelOrigin) labelOrigin.innerText = plant.origin || 'N/D';
         
         const qrContainer = document.getElementById('detail-qr-code'); 
         if (qrContainer && typeof QRCode !== 'undefined') {
@@ -1405,8 +1407,7 @@ function _internalOpenPlantDetail(id) {
 
 async function saveNotesFromDetail() {
     if (!currentPlantId || !plantsDatabase) return;
-    const parsedId = parseInt(currentPlantId, 10);
-    const plant = plantsDatabase.find(p => p.id === parsedId);
+    const plant = plantsDatabase.find(p => p.id === currentPlantId);
     if (!plant) return;
 
     const plantNotesEl = document.getElementById('detail-plant-notes');
@@ -1437,9 +1438,6 @@ async function saveNotesFromDetail() {
         if (typeof saveToLocal === 'function') await saveToLocal();
         
         _internalOpenPlantDetail(currentPlantId);
-
-        // IL POPUP SWEETALERT DI SUCCESSO È STATO RIMOSSO PER EVITARE DUPLICATI
-        // CI PENSERÀ IL TOAST PWA "SALVATO" A DARE IL FEEDBACK!
 
     } catch (err) {
         console.error("Errore salvataggio note:", err);

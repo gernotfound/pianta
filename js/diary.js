@@ -114,8 +114,6 @@ async function addDiaryLog() {
             return;
         }
     }
-    
-    const currentPlantIdNum = parseInt(currentPlantId, 10);
 
     if (type === 'Innesto') {
         graftName = document.getElementById('log-graft-name') ? document.getElementById('log-graft-name').value.trim() : ''; 
@@ -124,13 +122,14 @@ async function addDiaryLog() {
             return;
         }
         
-        let nameExists = plantsDatabase.some(p => (p.name || '').toLowerCase() === graftName.toLowerCase() && p.id !== currentPlantIdNum); 
+        // Strict Comparison (UUID)
+        let nameExists = plantsDatabase.some(p => (p.name || '').toLowerCase() === graftName.toLowerCase() && p.id !== currentPlantId); 
         if (nameExists) {
             if (typeof Swal !== 'undefined') return Swal.fire({icon: 'error', title: 'Errore', text: `Esiste già una pianta salvata con il nome "${escapeHTML(graftName)}".`, confirmButtonColor: '#2e7d32'});
             return;
         }
         
-        const plant = plantsDatabase.find(p => p.id === currentPlantIdNum); 
+        const plant = plantsDatabase.find(p => p.id === currentPlantId); 
         if(plant) {
             plant.name = graftName; 
             plant.origin = 'Innesto';
@@ -142,7 +141,7 @@ async function addDiaryLog() {
         const potVal = document.getElementById('log-pot-size') ? document.getElementById('log-pot-size').value : '';
         newPotSize = typeof parseLocalFloat === 'function' ? parseLocalFloat(potVal) : parseFloat(potVal); 
         
-        const plant = plantsDatabase.find(p => p.id === currentPlantIdNum); 
+        const plant = plantsDatabase.find(p => p.id === currentPlantId); 
         if(plant) {
             plant.placement = newPlacement; 
             plant.potSize = newPotSize; 
@@ -154,7 +153,6 @@ async function addDiaryLog() {
         return;
     }
 
-    // FIX MEDIUM 8: Prevenzione doppi click con sblocco garantito nel blocco finally
     const saveBtn = document.querySelector('.diary-section button[onclick="addDiaryLog()"]');
     if (saveBtn) {
         saveBtn.disabled = true;
@@ -196,14 +194,14 @@ async function addDiaryLog() {
 
 async function finalizeDiaryLog(date, type, note, height, harvest, ph, placement, potSize, graftName, photosArray) {
     if (!plantsDatabase) return;
-    const currentPlantIdNum = parseInt(currentPlantId, 10);
-    const plant = plantsDatabase.find(p => p.id === currentPlantIdNum);
+    const plant = plantsDatabase.find(p => p.id === currentPlantId);
     if (!plant) return;
     
     if (!Array.isArray(plant.logs)) plant.logs = [];
 
     plant.logs.push({ 
-        id: typeof generateNumericId === 'function' ? generateNumericId() : Date.now() + Math.floor(Math.random()*1000), 
+        // L'ID del diario diventa ora un UUID sicuro
+        id: typeof generateId === 'function' ? generateId() : crypto.randomUUID(), 
         date: date, 
         type: type, 
         height: height, 
@@ -221,7 +219,6 @@ async function finalizeDiaryLog(date, type, note, height, harvest, ph, placement
     if(typeof saveToLocal === 'function') await saveToLocal(); 
     isFormDirty = false; 
     
-    // FIX LOW 12 (UX): MANTENIAMO la Data e il Tipo selezionati svuotando solo i campi extra.
     const fieldsToClear = ['log-height', 'log-ph', 'log-harvest', 'log-note', 'log-photos', 'log-graft-name', 'log-pot-size'];
     fieldsToClear.forEach(id => {
         const el = document.getElementById(id);
@@ -234,7 +231,7 @@ async function finalizeDiaryLog(date, type, note, height, harvest, ph, placement
     }
     
     if (type === 'Innesto' || type === 'Rinvaso / Sistemazione') {
-        if(typeof _internalOpenPlantDetail === 'function') _internalOpenPlantDetail(currentPlantIdNum); 
+        if(typeof _internalOpenPlantDetail === 'function') _internalOpenPlantDetail(currentPlantId); 
     } else {
         if(typeof renderTimeline === 'function') renderTimeline(plant); 
         if(typeof updateYearDropdown === 'function') updateYearDropdown(plant); 
@@ -269,21 +266,19 @@ async function deleteLog(logId) {
     
     if(res.isConfirmed) {
         if (!plantsDatabase) return;
-        const currentPlantIdNum = parseInt(currentPlantId, 10);
-        const plant = plantsDatabase.find(p => p.id === currentPlantIdNum); 
+        const plant = plantsDatabase.find(p => p.id === currentPlantId); 
         if (!plant || !plant.logs) return;
 
-        const parsedLogId = parseInt(logId, 10);
-        const logToDelete = plant.logs.find(l => l.id === parsedLogId);
+        // Strict Comparison (UUID come stringhe, addio parseInt)
+        const logToDelete = plant.logs.find(l => l.id === logId);
         
         if (logToDelete && typeof revokeBlob === 'function') {
-            if (logToDelete.photo) revokeBlob(logToDelete.photo);
-            if (logToDelete.photos && logToDelete.photos.length > 0) {
+            if (logToDelete.photos && Array.isArray(logToDelete.photos)) {
                 logToDelete.photos.forEach(ph => revokeBlob(ph));
             }
         }
 
-        plant.logs = plant.logs.filter(l => l.id !== parsedLogId); 
+        plant.logs = plant.logs.filter(l => l.id !== logId); 
         unsavedChanges = true; 
         
         if(typeof saveToLocal === 'function') await saveToLocal(); 
@@ -331,9 +326,8 @@ function renderTimeline(plant) {
         let imgStr = ''; 
         const fallbackSrc = typeof OFFLINE_PLACEHOLDER !== 'undefined' ? OFFLINE_PLACEHOLDER : '';
 
-        let validPhotos = [];
-        if (log.photos && Array.isArray(log.photos)) validPhotos = log.photos;
-        else if (log.photo) validPhotos = [log.photo];
+        // Niente più fallback a vecchie `log.photo`, lavoriamo solo con l'architettura pura
+        const validPhotos = (log.photos && Array.isArray(log.photos)) ? log.photos : [];
 
         if (validPhotos.length > 0) {
             imgStr = '<div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">';
@@ -346,10 +340,11 @@ function renderTimeline(plant) {
             imgStr += '</div>';
         }
         
+        // FIX CRITICO PER GLI UUID: Aggiunti gli apici singoli all'id nel bottone onclick ('${log.id}')
         li.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                 <div><span class="timeline-date">${displayDate}</span><span class="timeline-type">${escapeHTML(log.type)}</span></div>
-                <button style="color:red; background:none; border:none; cursor:pointer; font-size: 16px; padding: 0 0 0 10px;" onclick="deleteLog(${log.id})" aria-label="Elimina evento">✖</button>
+                <button style="color:red; background:none; border:none; cursor:pointer; font-size: 16px; padding: 0 0 0 10px;" onclick="deleteLog('${log.id}')" aria-label="Elimina evento">✖</button>
             </div>
             <p style="margin: 8px 0 0 0; font-size: 14px;">${escapeHTML(log.note)}${heightStr}${phStr}${harvestStr}${repotStr}${graftStr}</p>
             ${imgStr}

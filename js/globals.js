@@ -2,24 +2,30 @@
 // CONFIGURAZIONE GLOBALE DELL'APP (APP_CONFIG)
 // ==========================================
 const APP_CONFIG = {
+    // Database (V3 per struttura a UUID pura)
     DB_NAME: 'TropicalGardenDB',
-    DB_VERSION: 2,
+    DB_VERSION: 3,
     
+    // UI e Tempi
     TOAST_TIMEOUT: 2200,       
     DEBOUNCE_DELAY: 300,       
     
+    // Gestione Immagini e RAM
     IMG_MAX_DIMENSION: 1200,   
     IMG_QUALITY_HIGH: 0.72,    
     IMG_QUALITY_LOW: 0.60,     
     IMG_COMPRESSION_THRESHOLD: 2000000, 
     
+    // Esportazione Dati
     MAX_BACKUP_WARNING_SIZE: 262144000, 
     
+    // Mappe (Leaflet)
     MAP_DEFAULT_LAT: 20.0,
     MAP_DEFAULT_LNG: 0.0,
     MAP_WORLD_ZOOM: 2,         
     MAP_PLANT_ZOOM: 15,        
     
+    // Meteo e Allerte
     WIND_ALERT_KMH: 40         
 };
 
@@ -193,12 +199,17 @@ function safeCloneImage(img) {
 }
 
 // ==========================================
-// GESTIONE ID UNIVOCI E SANIFICAZIONE XSS
+// GESTIONE ID UNIVOCI (UUID) E XSS
 // ==========================================
-let _internalIdCounter = 0;
-function generateNumericId() {
-    _internalIdCounter = (_internalIdCounter + 1) % 1000;
-    return parseInt(Date.now().toString() + _internalIdCounter.toString().padStart(3, '0'), 10);
+function generateId() {
+    // Sfrutta il processore crittografico per ID universali perfetti
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    // Fallback matematico per vecchissime web view
+    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    );
 }
 
 function sanitizeImageSource(src) {
@@ -287,10 +298,10 @@ function syncStore(store, ramArray, storeName) {
         let reqKeys = store.getAllKeys();
         reqKeys.onsuccess = function() {
             let dbKeys = reqKeys.result;
-            let ramKeys = ramArray.map(item => item.id);
+            let ramKeys = ramArray.map(item => String(item.id));
             
             dbKeys.forEach(key => { 
-                if (!ramKeys.includes(key)) {
+                if (!ramKeys.includes(String(key))) {
                     store.delete(key); 
                     delete dbSyncHashes[storeName][key];
                 }
@@ -340,7 +351,9 @@ async function saveToLocal() {
         try {
             const liteData = getSerializableFallbackData();
             localStorage.setItem('garden_full_backup_v1', JSON.stringify(liteData));
-        } catch(e) {}
+        } catch(e) {
+            console.warn("[Backup] Salvataggio fallback su localStorage fallito.");
+        }
 
         try {
             let db = await initDB();
@@ -354,8 +367,9 @@ async function saveToLocal() {
             
             tx.oncomplete = function() { showAutoSaveToast(); resolve(true); };
             tx.onerror = function(e) { 
+                console.error("[DB] Transazione fallita:", e.target.error);
                 if (e.target.error && e.target.error.name === 'QuotaExceededError') {
-                    if (typeof Swal !== 'undefined') Swal.fire({icon: 'error', title: 'Memoria Piena!', text: 'Spazio esaurito nel browser.', confirmButtonColor: '#d32f2f'});
+                    if (typeof Swal !== 'undefined') Swal.fire({icon: 'error', title: 'Memoria Piena!', text: 'Spazio esaurito nel browser. Elimina foto vecchie o archivia piante.', confirmButtonColor: '#d32f2f'});
                 }
                 resolve(false); 
             };
@@ -517,9 +531,9 @@ function logout() {
                 tx.objectStore('System').clear(); tx.objectStore('Plants').clear();
                 tx.objectStore('Expenses').clear(); tx.objectStore('Wishlist').clear();
             } catch(e) {}
-            localStorage.removeItem('garden_full_backup_v1');
+            localStorage.removeItem('garden_full_backup_v1'); 
             plantsDatabase = []; generalExpenses = []; wishlist = []; gardenTitle = "🌿 Gestione Piante Tropicali - Pro"; gardenNotes = "";
-            dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} }; 
+            dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} }; // Svuota cache hash
             window.location.hash = '#/startup'; window.location.reload();
         }
     });
@@ -527,7 +541,7 @@ function logout() {
 
 function createNewGarden() {
     gardenTitle = "🌿 Il mio giardino"; plantsDatabase = []; generalExpenses = []; wishlist = []; gardenNotes = "";
-    dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} }; 
+    dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} }; // Svuota cache hash
     saveToLocal().then(() => {
         const titleEl = document.getElementById('main-title'); if(titleEl) titleEl.innerText = gardenTitle;
         const startScreen = document.getElementById('startup-screen'); const navBar = document.getElementById('bottom-nav');

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'piante-pro-v2.10.1';
+const CACHE_NAME = 'piante-pro-v2.0.1';
 
 const offlineFallbackHtml = `<!DOCTYPE html>
 <html lang="it">

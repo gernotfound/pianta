@@ -101,11 +101,6 @@ async function loadZipProfile(file) {
         if (!loadedData || (typeof loadedData !== 'object' && !Array.isArray(loadedData))) {
             throw new Error('Il backup non contiene un formato JSON valido.');
         }
-        
-        const schemaVer = loadedData.schemaVersion || 0;
-        if (schemaVer > 1) {
-            console.warn("Backup generato da una versione più recente dell'app. Potrebbero esserci incongruenze.");
-        }
 
         let loadedPlants = Array.isArray(loadedData) ? loadedData : (Array.isArray(loadedData.plants) ? loadedData.plants : []);
         if (!Array.isArray(loadedPlants)) {
@@ -113,7 +108,6 @@ async function loadZipProfile(file) {
         }
         
         async function restoreImage(imgPath) {
-            // Anti-XSS: Accetta solo Blob creati internamente o percorsi ZIP validi
             if (imgPath && typeof imgPath === 'string' && imgPath.startsWith('images/')) {
                 const imgFile = zip.file(imgPath);
                 if (imgFile) {
@@ -129,6 +123,7 @@ async function loadZipProfile(file) {
             return typeof sanitizeImageSource === 'function' ? sanitizeImageSource(imgPath) : imgPath; 
         }
 
+        // ARCHITETTURA PULITA: Niente più migrazioni per dati preistorici
         for (let p of loadedPlants) {
             if(p.photo) p.photo = await restoreImage(p.photo); 
             if(p.fruitPhoto) p.fruitPhoto = await restoreImage(p.fruitPhoto);
@@ -142,14 +137,22 @@ async function loadZipProfile(file) {
                     } else {
                         log.photos = [];
                     }
+                    // ID evento Strict (UUID/Stringa)
+                    if (!log.id) log.id = typeof generateId === 'function' ? generateId() : crypto.randomUUID();
+                    else log.id = String(log.id);
                 } 
             } else {
                 p.logs = [];
             }
+            
             if(!p.status) p.status = 'active';
             
-            // Assicuriamoci che l'ID sia un numero intero per lo Strict Comparison (===)
-            p.id = parseInt(p.id, 10);
+            // ID pianta Strict (UUID/Stringa) per compatibilità e Strict Comparison (===)
+            if (!p.id) p.id = typeof generateId === 'function' ? generateId() : crypto.randomUUID();
+            else p.id = String(p.id);
+            
+            if (p.mother) p.mother = String(p.mother);
+            if (p.father) p.father = String(p.father);
         }
         
         plantsDatabase = loadedPlants;
@@ -163,12 +166,16 @@ async function loadZipProfile(file) {
             if (loadedData.notes) { gardenNotes = loadedData.notes; } else { gardenNotes = ""; }
             
             generalExpenses = Array.isArray(loadedData.expenses) ? loadedData.expenses : [];
+            for (let e of generalExpenses) {
+                if(!e.id) e.id = typeof generateId === 'function' ? generateId() : crypto.randomUUID();
+                else e.id = String(e.id);
+            }
             
             let loadedWishlist = Array.isArray(loadedData.wishlist) ? loadedData.wishlist : [];
             for (let w of loadedWishlist) {
                 if(w.photo) w.photo = await restoreImage(w.photo);
-                // Strict ID su Wishlist
-                w.id = parseInt(w.id, 10);
+                if(!w.id) w.id = typeof generateId === 'function' ? generateId() : crypto.randomUUID();
+                else w.id = String(w.id);
             }
             wishlist = loadedWishlist;
             
@@ -177,12 +184,11 @@ async function loadZipProfile(file) {
             wishlist = [];
         }
         
-        // Svuotiamo le vecchie impronte digitali (Hash) prima del ripristino per forzare il salvataggio completo
+        // Svuotiamo le vecchie impronte digitali (Hash) prima del ripristino per forzare il salvataggio completo sul nuovo DB
         if (typeof dbSyncHashes !== 'undefined') {
             dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} };
         }
 
-        // Attesa asincrona rigorosa del salvataggio prima di riavviare
         if(typeof saveToLocal === 'function') await saveToLocal();
         
         unsavedChanges = false;
@@ -274,6 +280,7 @@ async function exportData() {
             if(cp.logs && Array.isArray(cp.logs)) { 
                 cp.logs = cp.logs.map(log => {
                     let clog = { ...log };
+                    // ARCHITETTURA PULITA: Niente delete clog.photo perché non esiste più
                     if(clog.photos && Array.isArray(clog.photos) && clog.photos.length > 0) {
                         clog.photos = clog.photos.map((ph, idx) => processImage(ph, `log_${clog.id}_${idx}`));
                     } else {
@@ -310,7 +317,6 @@ async function exportData() {
         zip.file("data.json", jsonString);
 
         // Manteniamo "STORE": Le immagini WebP sono già compresse. 
-        // Cercare di comprimerle di nuovo (DEFLATE) farebbe saturare la RAM causando crash su mobile.
         const content = await zip.generateAsync({
             type: "blob", 
             compression: "STORE" 
@@ -329,7 +335,6 @@ async function exportData() {
         a.download = `${safeTitle}-${dateStr}-${timeStr}.zip`; 
         a.click();
         
-        // Pulizia Immediata Garbage Collection
         setTimeout(() => URL.revokeObjectURL(a.href), 1500);
         
         unsavedChanges = false;
@@ -383,13 +388,14 @@ function exportToCSV() {
 
         let motherName = "";
         if (p.mother !== undefined && p.mother !== null && p.mother !== "") {
-            let m = plantsDatabase.find(x => x.id === parseInt(p.mother, 10));
+            // Strict Comparison (===) con l'ID trattato come stringa
+            let m = plantsDatabase.find(x => x.id === String(p.mother));
             if (m) motherName = m.name;
         }
 
         let fatherName = "";
         if (p.father !== undefined && p.father !== null && p.father !== "") {
-            let f = plantsDatabase.find(x => x.id === parseInt(p.father, 10));
+            let f = plantsDatabase.find(x => x.id === String(p.father));
             if (f) fatherName = f.name;
         }
 

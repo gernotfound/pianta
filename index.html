@@ -19,6 +19,7 @@
     <link rel="manifest" href="manifest.json">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" integrity="sha512-c42qZA51frwO44A5Nq7OkEtrR1qO7fX5XnEw2XmXwT5A0Aof0U++z1U5wD+r5yE3jK7zN9V0GvXz0aQG0w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.29/sweetalert2.all.min.js" integrity="sha512-cgolxBUBvc5yorfBxXYQCvGEaTbZDdRMDjGrMw8h4G01gm/BfHlN8CO3amP68GbNbw8LY5uj/CFW4qpY9lHyPQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -386,11 +387,16 @@
                     <span class="filter-group-title" style="color: var(--accent);">⚠️ Vulnerabilità Termica</span>
                     <p style="font-size: 12px; color: #555; margin-top: 2px; margin-bottom: 12px;">Mostra le piante che <strong>NON resistono</strong> a queste temperature estreme.</p>
                     
-                    <label for="filter-vuln-cold" style="font-size: 13px; font-weight: bold;">❄️ Muoiono sotto i (°C):</label>
-                    <input type="text" inputmode="decimal" id="filter-vuln-cold" placeholder="es. 5" style="margin-bottom: 12px; width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
-
-                    <label for="filter-vuln-hot" style="font-size: 13px; font-weight: bold;">🔥 Muoiono sopra i (°C):</label>
-                    <input type="text" inputmode="decimal" id="filter-vuln-hot" placeholder="es. 35" style="margin-bottom: 0; width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 150px;">
+                            <label for="filter-vuln-cold" style="font-size: 13px; font-weight: bold;">❄️ Muoiono sotto i (°C):</label>
+                            <input type="text" inputmode="decimal" id="filter-vuln-cold" placeholder="es. 5" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label for="filter-vuln-hot" style="font-size: 13px; font-weight: bold;">🔥 Muoiono sopra i (°C):</label>
+                            <input type="text" inputmode="decimal" id="filter-vuln-hot" placeholder="es. 35" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="filter-group">
@@ -570,31 +576,25 @@
                             </div>
                         </div>
 
-                        <div style="grid-column: span 2; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
-                            <label style="font-weight: bold; display: block; margin-bottom: 10px; color: var(--primary);">🧪 pH ottimale:</label>
-                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                                <div style="flex: 1; min-width: 150px;">
-                                    <label for="p-ph-min" style="font-size: 13px;">Minimo:</label>
-                                    <input type="text" inputmode="decimal" id="p-ph-min" placeholder="es. 5,5">
-                                </div>
-                                <div style="flex: 1; min-width: 150px;">
-                                    <label for="p-ph-max" style="font-size: 13px;">Massimo:</label>
-                                    <input type="text" inputmode="decimal" id="p-ph-max" placeholder="es. 6,5">
-                                </div>
+                        <div style="grid-column: span 2; display: flex; gap: 15px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 150px;">
+                                <label for="p-ph-min">🧪 pH ottimale (Minimo):</label>
+                                <input type="text" inputmode="decimal" id="p-ph-min" placeholder="es. 5,5">
+                            </div>
+                            <div style="flex: 1; min-width: 150px;">
+                                <label for="p-ph-max">🧪 pH ottimale (Massimo):</label>
+                                <input type="text" inputmode="decimal" id="p-ph-max" placeholder="es. 6,5">
                             </div>
                         </div>
 
-                        <div style="grid-column: span 2; background: #fff3e0; padding: 15px; border-radius: 8px; border: 1px solid #ffe0b2;">
-                            <label style="font-weight: bold; display: block; margin-bottom: 10px; color: var(--accent);">🌡️ Temperatura ottimale (°C):</label>
-                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                                <div style="flex: 1; min-width: 150px;">
-                                    <label for="p-min-temp" style="font-size: 13px;">Minima (°C):</label>
-                                    <input type="text" inputmode="decimal" id="p-min-temp" placeholder="es. 5">
-                                </div>
-                                <div style="flex: 1; min-width: 150px;">
-                                    <label for="p-max-temp" style="font-size: 13px;">Massima (°C):</label>
-                                    <input type="text" inputmode="decimal" id="p-max-temp" placeholder="es. 38">
-                                </div>
+                        <div style="grid-column: span 2; display: flex; gap: 15px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 150px;">
+                                <label for="p-min-temp">🌡️ Temperatura minima (°C):</label>
+                                <input type="text" inputmode="decimal" id="p-min-temp" placeholder="es. 5">
+                            </div>
+                            <div style="flex: 1; min-width: 150px;">
+                                <label for="p-max-temp">🌡️ Temperatura massima (°C):</label>
+                                <input type="text" inputmode="decimal" id="p-max-temp" placeholder="es. 38">
                             </div>
                         </div>
                         
@@ -647,7 +647,6 @@
         </div>
     </div>
 
-    <!-- VISTA EVENTI GLOBALI & METEO -->
     <div id="events-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; margin-bottom: 20px;">
         
         <div class="detail-header" style="border-bottom: none; margin-bottom: 10px;">
@@ -673,7 +672,6 @@
         </div>
     </div>
 
-    <!-- VISTA MAPPA GLOBALE DEDICATA -->
     <div id="global-map-page" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
         <div class="detail-header">
             <h2 style="margin:0; color: var(--blue);">🗺️ Mappa globale</h2>
@@ -688,7 +686,6 @@
         </div>
     </div>
 
-    <!-- VISTA MACRO V2 -->
     <div id="macro-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #e0e0e0;">
         <div class="detail-header">
             <h2 style="margin:0; color: var(--accent);">☑️ Azioni di Massa (Macro)</h2>
@@ -746,7 +743,6 @@
         </div>
     </div>
 
-    <!-- VISTA SCANNER QR -->
     <div id="labels-scanner-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; text-align: center;">
         <div class="detail-header">
             <h2 style="margin:0; color: var(--blue);">🏷️ Scanner QR</h2>
@@ -758,7 +754,6 @@
         </div>
     </div>
 
-    <!-- VISTA SPESE -->
     <div id="expenses-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; margin-bottom: 20px;">
         <div class="detail-header">
             <h2 style="margin:0; color: var(--purple);">💰 Tracciamento Spese</h2>
@@ -798,7 +793,6 @@
         <ul class="timeline" id="expenses-list"></ul>
     </div>
 
-    <!-- VISTA WISHLIST -->
     <div id="wishlist-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e0e0e0;">
         <div class="detail-header">
             <h2 style="margin:0; color: var(--accent);">🛒 Wishlist Piante</h2>
@@ -828,7 +822,6 @@
         <div id="wishlist-grid" class="my-data-grid"></div>
     </div>
 
-    <!-- VISTA GALLERIA -->
     <div id="gallery-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e0e0e0;">
         <div class="detail-header">
             <h2 style="margin:0; color: var(--blue);">🖼️ Archivio Foto</h2>
@@ -837,7 +830,6 @@
         <div id="gallery-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:10px;"></div>
     </div>
 
-    <!-- VISTA ARCHIVIO STORICO -->
     <div id="archive-page" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e0e0e0;">
         <div class="detail-header">
             <h2 style="margin:0; color: var(--danger);">🥀 Archivio piante perse</h2>
@@ -846,8 +838,8 @@
         <div id="archive-grid"></div>
     </div>
 
-    <!-- Vista Dettaglio Pianta -->
     <div id="plant-detail-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #e0e0e0;">
+        
         <div class="detail-header">
             <h2 id="detail-title" style="margin:0;">Nome pianta</h2>
             <div>
@@ -862,11 +854,23 @@
             <div style="flex: 3; display: flex; flex-direction: column; gap: 10px;">
                 <div id="detail-info" style="background:#f9f9f9; padding:15px; border-radius:5px; border: 1px solid #e0e0e0; font-size: 15px;"></div>
                 <div class="photos-container" id="detail-photos-container"></div>
+                
+                <div style="margin-top: 10px;">
+                    <label for="detail-species-notes" style="font-weight: bold; display: block; margin-bottom: 5px; color: var(--primary);">🧬 Note specie (condivise):</label>
+                    <textarea id="detail-species-notes" rows="3" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; resize: vertical;" placeholder="Caratteristiche comuni alla specie (si salvano in automatico)..." onblur="autoSaveSpeciesNote()"></textarea>
+                </div>
             </div>
 
-            <div style="flex: 1; background:#f9f9f9; padding:10px; border-radius:5px; border: 1px solid #e0e0e0; display: flex; flex-direction: column;">
-                <h4 style="margin: 0 0 8px 0; font-size: 13px; color: var(--primary);">📍 Mappa</h4>
-                <div id="map-container" style="flex: 1; min-height: 110px; border-radius: 5px; border: 1px solid #ccc; z-index: 1;"></div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 15px;">
+                <div style="background:#f9f9f9; padding:10px; border-radius:5px; border: 1px solid #e0e0e0; display: flex; flex-direction: column;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 13px; color: var(--primary);">📍 Mappa</h4>
+                    <div id="map-container" style="flex: 1; min-height: 150px; border-radius: 5px; border: 1px solid #ccc; z-index: 1;"></div>
+                </div>
+                
+                <div style="background:#f9f9f9; padding:10px; border-radius:5px; border: 1px solid #e0e0e0;">
+                    <label for="detail-plant-notes" style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 13px; color: var(--primary);">📝 Note pianta:</label>
+                    <textarea id="detail-plant-notes" rows="4" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; resize: vertical;" placeholder="Appunti su questa singola pianta (si salvano in automatico)..." onblur="autoSavePlantNote()"></textarea>
+                </div>
             </div>
         </div>
 
@@ -973,19 +977,6 @@
             </div>
         </div>
 
-        <div id="notes-section" style="margin-top: 30px; padding: 20px; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 8px;">
-            <h3 style="margin-top: 0; color: var(--primary);"><span role="img" aria-label="note">📝</span> Note della pianta e della specie</h3>
-            <div style="margin-bottom: 15px;">
-                <label for="detail-plant-notes" style="font-weight: bold; display: block; margin-bottom: 5px;">📝 Note Pianta (singola):</label>
-                <textarea id="detail-plant-notes" rows="3" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;" placeholder="Appunti su questa singola pianta..."></textarea>
-            </div>
-            <div>
-                <label for="detail-species-notes" style="font-weight: bold; display: block; margin-bottom: 5px;">🧬 Note Specie (condivise):</label>
-                <textarea id="detail-species-notes" rows="3" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;" placeholder="Caratteristiche comuni alla specie..."></textarea>
-            </div>
-            <button class="btn btn-blue" style="margin-top: 10px; width: 100%;" onclick="saveNotesFromDetail()">💾 Salva Note</button>
-        </div>
-
         <div id="archive-section" style="margin-top: 30px; padding: 20px; background: #ffebee; border: 1px solid #ffcdd2; border-radius: 8px; text-align: center;">
             <h4 style="margin-top: 0; margin-bottom: 5px; color: var(--danger);">🥀 Archivio storico</h4>
             <p style="font-size: 14px; color: #555; margin-top: 0;">Sposta la pianta nell'archivio per conservarne la storia.</p>
@@ -1042,7 +1033,7 @@
         </div>
     </div>
 
-    <!-- NUOVA BOTTOM NAVIGATION BAR (5 Tasti - Ordine Corretto) -->
+    <!-- NUOVA BOTTOM NAVIGATION BAR -->
     <nav class="bottom-nav" id="bottom-nav" aria-label="Menu principale">
         <button class="nav-item active" id="nav-btn-home" onclick="navigateTab('home')">
             <span class="nav-icon" aria-hidden="true">🏠</span>

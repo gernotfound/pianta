@@ -1387,6 +1387,16 @@ if(typeof AppState !== 'undefined') {
     AppState.on('plantsUpdated', renderArchive); 
 }
 
+function makeGridItem(icon, label, value) {
+    if (!value || value === 'N/D') return '';
+    return `
+        <div style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #eaeaea; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+            <div style="font-size: 11px; color: #777; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">${icon} ${label}</div>
+            <div style="font-size: 14px; color: #222; font-weight: 500;">${value}</div>
+        </div>
+    `;
+}
+
 function _internalOpenPlantDetail(id) {
     if (!plantsDatabase) return;
     const targetId = String(id);
@@ -1402,24 +1412,6 @@ function _internalOpenPlantDetail(id) {
     const detailTitle = document.getElementById('detail-title');
     if (detailTitle) detailTitle.innerText = escapeHTML(plant.name) + (plant.scientific ? ` (${escapeHTML(plant.scientific)})` : '');
     
-    let basePlacement = escapeHTML(plant.placement || 'Vaso');
-    let sistemazioneLabel = basePlacement; 
-    let vol = plant.potSize; 
-    if (basePlacement === 'Vaso' && vol) sistemazioneLabel += ` (${formatLocalFloat(vol)} L)`;
-    let origLabel = escapeHTML(plant.origin || 'N/D');
-
-    let fidelityHtml = '';
-    if (plant.origin === 'Da seme') { 
-        let fidelityLabel = plant.geneticFidelity || 'Non ancora valutato'; 
-        fidelityHtml = `<p><strong>🧬 Fedeltà varietale:</strong> <span style="color:#e65100; font-weight:bold;">${escapeHTML(fidelityLabel)}</span></p>`; 
-    }
-
-    let autofertileHtml = '';
-    let modernFertility = getModernFertility(plant.autofertile);
-    if (modernFertility !== 'Sconosciuta') {
-        autofertileHtml = ` | <strong>🐝 Fertilità:</strong> ${escapeHTML(modernFertility)}`;
-    }
-
     let parentStr = '';
     if(plant.mother !== undefined && plant.mother !== null && plant.mother !== '') { 
         let m = plantsDatabase.find(x => String(x.id) === String(plant.mother)); 
@@ -1429,48 +1421,59 @@ function _internalOpenPlantDetail(id) {
         let f = plantsDatabase.find(x => String(x.id) === String(plant.father)); 
         if(f) parentStr += `Padre: <a href="javascript:void(0);" style="color:var(--blue); font-weight:bold;" onclick="navigateTo('plant-detail', '${f.id}')">${escapeHTML(f.name)}</a>`; 
     }
-    if(parentStr) parentStr = `<div style="background:#e3f2fd; padding:10px; border-radius:5px; margin-bottom:10px; font-size:14px;"><strong>🧬 Genealogia:</strong><br>${parentStr}</div>`;
+    if(parentStr) parentStr = `<div style="background:#e3f2fd; padding:10px 12px; border-radius:6px; margin-bottom:15px; font-size:13px; border: 1px solid #bbdefb;"><span style="color:var(--blue); font-weight:bold; display:block; margin-bottom:4px;">🧬 Genealogia</span>${parentStr}</div>`;
 
-    let tempStr = '';
-    if (plant.minTemp !== undefined && plant.minTemp !== null) tempStr += `<span style="color: #1976d2; font-weight:bold;">❄️ Minima tollerata: ${formatLocalFloat(plant.minTemp)}°C</span>`;
-    if (plant.maxTemp !== undefined && plant.maxTemp !== null) {
-        if (tempStr) tempStr += '<br>';
-        tempStr += `<span style="color: #d32f2f; font-weight:bold;">🔥 Massima tollerata: ${formatLocalFloat(plant.maxTemp)}°C</span>`;
+    let origFull = escapeHTML(plant.origin || 'N/D');
+    if (plant.origin === 'Da seme' && plant.geneticFidelity) {
+        origFull += ` <span style="font-weight:normal; font-size:12px; color:#e65100;">(${escapeHTML(plant.geneticFidelity)})</span>`;
     }
 
-    let priceStr = plant.price !== undefined && plant.price !== null ? `<br>💰 <strong>Costo:</strong> ${formatLocalFloat(plant.price)} €` : '';
+    let basePlacement = escapeHTML(plant.placement || 'Vaso');
+    let sistemazioneLabel = basePlacement; 
+    let vol = plant.potSize; 
+    if (basePlacement === 'Vaso' && vol) sistemazioneLabel += ` (${formatLocalFloat(vol)} L)`;
 
-    let notesHtml = '';
-    if (plant.notes) notesHtml += `<p style="margin-bottom:8px;"><strong>📝 Note Pianta:</strong> ${escapeHTML(plant.notes)}</p>`;
-    if (plant.speciesNotes) notesHtml += `<p style="margin-bottom:0;"><strong>🧬 Note Specie:</strong> ${escapeHTML(plant.speciesNotes)}</p>`;
-    if (!plant.notes && !plant.speciesNotes) notesHtml += `<p style="margin-bottom:0;"><strong>📝 Note:</strong> Nessuna nota inserita.</p>`;
+    let soilFull = escapeHTML(plant.soil || 'N/D');
+    let phClean = '';
+    if (plant.phMin !== null || plant.phMax !== null) {
+        if (plant.phMin === plant.phMax) phClean = formatLocalFloat(plant.phMin);
+        else if (plant.phMin !== null && plant.phMax !== null) phClean = `${formatLocalFloat(plant.phMin)} - ${formatLocalFloat(plant.phMax)}`;
+        else if (plant.phMin !== null) phClean = `> ${formatLocalFloat(plant.phMin)}`;
+        else if (plant.phMax !== null) phClean = `< ${formatLocalFloat(plant.phMax)}`;
+    }
+    if (phClean) soilFull += ` <span style="font-weight:normal; font-size:12px; color:#2e7d32;">(pH ${phClean})</span>`;
 
-    let phStr = '';
-    if (plant.phMin !== null && plant.phMin !== undefined && plant.phMax !== null && plant.phMax !== undefined) {
-        if (plant.phMin === plant.phMax) {
-            phStr = `| <strong>pH ottimale:</strong> ${formatLocalFloat(plant.phMin)}`;
-        } else {
-            phStr = `| <strong>pH ottimale:</strong> ${formatLocalFloat(plant.phMin)} - ${formatLocalFloat(plant.phMax)}`;
-        }
-    } else if (plant.phMin !== null && plant.phMin !== undefined) {
-        phStr = `| <strong>pH ottimale:</strong> > ${formatLocalFloat(plant.phMin)}`;
-    } else if (plant.phMax !== null && plant.phMax !== undefined) {
-        phStr = `| <strong>pH ottimale:</strong> < ${formatLocalFloat(plant.phMax)}`;
+    let modernFertility = getModernFertility(plant.autofertile);
+
+    let tempFull = '';
+    if (plant.minTemp !== null && plant.minTemp !== undefined) tempFull += `<span style="color:#1976d2">Min ${formatLocalFloat(plant.minTemp)}°C</span>`;
+    if (plant.maxTemp !== null && plant.maxTemp !== undefined) {
+        if(tempFull) tempFull += ' / ';
+        tempFull += `<span style="color:#d32f2f">Max ${formatLocalFloat(plant.maxTemp)}°C</span>`;
+    }
+    if(!tempFull) tempFull = 'N/D';
+
+    let ecoFull = renderFornitore(plant.vendor);
+    if (plant.price !== null && plant.price !== undefined) {
+        ecoFull += ` <span style="font-weight:normal; font-size:12px; color:#555;">(${formatLocalFloat(plant.price)} €)</span>`;
     }
 
     const detailInfo = document.getElementById('detail-info');
     if (detailInfo) {
-        detailInfo.innerHTML = `
-            ${parentStr}
-            <p style="margin-top:0;"><strong>📅 Data semina/inizio:</strong> ${formatDateIt(plant.sowingDate)}</p>
-            <p><strong>🪴 Sistemazione:</strong> ${sistemazioneLabel}</p>
-            <p><strong>🪨 Substrato:</strong> ${escapeHTML(plant.soil) || 'N/D'} ${phStr}</p>
-            <p><strong>🌱 Origine:</strong> ${origLabel}${autofertileHtml} | <strong>🛒 Fornitore:</strong> ${renderFornitore(plant.vendor)} ${priceStr}</p>
-            <p><strong>📍 Luogo:</strong> ${escapeHTML(plant.location) || 'N/D'} ${tempStr ? '<br>'+tempStr : ''}</p>
-            <hr style="border:0.5px solid #ddd; margin:10px 0;">
-            ${fidelityHtml}
-            ${notesHtml}
-        `;
+        let detailsHtml = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;">';
+        
+        detailsHtml += makeGridItem('📅', 'Inizio / Semina', plant.sowingDate ? formatDateIt(plant.sowingDate) : null);
+        detailsHtml += makeGridItem('🌱', 'Origine', origFull !== 'N/D' ? origFull : null);
+        detailsHtml += makeGridItem('🪴', 'Sistemazione', sistemazioneLabel);
+        detailsHtml += makeGridItem('🪨', 'Substrato', plant.soil || phClean ? soilFull : null);
+        detailsHtml += makeGridItem('🌸', 'Fertilità', modernFertility !== 'Sconosciuta' ? escapeHTML(modernFertility) : null);
+        detailsHtml += makeGridItem('🌡️', 'Tolleranza', tempFull !== 'N/D' ? tempFull : null);
+        detailsHtml += makeGridItem('📍', 'Luogo', plant.location ? escapeHTML(plant.location) : null);
+        detailsHtml += makeGridItem('🛒', 'Acquisto', plant.vendor || plant.price !== null ? ecoFull : null);
+
+        detailsHtml += '</div>';
+
+        detailInfo.innerHTML = parentStr + detailsHtml;
     }
 
     const photoContainer = document.getElementById('detail-photos-container'); 
@@ -1507,10 +1510,10 @@ function _internalOpenPlantDetail(id) {
     if (logTypeEl) logTypeEl.value = 'Misurazione'; 
     if (logPhotosEl) logPhotosEl.value = ''; 
 
-    const detPlantNotes = document.getElementById('detail-plant-notes');
-    const detSpeciesNotes = document.getElementById('detail-species-notes');
-    if (detPlantNotes) detPlantNotes.value = plant.notes || '';
-    if (detSpeciesNotes) detSpeciesNotes.value = plant.speciesNotes || '';
+    const detPlantNotes = document.querySelectorAll('#detail-plant-notes');
+    const detSpeciesNotes = document.querySelectorAll('#detail-species-notes');
+    detPlantNotes.forEach(el => el.value = plant.notes || '');
+    detSpeciesNotes.forEach(el => el.value = plant.speciesNotes || '');
     
     setTimeout(() => {
         if(typeof toggleDynamicFields === 'function') toggleDynamicFields();
@@ -1557,26 +1560,35 @@ function _internalOpenPlantDetail(id) {
     }, 50);
 }
 
-async function saveNotesFromDetail() {
+async function autoSavePlantNote() {
     if (!currentPlantId || !plantsDatabase) return;
     const parsedId = String(currentPlantId);
     const plant = plantsDatabase.find(p => String(p.id) === parsedId);
     if (!plant) return;
 
     const plantNotesEl = document.getElementById('detail-plant-notes');
-    const specNotesEl = document.getElementById('detail-species-notes');
-    
-    const newPlantNotes = plantNotesEl ? plantNotesEl.value.trim() : '';
-    const newSpeciesNotes = specNotesEl ? specNotesEl.value.trim() : '';
+    if (!plantNotesEl) return;
 
-    const notesBtn = document.querySelector('#notes-section button');
-    if (notesBtn) {
-        notesBtn.disabled = true;
-        notesBtn.innerText = "⏳ Salvataggio...";
-    }
-
-    try {
+    const newPlantNotes = plantNotesEl.value.trim();
+    if (plant.notes !== newPlantNotes) {
         plant.notes = newPlantNotes;
+        unsavedChanges = true;
+        if (typeof saveToLocal === 'function') await saveToLocal();
+        if (typeof showAutoSaveToast === 'function') showAutoSaveToast('Nota salvata');
+    }
+}
+
+async function autoSaveSpeciesNote() {
+    if (!currentPlantId || !plantsDatabase) return;
+    const parsedId = String(currentPlantId);
+    const plant = plantsDatabase.find(p => String(p.id) === parsedId);
+    if (!plant) return;
+
+    const specNotesEl = document.getElementById('detail-species-notes');
+    if (!specNotesEl) return;
+
+    const newSpeciesNotes = specNotesEl.value.trim();
+    if (plant.speciesNotes !== newSpeciesNotes) {
         plant.speciesNotes = newSpeciesNotes;
 
         if (plant.scientific) {
@@ -1589,16 +1601,6 @@ async function saveNotesFromDetail() {
 
         unsavedChanges = true;
         if (typeof saveToLocal === 'function') await saveToLocal();
-        
-        _internalOpenPlantDetail(currentPlantId);
-
-    } catch (err) {
-        console.error("Errore salvataggio note:", err);
-        if (typeof Swal !== 'undefined') Swal.fire({icon: 'error', title: 'Errore', text: 'Impossibile salvare le note.', confirmButtonColor: '#d32f2f'});
-    } finally {
-        if (notesBtn) {
-            notesBtn.disabled = false;
-            notesBtn.innerText = "💾 Salva Note";
-        }
+        if (typeof showAutoSaveToast === 'function') showAutoSaveToast('Nota specie salvata');
     }
 }

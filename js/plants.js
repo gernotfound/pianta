@@ -369,11 +369,27 @@ async function savePlant() {
     let autofertileVal = document.getElementById('p-autofertile') ? document.getElementById('p-autofertile').value : 'Sconosciuta';
     
     let finalPrice = document.getElementById('p-price') ? parseLocalFloat(document.getElementById('p-price').value) : null;
-    let phOttimale = document.getElementById('p-ph') ? parseLocalFloat(document.getElementById('p-ph').value) : null;
     let potSize = document.getElementById('p-pot-size') ? parseLocalFloat(document.getElementById('p-pot-size').value) : null;
     let minTemp = document.getElementById('p-min-temp') ? parseLocalFloat(document.getElementById('p-min-temp').value) : null;
     let maxTemp = document.getElementById('p-max-temp') ? parseLocalFloat(document.getElementById('p-max-temp').value) : null;
     
+    // VALIDAZIONE NUOVO RANGE pH
+    let phMin = document.getElementById('p-ph-min') ? parseLocalFloat(document.getElementById('p-ph-min').value) : null;
+    let phMax = document.getElementById('p-ph-max') ? parseLocalFloat(document.getElementById('p-ph-max').value) : null;
+
+    if (phMin !== null && (phMin < 0 || phMin > 14)) {
+        if (typeof Swal !== 'undefined') return Swal.fire({icon: 'error', title: 'Errore', text: "Il pH minimo deve essere compreso tra 0 e 14.", confirmButtonColor: '#2e7d32'});
+        else return alert("pH minimo fuori range.");
+    }
+    if (phMax !== null && (phMax < 0 || phMax > 14)) {
+        if (typeof Swal !== 'undefined') return Swal.fire({icon: 'error', title: 'Errore', text: "Il pH massimo deve essere compreso tra 0 e 14.", confirmButtonColor: '#2e7d32'});
+        else return alert("pH massimo fuori range.");
+    }
+    if (phMin !== null && phMax !== null && phMin > phMax) {
+        if (typeof Swal !== 'undefined') return Swal.fire({icon: 'error', title: 'Errore', text: "Il pH minimo non può essere maggiore del pH massimo.", confirmButtonColor: '#2e7d32'});
+        else return alert("Errore intervallo pH.");
+    }
+
     let latRaw = document.getElementById('p-lat') ? document.getElementById('p-lat').value.trim() : "";
     let lngRaw = document.getElementById('p-lng') ? document.getElementById('p-lng').value.trim() : "";
     let lat = parseLocalFloat(latRaw);
@@ -460,7 +476,8 @@ async function savePlant() {
                 plantsDatabase[index].placement = placementVal; 
                 plantsDatabase[index].potSize = potSize; 
                 plantsDatabase[index].soil = finalSoil; 
-                plantsDatabase[index].phOttimale = phOttimale; 
+                plantsDatabase[index].phMin = phMin; 
+                plantsDatabase[index].phMax = phMax; 
                 plantsDatabase[index].vendor = finalVendor; 
                 plantsDatabase[index].location = finalLocation; 
                 plantsDatabase[index].lat = lat; 
@@ -486,7 +503,8 @@ async function savePlant() {
                 placement: placementVal, 
                 potSize: potSize, 
                 soil: finalSoil, 
-                phOttimale: phOttimale, 
+                phMin: phMin, 
+                phMax: phMax, 
                 vendor: finalVendor, 
                 location: finalLocation, 
                 notes: '', 
@@ -510,7 +528,6 @@ async function savePlant() {
         if(typeof saveToLocal === 'function') await saveToLocal(); 
         isFormDirty = false; 
         
-        let wasEditing = editingMode;
         editingMode = false;
         currentPlantId = null;
 
@@ -535,8 +552,8 @@ function editCurrentPlant() { navigateTo('edit-plant', currentPlantId); }
 
 function _internalEditPlant(id) {
     if (!plantsDatabase) return;
-    const targetId = String(id);
-    const plant = plantsDatabase.find(p => String(p.id) === targetId);
+    const parsedId = String(id);
+    const plant = plantsDatabase.find(p => String(p.id) === parsedId);
     if(!plant) { 
         if(typeof goToHomeTab === 'function') goToHomeTab(); 
         else window.history.back(); 
@@ -565,7 +582,8 @@ function _internalEditPlant(id) {
         'p-max-temp': formatLocalFloat(plant.maxTemp),
         'p-placement': plant.placement || 'Vaso',
         'p-pot-size': formatLocalFloat(plant.potSize),
-        'p-ph': formatLocalFloat(plant.phOttimale),
+        'p-ph-min': formatLocalFloat(plant.phMin),
+        'p-ph-max': formatLocalFloat(plant.phMax),
         'p-lat': formatLocalFloat(plant.lat),
         'p-lng': formatLocalFloat(plant.lng)
     };
@@ -737,8 +755,8 @@ async function deleteCurrentPlant() {
 // ==========================================
 async function toggleArchiveStatus() {
     if (typeof Swal === 'undefined' || !plantsDatabase) return;
-    const targetId = String(currentPlantId);
-    const plant = plantsDatabase.find(p => String(p.id) === targetId);
+    const parsedId = String(currentPlantId);
+    const plant = plantsDatabase.find(p => String(p.id) === parsedId);
     if (!plant) return;
     
     const btn = document.getElementById('btn-archive-toggle');
@@ -786,8 +804,8 @@ async function toggleArchiveStatus() {
 
 function openDuplicateModal() {
     if (!plantsDatabase) return;
-    const targetId = String(currentPlantId);
-    const plantToCopy = plantsDatabase.find(p => String(p.id) === targetId); 
+    const parsedId = String(currentPlantId);
+    const plantToCopy = plantsDatabase.find(p => String(p.id) === parsedId); 
     if (!plantToCopy) return;
     
     const baseNameEl = document.getElementById('dup-base-name');
@@ -809,8 +827,8 @@ function closeDuplicateModal() {
 
 async function confirmDuplicate() {
     if (!plantsDatabase) return;
-    const targetId = String(currentPlantId);
-    const plantToCopy = plantsDatabase.find(p => String(p.id) === targetId); 
+    const parsedId = String(currentPlantId);
+    const plantToCopy = plantsDatabase.find(p => String(p.id) === parsedId); 
     if (!plantToCopy) return;
     
     const baseNameEl = document.getElementById('dup-base-name');
@@ -872,7 +890,8 @@ async function confirmDuplicate() {
                 placement: plantToCopy.placement, 
                 potSize: plantToCopy.potSize, 
                 soil: plantToCopy.soil, 
-                phOttimale: plantToCopy.phOttimale, 
+                phMin: plantToCopy.phMin, 
+                phMax: plantToCopy.phMax, 
                 vendor: plantToCopy.vendor, 
                 location: plantToCopy.location, 
                 notes: '', 
@@ -1026,8 +1045,8 @@ function renderPlants() {
             return tempB - tempA;
         } 
         else if (sortMode === 'ph_desc') {
-            let phA = (a.phOttimale !== undefined && a.phOttimale !== null) ? a.phOttimale : -999;
-            let phB = (b.phOttimale !== undefined && b.phOttimale !== null) ? b.phOttimale : -999;
+            let phA = (a.phMax !== undefined && a.phMax !== null) ? a.phMax : (a.phMin !== undefined && a.phMin !== null ? a.phMin : -999);
+            let phB = (b.phMax !== undefined && b.phMax !== null) ? b.phMax : (b.phMin !== undefined && b.phMin !== null ? b.phMin : -999);
             return phB - phA;
         }
         else if (sortMode === 'price_desc') {
@@ -1104,7 +1123,19 @@ function renderPlantsChunk(customSize = null) {
         
         let tempBadge = plant.minTemp !== undefined && plant.minTemp !== null ? `<span style="background:#e3f2fd; color:#1565c0; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:bold;">❄️ Min: ${formatLocalFloat(plant.minTemp)}°C</span>` : '';
         let maxTempBadge = plant.maxTemp !== undefined && plant.maxTemp !== null ? `<span style="background:#ffebee; color:#d32f2f; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:bold;">🔥 Max: ${formatLocalFloat(plant.maxTemp)}°C</span>` : '';
-        let phBadge = plant.phOttimale !== undefined && plant.phOttimale !== null ? `<span style="background:#e8f5e9; color:#2e7d32; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:bold;">🧪 pH ${formatLocalFloat(plant.phOttimale)}</span>` : '';
+        
+        let phBadge = '';
+        if (plant.phMin !== null && plant.phMin !== undefined && plant.phMax !== null && plant.phMax !== undefined) {
+            if (plant.phMin === plant.phMax) {
+                phBadge = `<span style="background:#e8f5e9; color:#2e7d32; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:bold;">🧪 pH ${formatLocalFloat(plant.phMin)}</span>`;
+            } else {
+                phBadge = `<span style="background:#e8f5e9; color:#2e7d32; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:bold;">🧪 pH ${formatLocalFloat(plant.phMin)} - ${formatLocalFloat(plant.phMax)}</span>`;
+            }
+        } else if (plant.phMin !== null && plant.phMin !== undefined) {
+            phBadge = `<span style="background:#e8f5e9; color:#2e7d32; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:bold;">🧪 pH > ${formatLocalFloat(plant.phMin)}</span>`;
+        } else if (plant.phMax !== null && plant.phMax !== undefined) {
+            phBadge = `<span style="background:#e8f5e9; color:#2e7d32; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:bold;">🧪 pH < ${formatLocalFloat(plant.phMax)}</span>`;
+        }
 
         let locationText = escapeHTML(plant.location) || 'Non specificata';
         let soilText = escapeHTML(plant.soil) || 'N/D';
@@ -1334,13 +1365,26 @@ function _internalOpenPlantDetail(id) {
     if (plant.speciesNotes) notesHtml += `<p style="margin-bottom:0;"><strong>🧬 Note Specie:</strong> ${escapeHTML(plant.speciesNotes)}</p>`;
     if (!plant.notes && !plant.speciesNotes) notesHtml += `<p style="margin-bottom:0;"><strong>📝 Note:</strong> Nessuna nota inserita.</p>`;
 
+    let phStr = '';
+    if (plant.phMin !== null && plant.phMin !== undefined && plant.phMax !== null && plant.phMax !== undefined) {
+        if (plant.phMin === plant.phMax) {
+            phStr = `| <strong>pH ottimale:</strong> ${formatLocalFloat(plant.phMin)}`;
+        } else {
+            phStr = `| <strong>pH ottimale:</strong> ${formatLocalFloat(plant.phMin)} - ${formatLocalFloat(plant.phMax)}`;
+        }
+    } else if (plant.phMin !== null && plant.phMin !== undefined) {
+        phStr = `| <strong>pH ottimale:</strong> > ${formatLocalFloat(plant.phMin)}`;
+    } else if (plant.phMax !== null && plant.phMax !== undefined) {
+        phStr = `| <strong>pH ottimale:</strong> < ${formatLocalFloat(plant.phMax)}`;
+    }
+
     const detailInfo = document.getElementById('detail-info');
     if (detailInfo) {
         detailInfo.innerHTML = `
             ${parentStr}
             <p style="margin-top:0;"><strong>📅 Data semina/inizio:</strong> ${formatDateIt(plant.sowingDate)}</p>
             <p><strong>🪴 Sistemazione:</strong> ${sistemazioneLabel}</p>
-            <p><strong>🪨 Substrato:</strong> ${escapeHTML(plant.soil) || 'N/D'} ${plant.phOttimale !== null && plant.phOttimale !== undefined ? `| <strong>pH ottimale:</strong> ${formatLocalFloat(plant.phOttimale)}` : ''}</p>
+            <p><strong>🪨 Substrato:</strong> ${escapeHTML(plant.soil) || 'N/D'} ${phStr}</p>
             <p><strong>🌱 Origine:</strong> ${origLabel}${autofertileHtml} | <strong>🛒 Fornitore:</strong> ${renderFornitore(plant.vendor)} ${priceStr}</p>
             <p><strong>📍 Luogo:</strong> ${escapeHTML(plant.location) || 'N/D'} ${tempStr ? '<br>'+tempStr : ''}</p>
             <hr style="border:0.5px solid #ddd; margin:10px 0;">
@@ -1435,8 +1479,8 @@ function _internalOpenPlantDetail(id) {
 
 async function saveNotesFromDetail() {
     if (!currentPlantId || !plantsDatabase) return;
-    const targetId = String(currentPlantId);
-    const plant = plantsDatabase.find(p => String(p.id) === targetId);
+    const parsedId = String(currentPlantId);
+    const plant = plantsDatabase.find(p => String(p.id) === parsedId);
     if (!plant) return;
 
     const plantNotesEl = document.getElementById('detail-plant-notes');

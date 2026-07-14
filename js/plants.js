@@ -4,79 +4,79 @@ function toggleFidelityField() {
     const fidelityEl = document.getElementById('p-genetic-fidelity');
     
     if (originEl && container) {
-        if (originEl.value === 'Da seme') { 
-            container.style.display = 'block'; 
-        } else { 
-            container.style.display = 'none'; 
-            if (fidelityEl) fidelityEl.value = 'Non ancora valutato'; 
+        if (originEl.value === 'Da seme') {
+            container.style.display = 'block';
+        } else {
+            container.style.display = 'none';
+            if (fidelityEl) fidelityEl.value = 'Non ancora valutato';
         }
     }
 }
 
 function setVendorMode(mode) {
-    vendorMode = mode; 
-    const select = document.getElementById('p-vendor-select'); 
-    const input = document.getElementById('p-vendor-input'); 
+    vendorMode = mode;
+    const select = document.getElementById('p-vendor-select');
+    const input = document.getElementById('p-vendor-input');
     const btn = document.getElementById('btn-toggle-vendor');
     if (!select || !input || !btn) return;
     
-    if (mode === 'select') { 
-        input.style.display = 'none'; 
-        select.style.display = 'block'; 
-        btn.innerText = '➕ Nuovo'; 
-    } else { 
-        select.style.display = 'none'; 
-        input.style.display = 'block'; 
-        btn.innerText = '🔄 Storico'; 
+    if (mode === 'select') {
+        input.style.display = 'none';
+        select.style.display = 'block';
+        btn.innerText = '➕ Nuovo';
+    } else {
+        select.style.display = 'none';
+        input.style.display = 'block';
+        btn.innerText = '🔄 Storico';
     }
 }
 
-function toggleVendorMode() { 
-    setVendorMode(vendorMode === 'select' ? 'input' : 'select'); 
+function toggleVendorMode() {
+    setVendorMode(vendorMode === 'select' ? 'input' : 'select');
 }
 
 function setSoilMode(mode) {
-    soilMode = mode; 
-    const select = document.getElementById('p-soil-select'); 
-    const input = document.getElementById('p-soil-input'); 
+    soilMode = mode;
+    const select = document.getElementById('p-soil-select');
+    const input = document.getElementById('p-soil-input');
     const btn = document.getElementById('btn-toggle-soil');
     if (!select || !input || !btn) return;
 
-    if (mode === 'select') { 
-        input.style.display = 'none'; 
-        select.style.display = 'block'; 
-        btn.innerText = '➕ Nuovo'; 
-    } else { 
-        select.style.display = 'none'; 
-        input.style.display = 'block'; 
-        btn.innerText = '🔄 Storico'; 
+    if (mode === 'select') {
+        input.style.display = 'none';
+        select.style.display = 'block';
+        btn.innerText = '➕ Nuovo';
+    } else {
+        select.style.display = 'none';
+        input.style.display = 'block';
+        btn.innerText = '🔄 Storico';
     }
 }
 
-function toggleSoilMode() { 
-    setSoilMode(soilMode === 'select' ? 'input' : 'select'); 
+function toggleSoilMode() {
+    setSoilMode(soilMode === 'select' ? 'input' : 'select');
 }
 
 function setScientificMode(mode) {
-    scientificMode = mode; 
-    const select = document.getElementById('p-scientific-select'); 
-    const input = document.getElementById('p-scientific-input'); 
+    scientificMode = mode;
+    const select = document.getElementById('p-scientific-select');
+    const input = document.getElementById('p-scientific-input');
     const btn = document.getElementById('btn-toggle-scientific');
     if (!select || !input || !btn) return;
 
-    if (mode === 'select') { 
-        input.style.display = 'none'; 
-        select.style.display = 'block'; 
-        btn.innerText = '➕ Nuovo'; 
-    } else { 
-        select.style.display = 'none'; 
-        input.style.display = 'block'; 
-        btn.innerText = '🔄 Storico'; 
+    if (mode === 'select') {
+        input.style.display = 'none';
+        select.style.display = 'block';
+        btn.innerText = '➕ Nuovo';
+    } else {
+        select.style.display = 'none';
+        input.style.display = 'block';
+        btn.innerText = '🔄 Storico';
     }
 }
 
-function toggleScientificMode() { 
-    setScientificMode(scientificMode === 'select' ? 'input' : 'select'); 
+function toggleScientificMode() {
+    setScientificMode(scientificMode === 'select' ? 'input' : 'select');
 }
 
 function setLocationMode(mode) {
@@ -93,7 +93,7 @@ function setLocationMode(mode) {
         input.style.display = 'none';
         select.style.display = 'block';
         btn.innerText = '➕ Nuovo';
-        fillSavedLocation(); 
+        fillSavedLocation();
     } else {
         select.style.display = 'none';
         input.style.display = 'block';
@@ -103,21 +103,21 @@ function setLocationMode(mode) {
     }
 }
 
-function toggleLocationMode() { 
-    setLocationMode(locationMode === 'select' ? 'input' : 'select'); 
+function toggleLocationMode() {
+    setLocationMode(locationMode === 'select' ? 'input' : 'select');
 }
 
 function togglePotSizeField() {
-    const placementEl = document.getElementById('p-placement'); 
+    const placementEl = document.getElementById('p-placement');
     const container = document.getElementById('pot-size-container');
     const potSizeEl = document.getElementById('p-pot-size');
     
     if (placementEl && container) {
         if (placementEl.value === 'Vaso') {
-            container.style.display = 'flex'; 
-        } else { 
-            container.style.display = 'none'; 
-            if (potSizeEl) potSizeEl.value = ''; 
+            container.style.display = 'flex';
+        } else {
+            container.style.display = 'none';
+            if (potSizeEl) potSizeEl.value = '';
         }
     }
 }
@@ -168,94 +168,114 @@ function syncSpeciesNotes() {
 function populateFormHelpers() {
     if (!plantsDatabase) return;
     
-    const motherSelect = document.getElementById('p-mother'); 
+    const motherSelect = document.getElementById('p-mother');
     const fatherSelect = document.getElementById('p-father');
     
-    if (motherSelect) motherSelect.innerHTML = '<option value="">-- Nessuna / Sconosciuta --</option>'; 
+    if (motherSelect) motherSelect.innerHTML = '<option value="">-- Nessuna / Sconosciuta --</option>';
     if (fatherSelect) fatherSelect.innerHTML = '<option value="">-- Nessuno / Sconosciuto --</option>';
     
     const currentPlantIdStr = currentPlantId ? String(currentPlantId) : '';
     const availableParents = plantsDatabase.filter(p => String(p.id) !== currentPlantIdStr).sort((a,b) => (a.name || '').localeCompare(b.name || ''));
     
-    availableParents.forEach(p => {
-        if (motherSelect) {
-            const optM = document.createElement('option'); 
-            optM.value = String(p.id); 
-            optM.innerText = escapeHTML(p.name) + (p.status === 'archived' ? ' (archiviata)' : ''); 
-            motherSelect.appendChild(optM);
-        }
-        if (fatherSelect) {
-            const optF = document.createElement('option'); 
-            optF.value = String(p.id); 
-            optF.innerText = escapeHTML(p.name) + (p.status === 'archived' ? ' (archiviata)' : ''); 
-            fatherSelect.appendChild(optF);
-        }
-    });
+    if (motherSelect && fatherSelect) {
+        const fragM = document.createDocumentFragment();
+        const fragF = document.createDocumentFragment();
+        availableParents.forEach(p => {
+            const optM = document.createElement('option');
+            optM.value = String(p.id);
+            optM.innerText = escapeHTML(p.name) + (p.status === 'archived' ? ' (archiviata)' : '');
+            fragM.appendChild(optM);
+
+            const optF = document.createElement('option');
+            optF.value = String(p.id);
+            optF.innerText = escapeHTML(p.name) + (p.status === 'archived' ? ' (archiviata)' : '');
+            fragF.appendChild(optF);
+        });
+        motherSelect.appendChild(fragM);
+        fatherSelect.appendChild(fragF);
+    }
 
     const vendorSelect = document.getElementById('p-vendor-select');
     if (vendorSelect) {
         const vendors = [...new Set(plantsDatabase.map(p => p.vendor).filter(v => v && v.trim() !== ''))];
         vendorSelect.innerHTML = '<option value="">-- Seleziona fornitore --</option>';
-        if (vendors.length === 0) vendorSelect.innerHTML = '<option value="">Nessun fornitore salvato</option>';
-        else vendors.forEach(v => { 
-            const opt = document.createElement('option'); 
-            opt.value = escapeHTML(v); 
-            opt.innerText = v.length > 40 ? escapeHTML(v.substring(0, 40)) + '...' : escapeHTML(v); 
-            vendorSelect.appendChild(opt); 
-        });
+        if (vendors.length === 0) {
+            vendorSelect.innerHTML = '<option value="">Nessun fornitore salvato</option>';
+        } else {
+            const fragV = document.createDocumentFragment();
+            vendors.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = escapeHTML(v);
+                opt.innerText = v.length > 40 ? escapeHTML(v.substring(0, 40)) + '...' : escapeHTML(v);
+                fragV.appendChild(opt);
+            });
+            vendorSelect.appendChild(fragV);
+        }
     }
 
     const soilSelect = document.getElementById('p-soil-select');
     if (soilSelect) {
         const soils = [...new Set(plantsDatabase.map(p => p.soil).filter(s => s && s.trim() !== ''))];
         soilSelect.innerHTML = '<option value="">-- Seleziona substrato --</option>';
-        if (soils.length === 0) soilSelect.innerHTML = '<option value="">Nessun substrato salvato</option>';
-        else soils.forEach(s => { 
-            const opt = document.createElement('option'); 
-            opt.value = escapeHTML(s); 
-            opt.innerText = s.length > 40 ? escapeHTML(s.substring(0, 40)) + '...' : escapeHTML(s); 
-            soilSelect.appendChild(opt); 
-        });
+        if (soils.length === 0) {
+            soilSelect.innerHTML = '<option value="">Nessun substrato salvato</option>';
+        } else {
+            const fragS = document.createDocumentFragment();
+            soils.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = escapeHTML(s);
+                opt.innerText = s.length > 40 ? escapeHTML(s.substring(0, 40)) + '...' : escapeHTML(s);
+                fragS.appendChild(opt);
+            });
+            soilSelect.appendChild(fragS);
+        }
     }
 
     const scientificSelect = document.getElementById('p-scientific-select');
     if (scientificSelect) {
         const scientifics = [...new Set(plantsDatabase.map(p => p.scientific).filter(v => v && v.trim() !== ''))].sort();
         scientificSelect.innerHTML = '<option value="">-- Seleziona o lascia vuoto --</option>';
-        if (scientifics.length === 0) scientificSelect.innerHTML = '<option value="">Nessun nome scientifico salvato</option>';
-        else scientifics.forEach(s => { 
-            const opt = document.createElement('option'); 
-            opt.value = escapeHTML(s); 
-            opt.innerText = escapeHTML(s); 
-            scientificSelect.appendChild(opt); 
-        });
+        if (scientifics.length === 0) {
+            scientificSelect.innerHTML = '<option value="">Nessun nome scientifico salvato</option>';
+        } else {
+            const fragSci = document.createDocumentFragment();
+            scientifics.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = escapeHTML(s);
+                opt.innerText = escapeHTML(s);
+                fragSci.appendChild(opt);
+            });
+            scientificSelect.appendChild(fragSci);
+        }
     }
 
     const locSelect = document.getElementById('p-location-select');
     if (locSelect) {
-        const locs = []; 
+        const locs = [];
         const signatures = new Set();
         plantsDatabase.forEach(p => {
             if (p.location || (p.lat !== null && p.lng !== null)) {
                 let sig = `${p.location}_${p.lat}_${p.lng}`;
-                if (!signatures.has(sig)) { 
-                    signatures.add(sig); 
-                    locs.push({ loc: p.location, lat: p.lat, lng: p.lng }); 
+                if (!signatures.has(sig)) {
+                    signatures.add(sig);
+                    locs.push({ loc: p.location, lat: p.lat, lng: p.lng });
                 }
             }
         });
         locSelect.innerHTML = '<option value="">📍 Scegli da "I miei luoghi"...</option>';
+        const fragL = document.createDocumentFragment();
         locs.forEach((l, index) => {
-            const opt = document.createElement('option'); 
-            opt.value = index + 1; 
-            let text = l.loc || 'Luogo senza nome'; 
+            const opt = document.createElement('option');
+            opt.value = index + 1;
+            let text = l.loc || 'Luogo senza nome';
             if (l.lat !== null && l.lng !== null && l.lat !== undefined && l.lng !== undefined) text += ` (${l.lat}, ${l.lng})`;
-            opt.innerText = escapeHTML(text); 
-            opt.dataset.loc = l.loc || ''; 
-            opt.dataset.lat = l.lat !== null && l.lat !== undefined ? l.lat : ''; 
-            opt.dataset.lng = l.lng !== null && l.lng !== undefined ? l.lng : ''; 
-            locSelect.appendChild(opt);
+            opt.innerText = escapeHTML(text);
+            opt.dataset.loc = l.loc || '';
+            opt.dataset.lat = l.lat !== null && l.lat !== undefined ? l.lat : '';
+            opt.dataset.lng = l.lng !== null && l.lng !== undefined ? l.lng : '';
+            fragL.appendChild(opt);
         });
+        locSelect.appendChild(fragL);
     }
 }
 
@@ -290,75 +310,75 @@ function fillSavedLocation() {
 }
 
 function _internalOpenPlantForm() {
-    editingMode = false; 
-    currentPlantId = null; 
-    isFormDirty = false; 
+    editingMode = false;
+    currentPlantId = null;
+    isFormDirty = false;
     
     const formTitle = document.getElementById('form-title');
-    if(formTitle) formTitle.innerText = "Aggiungi nuova pianta";
+    if (formTitle) formTitle.innerText = "Aggiungi nuova pianta";
     
-    clearForm(); 
-    populateFormHelpers(); 
-    setVendorMode('select'); 
+    clearForm();
+    populateFormHelpers();
+    setVendorMode('select');
     setSoilMode('select');
     setScientificMode('select');
     setLocationMode('select');
     
     const originEl = document.getElementById('p-origin');
-    if (originEl) originEl.value = 'Da seme'; 
-    toggleFidelityField(); 
+    if (originEl) originEl.value = 'Da seme';
+    toggleFidelityField();
     
     const placementEl = document.getElementById('p-placement');
-    if (placementEl) placementEl.value = 'Vaso'; 
+    if (placementEl) placementEl.value = 'Vaso';
     togglePotSizeField();
     
     setTimeout(() => {
-        if(typeof initFormMap === 'function') initFormMap();
+        if (typeof initFormMap === 'function') initFormMap();
     }, 150);
 }
 
 function clearForm() {
-    document.querySelectorAll('#form-container input, #form-container textarea, #form-container select').forEach(el => { 
-        if (!['p-origin', 'p-placement', 'p-genetic-fidelity', 'search-plant'].includes(el.id)) { 
-            el.value = ''; 
-        } 
+    document.querySelectorAll('#form-container input, #form-container textarea, #form-container select').forEach(el => {
+        if (!['p-origin', 'p-placement', 'p-genetic-fidelity', 'search-plant'].includes(el.id)) {
+            el.value = '';
+        }
     });
-    setVendorMode('select'); 
-    setSoilMode('select'); 
-    setScientificMode('select'); 
+    setVendorMode('select');
+    setSoilMode('select');
+    setScientificMode('select');
     setLocationMode('select');
     
     const fidelityEl = document.getElementById('p-genetic-fidelity');
     if (fidelityEl) fidelityEl.value = 'Non ancora valutato';
     
     const autofertileEl = document.getElementById('p-autofertile');
-    if(autofertileEl) autofertileEl.value = 'Sconosciuta';
+    if (autofertileEl) autofertileEl.value = 'Sconosciuta';
     
-    if(document.getElementById('detail-plant-notes')) document.getElementById('detail-plant-notes').value = '';
-    if(document.getElementById('detail-species-notes')) document.getElementById('detail-species-notes').value = '';
+    if (document.getElementById('detail-plant-notes')) document.getElementById('detail-plant-notes').value = '';
+    if (document.getElementById('detail-species-notes')) document.getElementById('detail-species-notes').value = '';
 
-    mainPhotoRemoved = false; 
-    fruitPhotoRemoved = false; 
+    mainPhotoRemoved = false;
+    fruitPhotoRemoved = false;
     
-    if (window.smartCropBlobs) { 
+    if (window.smartCropBlobs) {
         if (window.smartCropBlobs.main && typeof revokeBlob === 'function') revokeBlob(window.smartCropBlobs.main);
         if (window.smartCropBlobs.fruit && typeof revokeBlob === 'function') revokeBlob(window.smartCropBlobs.fruit);
-        window.smartCropBlobs = { main: null, fruit: null }; 
+        window.smartCropBlobs = { main: null, fruit: null };
     }
     
     ['main', 'fruit'].forEach(type => {
         const preview = document.getElementById('preview-' + type);
-        if(preview) { 
-            preview.src = ''; 
-            preview.style.display = 'none'; 
+        if (preview) {
+            preview.src = '';
+            preview.style.display = 'none';
         }
         const placeholder = document.getElementById('placeholder-' + type);
-        if(placeholder) placeholder.style.display = 'flex';
+        if (placeholder) placeholder.style.display = 'flex';
         const removeBtn = document.getElementById('remove-btn-' + type);
-        if(removeBtn) removeBtn.style.display = 'none';
+        if (removeBtn) removeBtn.style.display = 'none';
         
         let hiddenInput = document.getElementById(type === 'main' ? 'p-photo-hidden' : 'p-fruit-photo-hidden');
-        if(hiddenInput) hiddenInput.value = '';
+        if (hiddenInput) hiddenInput.value = '';
     });
 }
 
@@ -463,33 +483,32 @@ async function savePlant() {
     }
 
     try {
-        let finalMainPhoto = ""; 
+        let finalMainPhoto = "";
         let finalFruitPhoto = "";
+        let existingPlant = null;
 
         if (editingMode && currentPlantIdStr !== null) {
-            let plantToClean = plantsDatabase.find(x => String(x.id) === currentPlantIdStr);
-            if (plantToClean) {
+            existingPlant = plantsDatabase.find(x => String(x.id) === currentPlantIdStr);
+            if (existingPlant) {
                 if ((window.smartCropBlobs && window.smartCropBlobs['main']) || mainPhotoRemoved) {
-                    if (plantToClean.photo && typeof revokeBlob === 'function') revokeBlob(plantToClean.photo);
+                    if (existingPlant.photo && typeof revokeBlob === 'function') revokeBlob(existingPlant.photo);
                 }
                 if ((window.smartCropBlobs && window.smartCropBlobs['fruit']) || fruitPhotoRemoved) {
-                    if (plantToClean.fruitPhoto && typeof revokeBlob === 'function') revokeBlob(plantToClean.fruitPhoto);
+                    if (existingPlant.fruitPhoto && typeof revokeBlob === 'function') revokeBlob(existingPlant.fruitPhoto);
                 }
             }
         }
 
-        if (window.smartCropBlobs && window.smartCropBlobs['main']) { 
-            finalMainPhoto = window.smartCropBlobs['main']; 
-        } else if (editingMode && currentPlantIdStr !== null && !mainPhotoRemoved) { 
-            let p = plantsDatabase.find(x => String(x.id) === currentPlantIdStr);
-            finalMainPhoto = p ? p.photo || "" : ""; 
+        if (window.smartCropBlobs && window.smartCropBlobs['main']) {
+            finalMainPhoto = window.smartCropBlobs['main'];
+        } else if (existingPlant && !mainPhotoRemoved) {
+            finalMainPhoto = existingPlant.photo || "";
         }
         
-        if (window.smartCropBlobs && window.smartCropBlobs['fruit']) { 
-            finalFruitPhoto = window.smartCropBlobs['fruit']; 
-        } else if (editingMode && currentPlantIdStr !== null && !fruitPhotoRemoved) { 
-            let p = plantsDatabase.find(x => String(x.id) === currentPlantIdStr);
-            finalFruitPhoto = p ? p.fruitPhoto || "" : ""; 
+        if (window.smartCropBlobs && window.smartCropBlobs['fruit']) {
+            finalFruitPhoto = window.smartCropBlobs['fruit'];
+        } else if (existingPlant && !fruitPhotoRemoved) {
+            finalFruitPhoto = existingPlant.fruitPhoto || "";
         }
 
         let savedPlantId = (editingMode && currentPlantIdStr !== null) ? currentPlantIdStr : (typeof generateId === 'function' ? generateId() : crypto.randomUUID());
@@ -507,74 +526,72 @@ async function savePlant() {
         if (editingMode && currentPlantIdStr !== null) {
             let index = plantsDatabase.findIndex(p => String(p.id) === currentPlantIdStr);
             if (index > -1) {
-                plantsDatabase[index].name = newName; 
-                plantsDatabase[index].scientific = finalScientific; 
+                plantsDatabase[index].name = newName;
+                plantsDatabase[index].scientific = finalScientific;
                 plantsDatabase[index].price = finalPrice;
-                plantsDatabase[index].origin = originVal; 
+                plantsDatabase[index].origin = originVal;
                 plantsDatabase[index].autofertile = autofertileVal;
-                plantsDatabase[index].sowingDate = sowingDateVal; 
-                plantsDatabase[index].geneticFidelity = fidelityVal; 
-                plantsDatabase[index].placement = placementVal; 
-                plantsDatabase[index].potSize = potSize; 
-                plantsDatabase[index].soil = finalSoil; 
-                plantsDatabase[index].phMin = phMin; 
-                plantsDatabase[index].phMax = phMax; 
-                plantsDatabase[index].vendor = finalVendor; 
-                plantsDatabase[index].location = finalLocation; 
-                plantsDatabase[index].lat = lat; 
-                plantsDatabase[index].lng = lng; 
-                plantsDatabase[index].photo = finalMainPhoto; 
-                plantsDatabase[index].fruitPhoto = finalFruitPhoto; 
-                plantsDatabase[index].mother = motherVal; 
-                plantsDatabase[index].father = fatherVal; 
-                plantsDatabase[index].minTemp = minTemp; 
+                plantsDatabase[index].sowingDate = sowingDateVal;
+                plantsDatabase[index].geneticFidelity = fidelityVal;
+                plantsDatabase[index].placement = placementVal;
+                plantsDatabase[index].potSize = potSize;
+                plantsDatabase[index].soil = finalSoil;
+                plantsDatabase[index].phMin = phMin;
+                plantsDatabase[index].phMax = phMax;
+                plantsDatabase[index].vendor = finalVendor;
+                plantsDatabase[index].location = finalLocation;
+                plantsDatabase[index].lat = lat;
+                plantsDatabase[index].lng = lng;
+                plantsDatabase[index].photo = finalMainPhoto;
+                plantsDatabase[index].fruitPhoto = finalFruitPhoto;
+                plantsDatabase[index].mother = motherVal;
+                plantsDatabase[index].father = fatherVal;
+                plantsDatabase[index].minTemp = minTemp;
                 plantsDatabase[index].maxTemp = maxTemp;
             }
         } else {
             const plantData = {
-                id: savedPlantId, 
-                createdAt: Date.now(), 
-                name: newName, 
-                scientific: finalScientific, 
-                price: finalPrice, 
-                origin: originVal, 
+                id: savedPlantId,
+                createdAt: Date.now(),
+                name: newName,
+                scientific: finalScientific,
+                price: finalPrice,
+                origin: originVal,
                 autofertile: autofertileVal,
-                sowingDate: sowingDateVal, 
-                geneticFidelity: fidelityVal, 
-                placement: placementVal, 
-                potSize: potSize, 
-                soil: finalSoil, 
-                phMin: phMin, 
-                phMax: phMax, 
-                vendor: finalVendor, 
-                location: finalLocation, 
-                notes: '', 
-                speciesNotes: '', 
-                lat: lat, 
-                lng: lng, 
-                photo: finalMainPhoto, 
-                fruitPhoto: finalFruitPhoto, 
-                status: 'active', 
-                logs: [], 
-                mother: motherVal, 
-                father: fatherVal, 
-                minTemp: minTemp, 
+                sowingDate: sowingDateVal,
+                geneticFidelity: fidelityVal,
+                placement: placementVal,
+                potSize: potSize,
+                soil: finalSoil,
+                phMin: phMin,
+                phMax: phMax,
+                vendor: finalVendor,
+                location: finalLocation,
+                notes: '',
+                speciesNotes: '',
+                lat: lat,
+                lng: lng,
+                photo: finalMainPhoto,
+                fruitPhoto: finalFruitPhoto,
+                status: 'active',
+                logs: [],
+                mother: motherVal,
+                father: fatherVal,
+                minTemp: minTemp,
                 maxTemp: maxTemp
             };
             plantsDatabase.push(plantData);
         }
         
-        unsavedChanges = true; 
-        
-        if(typeof saveToLocal === 'function') await saveToLocal(); 
-        isFormDirty = false; 
-        
+        unsavedChanges = true;
+        if (typeof saveToLocal === 'function') await saveToLocal();
+        isFormDirty = false;
         editingMode = false;
         currentPlantId = null;
 
-        if(typeof AppState !== 'undefined') AppState.emit('plantsUpdated');
+        if (typeof AppState !== 'undefined') AppState.emit('plantsUpdated');
         
-        if(typeof navigateTo === 'function') {
+        if (typeof navigateTo === 'function') {
             navigateTo('plant-detail', savedPlantId);
         }
         
@@ -589,28 +606,28 @@ async function savePlant() {
     }
 }
 
-function editCurrentPlant() { 
-    navigateTo('edit-plant', currentPlantId); 
+function editCurrentPlant() {
+    navigateTo('edit-plant', currentPlantId);
 }
 
 function _internalEditPlant(id) {
     if (!plantsDatabase) return;
     const parsedId = String(id);
     const plant = plantsDatabase.find(p => String(p.id) === parsedId);
-    if(!plant) { 
-        if(typeof goBack === 'function') goBack(); 
-        else window.history.back(); 
-        return; 
+    if (!plant) {
+        if (typeof goBack === 'function') goBack();
+        else window.history.back();
+        return;
     }
     
-    currentPlantId = String(plant.id); 
-    editingMode = true; 
-    isFormDirty = false; 
+    currentPlantId = String(plant.id);
+    editingMode = true;
+    isFormDirty = false;
     
     const formTitle = document.getElementById('form-title');
-    if(formTitle) formTitle.innerText = "Modifica dettagli pianta";
+    if (formTitle) formTitle.innerText = "Modifica dettagli pianta";
 
-    clearForm(); 
+    clearForm();
     populateFormHelpers();
     
     const fields = {
@@ -636,44 +653,44 @@ function _internalEditPlant(id) {
         if (el) el.value = val;
     }
     
-    const originSelect = document.getElementById('p-origin'); 
+    const originSelect = document.getElementById('p-origin');
     if (originSelect) {
-        let oldOrigin = plant.origin || 'Da seme'; 
-        originSelect.value = Array.from(originSelect.options).some(opt => opt.value === oldOrigin) ? oldOrigin : 'Non so / Altro'; 
+        let oldOrigin = plant.origin || 'Da seme';
+        originSelect.value = Array.from(originSelect.options).some(opt => opt.value === oldOrigin) ? oldOrigin : 'Non so / Altro';
         toggleFidelityField();
     }
     
-    if(plant.vendor) { 
-        setVendorMode('select'); 
-        if (document.getElementById('p-vendor-select')) document.getElementById('p-vendor-select').value = plant.vendor; 
-        if (document.getElementById('p-vendor-input')) document.getElementById('p-vendor-input').value = plant.vendor; 
-    } else { 
-        setVendorMode('select'); 
+    if (plant.vendor) {
+        setVendorMode('select');
+        if (document.getElementById('p-vendor-select')) document.getElementById('p-vendor-select').value = plant.vendor;
+        if (document.getElementById('p-vendor-input')) document.getElementById('p-vendor-input').value = plant.vendor;
+    } else {
+        setVendorMode('select');
     }
     
-    if(plant.soil) { 
-        setSoilMode('select'); 
-        if (document.getElementById('p-soil-select')) document.getElementById('p-soil-select').value = plant.soil; 
-        if (document.getElementById('p-soil-input')) document.getElementById('p-soil-input').value = plant.soil; 
-    } else { 
-        setSoilMode('select'); 
+    if (plant.soil) {
+        setSoilMode('select');
+        if (document.getElementById('p-soil-select')) document.getElementById('p-soil-select').value = plant.soil;
+        if (document.getElementById('p-soil-input')) document.getElementById('p-soil-input').value = plant.soil;
+    } else {
+        setSoilMode('select');
     }
     
-    if (plant.scientific) { 
-        setScientificMode('select'); 
+    if (plant.scientific) {
+        setScientificMode('select');
         let sel = document.getElementById('p-scientific-select');
         if (sel) {
             let found = Array.from(sel.options).some(opt => opt.value === plant.scientific);
-            if(found) {
+            if (found) {
                 sel.value = plant.scientific;
-                if(document.getElementById('p-scientific-input')) document.getElementById('p-scientific-input').value = plant.scientific; 
+                if (document.getElementById('p-scientific-input')) document.getElementById('p-scientific-input').value = plant.scientific;
             } else {
                 setScientificMode('input');
-                if(document.getElementById('p-scientific-input')) document.getElementById('p-scientific-input').value = plant.scientific;
+                if (document.getElementById('p-scientific-input')) document.getElementById('p-scientific-input').value = plant.scientific;
             }
         }
-    } else { 
-        setScientificMode('select'); 
+    } else {
+        setScientificMode('select');
     }
 
     if (plant.location || (plant.lat !== null && plant.lng !== null && plant.lat !== undefined && plant.lng !== undefined)) {
@@ -681,25 +698,25 @@ function _internalEditPlant(id) {
         let sel = document.getElementById('p-location-select');
         if (sel) {
             let found = false;
-            for(let i=1; i<sel.options.length; i++) {
-                if(sel.options[i].dataset.loc === (plant.location || '') && 
-                   formatLocalFloat(sel.options[i].dataset.lat) === formatLocalFloat(plant.lat) && 
-                   formatLocalFloat(sel.options[i].dataset.lng) === formatLocalFloat(plant.lng)) {
+            for (let i = 1; i < sel.options.length; i++) {
+                if (sel.options[i].dataset.loc === (plant.location || '') &&
+                    formatLocalFloat(sel.options[i].dataset.lat) === formatLocalFloat(plant.lat) &&
+                    formatLocalFloat(sel.options[i].dataset.lng) === formatLocalFloat(plant.lng)) {
                     sel.selectedIndex = i;
                     found = true;
                     break;
                 }
             }
-            if(!found) {
+            if (!found) {
                 setLocationMode('input');
-                if(document.getElementById('p-location-input')) document.getElementById('p-location-input').value = plant.location || '';
+                if (document.getElementById('p-location-input')) document.getElementById('p-location-input').value = plant.location || '';
             } else {
-                if(document.getElementById('p-location-input')) document.getElementById('p-location-input').value = plant.location || '';
-                fillSavedLocation(); 
+                if (document.getElementById('p-location-input')) document.getElementById('p-location-input').value = plant.location || '';
+                fillSavedLocation();
             }
         }
-    } else { 
-        setLocationMode('select'); 
+    } else {
+        setLocationMode('select');
     }
 
     togglePotSizeField();
@@ -732,25 +749,25 @@ function _internalEditPlant(id) {
     }
 
     setTimeout(() => {
-        if(typeof initFormMap === 'function') initFormMap();
+        if (typeof initFormMap === 'function') initFormMap();
     }, 150);
 }
 
 async function deleteCurrentPlant() {
     if (typeof Swal === 'undefined') return;
     
-    const res = await Swal.fire({ 
-        title: 'Sei sicuro?', 
-        text: "Questa azione ELIMINERÀ DEFINITIVAMENTE la pianta, distruggendo tutti i diari e le foto. L'operazione non è reversibile.", 
-        icon: 'error', 
-        showCancelButton: true, 
-        confirmButtonColor: '#d32f2f', 
-        cancelButtonColor: '#607d8b', 
-        confirmButtonText: 'Elimina per sempre', 
-        cancelButtonText: 'Annulla' 
+    const res = await Swal.fire({
+        title: 'Sei sicuro?',
+        text: "Questa azione ELIMINERÀ DEFINITIVAMENTE la pianta, distruggendo tutti i diari e le foto. L'operazione non è reversibile.",
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonColor: '#d32f2f',
+        cancelButtonColor: '#607d8b',
+        confirmButtonText: 'Elimina per sempre',
+        cancelButtonText: 'Annulla'
     });
     
-    if(res.isConfirmed) {
+    if (res.isConfirmed) {
         if (!plantsDatabase) return;
         
         const deleteBtn = document.querySelector('button[onclick="deleteCurrentPlant()"]');
@@ -764,7 +781,7 @@ async function deleteCurrentPlant() {
             const plantToDelete = plantsDatabase.find(p => String(p.id) === currentPlantIdStr);
             
             if (plantToDelete && typeof cleanupPlantImages === 'function') {
-                cleanupPlantImages(plantToDelete); 
+                cleanupPlantImages(plantToDelete);
             }
 
             plantsDatabase.forEach(p => {
@@ -772,15 +789,15 @@ async function deleteCurrentPlant() {
                 if (String(p.father) === currentPlantIdStr) p.father = '';
             });
 
-            plantsDatabase = plantsDatabase.filter(p => String(p.id) !== currentPlantIdStr); 
-            unsavedChanges = true; 
+            plantsDatabase = plantsDatabase.filter(p => String(p.id) !== currentPlantIdStr);
+            unsavedChanges = true;
             
-            if(typeof saveToLocal === 'function') await saveToLocal(); 
+            if (typeof saveToLocal === 'function') await saveToLocal();
             
-            isFormDirty = false; 
+            isFormDirty = false;
             
-            if(typeof AppState !== 'undefined') AppState.emit('plantsUpdated'); 
-            if(typeof goBack === 'function') goBack(); 
+            if (typeof AppState !== 'undefined') AppState.emit('plantsUpdated');
+            if (typeof goBack === 'function') goBack();
             
             Swal.fire({
                 icon: 'info',
@@ -810,82 +827,82 @@ async function toggleArchiveStatus() {
     
     const btn = document.getElementById('btn-archive-toggle');
     
-    if (plant.status === 'archived') { 
+    if (plant.status === 'archived') {
         const res = await Swal.fire({ title: 'Ripristinare?', text: "La pianta tornerà visibile nel tuo giardino principale.", icon: 'question', showCancelButton: true, confirmButtonColor: '#2e7d32', cancelButtonColor: '#607d8b', confirmButtonText: 'Sì, ripristina', cancelButtonText: 'Annulla' });
-        if(res.isConfirmed) { 
-            if(btn) { btn.disabled = true; btn.innerText = "⏳ Attendere..."; }
+        if (res.isConfirmed) {
+            if (btn) { btn.disabled = true; btn.innerText = "⏳ Attendere..."; }
             
             try {
-                plant.status = 'active'; 
-                unsavedChanges = true; 
-                if(typeof saveToLocal === 'function') await saveToLocal(); 
+                plant.status = 'active';
+                unsavedChanges = true;
+                if (typeof saveToLocal === 'function') await saveToLocal();
                 
-                if(typeof AppState !== 'undefined') AppState.emit('plantsUpdated'); 
-                if(typeof goBack === 'function') goBack(); 
-                else window.history.back(); 
+                if (typeof AppState !== 'undefined') AppState.emit('plantsUpdated');
+                if (typeof goBack === 'function') goBack();
+                else window.history.back();
             } catch (err) {
                 console.error("Errore ripristino:", err);
             } finally {
-                if(btn) btn.disabled = false;
+                if (btn) btn.disabled = false;
             }
-        } 
-    } else { 
+        }
+    } else {
         const res = await Swal.fire({ title: 'Archiviare?', text: "Scomparirà dalla vista principale ma tutti i dati verranno conservati nell'archivio storico.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d32f2f', cancelButtonColor: '#607d8b', confirmButtonText: 'Sì, archivia', cancelButtonText: 'Annulla' });
-        if(res.isConfirmed) { 
-            if(btn) { btn.disabled = true; btn.innerText = "⏳ Attendere..."; }
+        if (res.isConfirmed) {
+            if (btn) { btn.disabled = true; btn.innerText = "⏳ Attendere..."; }
             
             try {
-                plant.status = 'archived'; 
-                unsavedChanges = true; 
-                if(typeof saveToLocal === 'function') await saveToLocal(); 
+                plant.status = 'archived';
+                unsavedChanges = true;
+                if (typeof saveToLocal === 'function') await saveToLocal();
                 
-                if(typeof AppState !== 'undefined') AppState.emit('plantsUpdated'); 
-                if(typeof goBack === 'function') goBack(); 
-                else window.history.back(); 
+                if (typeof AppState !== 'undefined') AppState.emit('plantsUpdated');
+                if (typeof goBack === 'function') goBack();
+                else window.history.back();
             } catch (err) {
                 console.error("Errore archiviazione:", err);
             } finally {
-                if(btn) btn.disabled = false;
+                if (btn) btn.disabled = false;
             }
-        } 
+        }
     }
 }
 
 function openDuplicateModal() {
     if (!plantsDatabase) return;
     const parsedId = String(currentPlantId);
-    const plantToCopy = plantsDatabase.find(p => String(p.id) === parsedId); 
+    const plantToCopy = plantsDatabase.find(p => String(p.id) === parsedId);
     if (!plantToCopy) return;
     
     const baseNameEl = document.getElementById('dup-base-name');
     const qtyEl = document.getElementById('dup-qty');
-    const diaryCheckEl = document.getElementById('dup-copy-diary'); 
+    const diaryCheckEl = document.getElementById('dup-copy-diary');
     const overlay = document.getElementById('duplicate-modal-overlay');
     
-    if (baseNameEl) baseNameEl.value = plantToCopy.name; 
-    if (qtyEl) qtyEl.value = 1; 
-    if (diaryCheckEl) diaryCheckEl.checked = false; 
+    if (baseNameEl) baseNameEl.value = plantToCopy.name;
+    if (qtyEl) qtyEl.value = 1;
+    if (diaryCheckEl) diaryCheckEl.checked = false;
     
     if (overlay) overlay.style.display = 'flex';
 }
 
-function closeDuplicateModal() { 
+function closeDuplicateModal() {
     const overlay = document.getElementById('duplicate-modal-overlay');
-    if (overlay) overlay.style.display = 'none'; 
+    if (overlay) overlay.style.display = 'none';
 }
 
 async function confirmDuplicate() {
     if (!plantsDatabase) return;
     const parsedId = String(currentPlantId);
-    const plantToCopy = plantsDatabase.find(p => String(p.id) === parsedId); 
+    const plantToCopy = plantsDatabase.find(p => String(p.id) === parsedId);
     if (!plantToCopy) return;
     
     const baseNameEl = document.getElementById('dup-base-name');
-    let baseName = baseNameEl ? baseNameEl.value.trim() : ''; 
+    let baseName = baseNameEl ? baseNameEl.value.trim() : '';
     if (!baseName) baseName = plantToCopy.name;
     
     const qtyEl = document.getElementById('dup-qty');
-    let qty = qtyEl ? parseInt(qtyEl.value, 10) : 1; 
+    let qty = qtyEl ? parseInt(qtyEl.value, 10) : 1;
     
     if (isNaN(qty) || qty < 1) {
         if (typeof Swal !== 'undefined') return Swal.fire({icon: 'error', title: 'Errore', text: 'Inserisci una quantità valida (minimo 1).', confirmButtonColor: '#2e7d32'});
@@ -903,32 +920,32 @@ async function confirmDuplicate() {
 
     try {
         for (let i = 0; i < qty; i++) {
-            let newName = baseName; 
+            let newName = baseName;
             let suffixCounter = 1;
             if (qty > 1 || plantsDatabase.some(p => (p.name || '').toLowerCase() === baseName.toLowerCase())) {
                 newName = `${baseName} - ${suffixCounter}`;
-                while (plantsDatabase.some(p => (p.name || '').toLowerCase() === newName.toLowerCase())) { 
-                    suffixCounter++; 
-                    newName = `${baseName} - ${suffixCounter}`; 
+                while (plantsDatabase.some(p => (p.name || '').toLowerCase() === newName.toLowerCase())) {
+                    suffixCounter++;
+                    newName = `${baseName} - ${suffixCounter}`;
                 }
             }
             
             let clonedLogs = [];
-            if (copyDiary && plantToCopy.logs && Array.isArray(plantToCopy.logs)) { 
+            if (copyDiary && plantToCopy.logs && Array.isArray(plantToCopy.logs)) {
                 clonedLogs = plantToCopy.logs.map((log) => {
                     return {
                         id: typeof generateId === 'function' ? generateId() : crypto.randomUUID(),
-                        date: log.date, 
-                        type: log.type, 
-                        height: log.height, 
-                        harvest: log.harvest, 
-                        ph: log.ph, 
-                        placement: log.placement, 
-                        potSize: log.potSize, 
-                        graftName: log.graftName, 
+                        date: log.date,
+                        type: log.type,
+                        height: log.height,
+                        harvest: log.harvest,
+                        ph: log.ph,
+                        placement: log.placement,
+                        potSize: log.potSize,
+                        graftName: log.graftName,
                         note: log.note,
-                        photo: safeCloneImage(log.photo), 
-                        photos: log.photos && Array.isArray(log.photos) ? log.photos.map(ph => safeCloneImage(ph)) : [] 
+                        photo: safeCloneImage(log.photo),
+                        photos: log.photos && Array.isArray(log.photos) ? log.photos.map(ph => safeCloneImage(ph)) : []
                     };
                 });
             }
@@ -936,45 +953,45 @@ async function confirmDuplicate() {
             const newPlantId = typeof generateId === 'function' ? generateId() : crypto.randomUUID();
 
             const newPlant = {
-                id: newPlantId, 
+                id: newPlantId,
                 createdAt: Date.now(),
-                name: newName, 
-                scientific: plantToCopy.scientific, 
-                price: plantToCopy.price, 
-                origin: plantToCopy.origin, 
+                name: newName,
+                scientific: plantToCopy.scientific,
+                price: plantToCopy.price,
+                origin: plantToCopy.origin,
                 autofertile: getModernFertility(plantToCopy.autofertile),
-                sowingDate: plantToCopy.sowingDate, 
-                geneticFidelity: plantToCopy.geneticFidelity, 
-                placement: plantToCopy.placement, 
-                potSize: plantToCopy.potSize, 
-                soil: plantToCopy.soil, 
-                phMin: plantToCopy.phMin, 
-                phMax: plantToCopy.phMax, 
-                vendor: plantToCopy.vendor, 
-                location: plantToCopy.location, 
-                notes: '', 
-                speciesNotes: plantToCopy.speciesNotes, 
-                lat: plantToCopy.lat, 
-                lng: plantToCopy.lng, 
-                photo: safeCloneImage(plantToCopy.photo), 
-                fruitPhoto: safeCloneImage(plantToCopy.fruitPhoto), 
-                status: 'active', 
-                logs: clonedLogs, 
-                mother: plantToCopy.mother !== undefined && plantToCopy.mother !== null ? String(plantToCopy.mother) : '', 
-                father: plantToCopy.father !== undefined && plantToCopy.father !== null ? String(plantToCopy.father) : '', 
-                minTemp: plantToCopy.minTemp, 
-                maxTemp: plantToCopy.maxTemp          
+                sowingDate: plantToCopy.sowingDate,
+                geneticFidelity: plantToCopy.geneticFidelity,
+                placement: plantToCopy.placement,
+                potSize: plantToCopy.potSize,
+                soil: plantToCopy.soil,
+                phMin: plantToCopy.phMin,
+                phMax: plantToCopy.phMax,
+                vendor: plantToCopy.vendor,
+                location: plantToCopy.location,
+                notes: '',
+                speciesNotes: plantToCopy.speciesNotes,
+                lat: plantToCopy.lat,
+                lng: plantToCopy.lng,
+                photo: safeCloneImage(plantToCopy.photo),
+                fruitPhoto: safeCloneImage(plantToCopy.fruitPhoto),
+                status: 'active',
+                logs: clonedLogs,
+                mother: plantToCopy.mother !== undefined && plantToCopy.mother !== null ? String(plantToCopy.mother) : '',
+                father: plantToCopy.father !== undefined && plantToCopy.father !== null ? String(plantToCopy.father) : '',
+                minTemp: plantToCopy.minTemp,
+                maxTemp: plantToCopy.maxTemp
             };
             plantsDatabase.push(newPlant);
         }
         
-        unsavedChanges = true; 
-        if(typeof saveToLocal === 'function') await saveToLocal(); 
+        unsavedChanges = true;
+        if (typeof saveToLocal === 'function') await saveToLocal();
         
-        closeDuplicateModal(); 
+        closeDuplicateModal();
         
-        if(typeof AppState !== 'undefined') AppState.emit('plantsUpdated');
-        if(typeof goBack === 'function') goBack(); 
+        if (typeof AppState !== 'undefined') AppState.emit('plantsUpdated');
+        if (typeof goBack === 'function') goBack();
         
         if (typeof Swal !== 'undefined') {
             Swal.fire({icon: 'success', title: 'Piante clonate', text: `Hai clonato con successo ${qty} piante.`, timer: 2000, showConfirmButton: false});
@@ -997,8 +1014,8 @@ let plantsObserver = null;
 let lastFilterStateString = "";
 
 function renderPlants() {
-    const grid = document.getElementById('plants-grid'); 
-    if(!grid) return;
+    const grid = document.getElementById('plants-grid');
+    if (!grid) return;
     
     if (plantsObserver) {
         plantsObserver.disconnect();
@@ -1012,7 +1029,7 @@ function renderPlants() {
     const searchBar = document.querySelector('.search-sort-bar');
     
     if (plantsDatabase.length === 0) {
-        if(emptyState) {
+        if (emptyState) {
             emptyState.innerHTML = `
                 <span style="font-size: 50px;" aria-hidden="true">🌱</span>
                 <h3 style="color: var(--primary); margin-bottom: 10px;">Il tuo giardino è vuoto</h3>
@@ -1022,14 +1039,14 @@ function renderPlants() {
             emptyState.classList.remove('hidden');
         }
         grid.classList.add('hidden');
-        if(statsBar) statsBar.style.display = 'none';
-        if(searchBar) searchBar.style.display = 'none';
+        if (statsBar) statsBar.style.display = 'none';
+        if (searchBar) searchBar.style.display = 'none';
         return;
     } else {
-        if(emptyState) emptyState.classList.add('hidden');
+        if (emptyState) emptyState.classList.add('hidden');
         grid.classList.remove('hidden');
-        if(statsBar) statsBar.style.display = 'block';
-        if(searchBar) searchBar.style.display = 'flex';
+        if (statsBar) statsBar.style.display = 'block';
+        if (searchBar) searchBar.style.display = 'flex';
     }
 
     const searchInput = document.getElementById('search-plant');
@@ -1106,21 +1123,21 @@ function renderPlants() {
             return timeA - timeB;
         }
         else if (sortMode === 'last_updated') {
-            let lastA = 0; 
-            if (a.logs && Array.isArray(a.logs) && a.logs.length > 0) { 
-                lastA = Math.max(...a.logs.map(l => new Date(l.date).getTime() || 0)); 
+            let lastA = 0;
+            if (a.logs && Array.isArray(a.logs) && a.logs.length > 0) {
+                lastA = Math.max(...a.logs.map(l => new Date(l.date).getTime() || 0));
             }
-            let lastB = 0; 
-            if (b.logs && Array.isArray(b.logs) && b.logs.length > 0) { 
-                lastB = Math.max(...b.logs.map(l => new Date(l.date).getTime() || 0)); 
+            let lastB = 0;
+            if (b.logs && Array.isArray(b.logs) && b.logs.length > 0) {
+                lastB = Math.max(...b.logs.map(l => new Date(l.date).getTime() || 0));
             }
-            return lastB - lastA; 
-        } 
+            return lastB - lastA;
+        }
         else if (sortMode === 'temp_desc') {
             let tempA = (a.minTemp !== undefined && a.minTemp !== null) ? a.minTemp : -999;
             let tempB = (b.minTemp !== undefined && b.minTemp !== null) ? b.minTemp : -999;
             return tempB - tempA;
-        } 
+        }
         else if (sortMode === 'ph_desc') {
             let phA = (a.phMax !== undefined && a.phMax !== null) ? a.phMax : (a.phMin !== undefined && a.phMin !== null ? a.phMin : -999);
             let phB = (b.phMax !== undefined && b.phMax !== null) ? b.phMax : (b.phMin !== undefined && b.phMin !== null ? b.phMin : -999);
@@ -1137,8 +1154,8 @@ function renderPlants() {
     const validSpecies = filteredPlants.map(p => p.scientific ? p.scientific.trim().toLowerCase() : '').filter(s => s !== '');
     const countPlantsEl = document.getElementById('count-plants');
     const countSpeciesEl = document.getElementById('count-species');
-    if(countPlantsEl) countPlantsEl.innerText = filteredPlants.length; 
-    if(countSpeciesEl) countSpeciesEl.innerText = new Set(validSpecies).size;
+    if (countPlantsEl) countPlantsEl.innerText = filteredPlants.length;
+    if (countSpeciesEl) countSpeciesEl.innerText = new Set(validSpecies).size;
 
     currentFilteredPlants = filteredPlants;
 
@@ -1155,14 +1172,14 @@ function renderPlants() {
     }
 
     let elementsToRenderNow = currentPlantsChunkIndex > 0 ? currentPlantsChunkIndex : PLANTS_CHUNK_SIZE;
-    currentPlantsChunkIndex = 0; 
+    currentPlantsChunkIndex = 0;
 
     renderPlantsChunk(elementsToRenderNow);
 }
 
 function renderPlantsChunk(customSize = null) {
-    const grid = document.getElementById('plants-grid'); 
-    if(!grid) return;
+    const grid = document.getElementById('plants-grid');
+    if (!grid) return;
     
     const fragment = document.createDocumentFragment();
     const fallbackSrc = typeof OFFLINE_PLACEHOLDER !== 'undefined' ? OFFLINE_PLACEHOLDER : '';
@@ -1174,7 +1191,7 @@ function renderPlantsChunk(customSize = null) {
         const card = document.createElement('div');
         
         let archiveStyle = plant.status === 'archived' ? ' border-left-color: var(--danger); opacity: 0.85;' : '';
-        card.className = 'plant-card animate__animated animate__fadeIn'; 
+        card.className = 'plant-card animate__animated animate__fadeIn';
         card.style.animationDuration = '0.5s';
         if (archiveStyle) card.style.cssText += archiveStyle;
         
@@ -1182,7 +1199,7 @@ function renderPlantsChunk(customSize = null) {
         card.setAttribute('tabindex', '0');
         card.setAttribute('aria-label', `Vedi dettagli della pianta ${escapeHTML(plant.name)}`);
         
-        const openDetail = () => { if(typeof navigateTo === 'function') navigateTo('plant-detail', plant.id); };
+        const openDetail = () => { if (typeof navigateTo === 'function') navigateTo('plant-detail', plant.id); };
         card.onclick = openDetail;
         card.onkeydown = (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -1195,8 +1212,8 @@ function renderPlantsChunk(customSize = null) {
         let imgSrc = (typeof getImageUrl === 'function' && rawPhoto) ? getImageUrl(rawPhoto) : fallbackSrc;
 
         let basePlacement = escapeHTML(plant.placement || 'Vaso');
-        let sistemazioneLabel = basePlacement; 
-        let vol = plant.potSize; 
+        let sistemazioneLabel = basePlacement;
+        let vol = plant.potSize;
         if (basePlacement === 'Vaso' && vol) sistemazioneLabel += ` (${formatLocalFloat(vol)} L)`;
         
         let origLabel = plant.origin || 'Non so / Altro';
@@ -1280,8 +1297,8 @@ let currentArchivedPlants = [];
 let archiveObserver = null;
 
 function renderArchive() {
-    const grid = document.getElementById('archive-grid'); 
-    if(!grid) return;
+    const grid = document.getElementById('archive-grid');
+    if (!grid) return;
     
     if (archiveObserver) {
         archiveObserver.disconnect();
@@ -1290,11 +1307,11 @@ function renderArchive() {
     
     if (!plantsDatabase || !Array.isArray(plantsDatabase)) plantsDatabase = [];
     
-    currentArchivedPlants = plantsDatabase.filter(p => p.status === 'archived'); 
+    currentArchivedPlants = plantsDatabase.filter(p => p.status === 'archived');
     currentArchivedPlants.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     
     if (currentArchivedPlants.length === 0) {
-        grid.innerHTML = '<p style="grid-column: 1 / -1; color: #555;">Nessuna pianta archiviata al momento.</p>'; 
+        grid.innerHTML = '<p style="grid-column: 1 / -1; color: #555;">Nessuna pianta archiviata al momento.</p>';
         currentArchiveChunkIndex = 0;
         return;
     }
@@ -1302,14 +1319,14 @@ function renderArchive() {
     grid.innerHTML = '';
     
     let elementsToRenderNow = currentArchiveChunkIndex > 0 ? currentArchiveChunkIndex : ARCHIVE_CHUNK_SIZE;
-    currentArchiveChunkIndex = 0; 
+    currentArchiveChunkIndex = 0;
     
     renderArchiveChunk(elementsToRenderNow);
 }
 
 function renderArchiveChunk(customSize = null) {
-    const grid = document.getElementById('archive-grid'); 
-    if(!grid) return;
+    const grid = document.getElementById('archive-grid');
+    if (!grid) return;
 
     const fragment = document.createDocumentFragment();
     const fallbackSrc = typeof OFFLINE_PLACEHOLDER !== 'undefined' ? OFFLINE_PLACEHOLDER : '';
@@ -1318,15 +1335,15 @@ function renderArchiveChunk(customSize = null) {
     const chunk = currentArchivedPlants.slice(currentArchiveChunkIndex, currentArchiveChunkIndex + chunkSize);
 
     chunk.forEach(plant => {
-        const card = document.createElement('div'); 
-        card.className = 'plant-card animate__animated animate__fadeIn'; 
-        card.style.borderLeftColor = 'var(--danger)'; 
+        const card = document.createElement('div');
+        card.className = 'plant-card animate__animated animate__fadeIn';
+        card.style.borderLeftColor = 'var(--danger)';
         
         card.setAttribute('role', 'button');
         card.setAttribute('tabindex', '0');
         card.setAttribute('aria-label', `Vedi dettagli della pianta archiviata ${escapeHTML(plant.name)}`);
         
-        const openDetail = () => { if(typeof navigateTo === 'function') navigateTo('plant-detail', plant.id); };
+        const openDetail = () => { if (typeof navigateTo === 'function') navigateTo('plant-detail', plant.id); };
         card.onclick = openDetail;
         card.onkeydown = (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -1382,9 +1399,9 @@ function renderArchiveChunk(customSize = null) {
     }
 }
 
-if(typeof AppState !== 'undefined') { 
-    AppState.on('plantsUpdated', renderPlants); 
-    AppState.on('plantsUpdated', renderArchive); 
+if(typeof AppState !== 'undefined') {
+    AppState.on('plantsUpdated', renderPlants);
+    AppState.on('plantsUpdated', renderArchive);
 }
 
 function makeGridItem(icon, label, value) {
@@ -1401,27 +1418,27 @@ function _internalOpenPlantDetail(id) {
     if (!plantsDatabase) return;
     const targetId = String(id);
     const plant = plantsDatabase.find(p => String(p.id) === targetId);
-    if(!plant) { 
-        if(typeof goBack === 'function') goBack(); 
-        else window.history.back(); 
-        return; 
+    if (!plant) {
+        if (typeof goBack === 'function') goBack();
+        else window.history.back();
+        return;
     }
     
-    currentPlantId = String(plant.id); 
+    currentPlantId = String(plant.id);
     
     const detailTitle = document.getElementById('detail-title');
     if (detailTitle) detailTitle.innerText = escapeHTML(plant.name) + (plant.scientific ? ` (${escapeHTML(plant.scientific)})` : '');
     
     let parentStr = '';
-    if(plant.mother !== undefined && plant.mother !== null && plant.mother !== '') { 
-        let m = plantsDatabase.find(x => String(x.id) === String(plant.mother)); 
-        if(m) parentStr += `Madre: <a href="javascript:void(0);" style="color:var(--blue); font-weight:bold;" onclick="navigateTo('plant-detail', '${m.id}')">${escapeHTML(m.name)}</a><br>`; 
+    if (plant.mother !== undefined && plant.mother !== null && plant.mother !== '') {
+        let m = plantsDatabase.find(x => String(x.id) === String(plant.mother));
+        if (m) parentStr += `Madre: <a href="javascript:void(0);" style="color:var(--blue); font-weight:bold;" onclick="navigateTo('plant-detail', '${m.id}')">${escapeHTML(m.name)}</a><br>`;
     }
-    if(plant.father !== undefined && plant.father !== null && plant.father !== '') { 
-        let f = plantsDatabase.find(x => String(x.id) === String(plant.father)); 
-        if(f) parentStr += `Padre: <a href="javascript:void(0);" style="color:var(--blue); font-weight:bold;" onclick="navigateTo('plant-detail', '${f.id}')">${escapeHTML(f.name)}</a>`; 
+    if (plant.father !== undefined && plant.father !== null && plant.father !== '') {
+        let f = plantsDatabase.find(x => String(x.id) === String(plant.father));
+        if (f) parentStr += `Padre: <a href="javascript:void(0);" style="color:var(--blue); font-weight:bold;" onclick="navigateTo('plant-detail', '${f.id}')">${escapeHTML(f.name)}</a>`;
     }
-    if(parentStr) parentStr = `<div style="background:#e3f2fd; padding:10px 12px; border-radius:6px; margin-bottom:15px; font-size:13px; border: 1px solid #bbdefb;"><span style="color:var(--blue); font-weight:bold; display:block; margin-bottom:4px;">🧬 Genealogia</span>${parentStr}</div>`;
+    if (parentStr) parentStr = `<div style="background:#e3f2fd; padding:10px 12px; border-radius:6px; margin-bottom:15px; font-size:13px; border: 1px solid #bbdefb;"><span style="color:var(--blue); font-weight:bold; display:block; margin-bottom:4px;">🧬 Genealogia</span>${parentStr}</div>`;
 
     let origFull = escapeHTML(plant.origin || 'N/D');
     if (plant.origin === 'Da seme' && plant.geneticFidelity) {
@@ -1429,8 +1446,8 @@ function _internalOpenPlantDetail(id) {
     }
 
     let basePlacement = escapeHTML(plant.placement || 'Vaso');
-    let sistemazioneLabel = basePlacement; 
-    let vol = plant.potSize; 
+    let sistemazioneLabel = basePlacement;
+    let vol = plant.potSize;
     if (basePlacement === 'Vaso' && vol) sistemazioneLabel += ` (${formatLocalFloat(vol)} L)`;
 
     let soilFull = escapeHTML(plant.soil || 'N/D');
@@ -1451,7 +1468,7 @@ function _internalOpenPlantDetail(id) {
         if(tempFull) tempFull += ' / ';
         tempFull += `<span style="color:#d32f2f">Max ${formatLocalFloat(plant.maxTemp)}°C</span>`;
     }
-    if(!tempFull) tempFull = 'N/D';
+    if (!tempFull) tempFull = 'N/D';
 
     let ecoFull = renderFornitore(plant.vendor);
     if (plant.price !== null && plant.price !== undefined) {
@@ -1476,7 +1493,7 @@ function _internalOpenPlantDetail(id) {
         detailInfo.innerHTML = parentStr + detailsHtml;
     }
 
-    const photoContainer = document.getElementById('detail-photos-container'); 
+    const photoContainer = document.getElementById('detail-photos-container');
     if (photoContainer) {
         photoContainer.innerHTML = '';
         let safeNameJS = escapeHTML(plant.name).replace(/&#39;/g, "\\'");
@@ -1485,14 +1502,14 @@ function _internalOpenPlantDetail(id) {
         let pFruitImg = (typeof getImageUrl === 'function' && plant.fruitPhoto) ? getImageUrl(plant.fruitPhoto) : plant.fruitPhoto;
         const fallbackSrc = typeof OFFLINE_PLACEHOLDER !== 'undefined' ? OFFLINE_PLACEHOLDER : '';
 
-        if(pMainImg || pFruitImg) {
-            let addClass = plant.status === 'archived' ? ' grayscale-img' : ''; 
+        if (pMainImg || pFruitImg) {
+            let addClass = plant.status === 'archived' ? ' grayscale-img' : '';
             
-            if(pMainImg) photoContainer.innerHTML += `<img src="${pMainImg}" onerror="this.onerror=null; this.src='${fallbackSrc}';" class="plant-img${addClass}" title="Foto Pianta" style="cursor:pointer;" tabindex="0" role="button" aria-label="Ingrandisci Foto Pianta" onclick="if(typeof openImageModal === 'function') openImageModal('${pMainImg}', '${safeNameJS}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" alt="Foto Pianta">`;
+            if (pMainImg) photoContainer.innerHTML += `<img src="${pMainImg}" onerror="this.onerror=null; this.src='${fallbackSrc}';" class="plant-img${addClass}" title="Foto Pianta" style="cursor:pointer;" tabindex="0" role="button" aria-label="Ingrandisci Foto Pianta" onclick="if(typeof openImageModal === 'function') openImageModal('${pMainImg}', '${safeNameJS}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" alt="Foto Pianta">`;
             
-            if(pFruitImg) photoContainer.innerHTML += `<img src="${pFruitImg}" onerror="this.onerror=null; this.src='${fallbackSrc}';" class="plant-img${addClass}" title="Foto Frutto" style="cursor:pointer;" tabindex="0" role="button" aria-label="Ingrandisci Foto Frutto" onclick="if(typeof openImageModal === 'function') openImageModal('${pFruitImg}', 'Dettaglio Frutto')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" alt="Foto Frutto">`;
-        } else { 
-            photoContainer.innerHTML = `<div style="height:100px; width:100%; display:flex; align-items:center; justify-content:center; border:1px solid #ddd; border-radius:5px; color:#999;">Nessuna foto inserita</div>`; 
+            if (pFruitImg) photoContainer.innerHTML += `<img src="${pFruitImg}" onerror="this.onerror=null; this.src='${fallbackSrc}';" class="plant-img${addClass}" title="Foto Frutto" style="cursor:pointer;" tabindex="0" role="button" aria-label="Ingrandisci Foto Frutto" onclick="if(typeof openImageModal === 'function') openImageModal('${pFruitImg}', 'Dettaglio Frutto')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" alt="Foto Frutto">`;
+        } else {
+            photoContainer.innerHTML = `<div style="height:100px; width:100%; display:flex; align-items:center; justify-content:center; border:1px solid #ddd; border-radius:5px; color:#999;">Nessuna foto inserita</div>`;
         }
     }
 
@@ -1507,8 +1524,8 @@ function _internalOpenPlantDetail(id) {
     
     const logTypeEl = document.getElementById('log-type');
     const logPhotosEl = document.getElementById('log-photos');
-    if (logTypeEl) logTypeEl.value = 'Misurazione'; 
-    if (logPhotosEl) logPhotosEl.value = ''; 
+    if (logTypeEl) logTypeEl.value = 'Misurazione';
+    if (logPhotosEl) logPhotosEl.value = '';
 
     const detPlantNotes = document.querySelectorAll('#detail-plant-notes');
     const detSpeciesNotes = document.querySelectorAll('#detail-species-notes');
@@ -1516,30 +1533,30 @@ function _internalOpenPlantDetail(id) {
     detSpeciesNotes.forEach(el => el.value = plant.speciesNotes || '');
     
     setTimeout(() => {
-        if(typeof toggleDynamicFields === 'function') toggleDynamicFields();
-        if(typeof renderTimeline === 'function') renderTimeline(plant); 
-        if(typeof updateYearDropdown === 'function') updateYearDropdown(plant); 
-        if(typeof initMap === 'function') initMap(plant); 
-        if(typeof renderCharts === 'function') renderCharts(plant);
+        if (typeof toggleDynamicFields === 'function') toggleDynamicFields();
+        if (typeof renderTimeline === 'function') renderTimeline(plant);
+        if (typeof updateYearDropdown === 'function') updateYearDropdown(plant);
+        if (typeof initMap === 'function') initMap(plant);
+        if (typeof renderCharts === 'function') renderCharts(plant);
         
-        const archiveBtn = document.getElementById('btn-archive-toggle'); 
+        const archiveBtn = document.getElementById('btn-archive-toggle');
         const archiveSec = document.getElementById('archive-section');
         
         if (archiveBtn && archiveSec) {
-            if (plant.status === 'archived') { 
-                archiveSec.style.background = '#e8f5e9'; 
-                archiveSec.style.borderColor = '#c8e6c9'; 
-                archiveSec.querySelector('h4').innerText = '🌱 Pianta in archivio'; 
-                archiveSec.querySelector('h4').style.color = 'var(--primary)'; 
-                archiveBtn.className = 'btn'; 
-                archiveBtn.innerText = 'Ripristina nel giardino'; 
-            } else { 
-                archiveSec.style.background = '#ffebee'; 
-                archiveSec.style.borderColor = '#ffcdd2'; 
-                archiveSec.querySelector('h4').innerText = '🥀 Archivio storico'; 
-                archiveSec.querySelector('h4').style.color = 'var(--danger)'; 
-                archiveBtn.className = 'btn btn-danger'; 
-                archiveBtn.innerText = 'Archivia pianta'; 
+            if (plant.status === 'archived') {
+                archiveSec.style.background = '#e8f5e9';
+                archiveSec.style.borderColor = '#c8e6c9';
+                archiveSec.querySelector('h4').innerText = '🌱 Pianta in archivio';
+                archiveSec.querySelector('h4').style.color = 'var(--primary)';
+                archiveBtn.className = 'btn';
+                archiveBtn.innerText = 'Ripristina nel giardino';
+            } else {
+                archiveSec.style.background = '#ffebee';
+                archiveSec.style.borderColor = '#ffcdd2';
+                archiveSec.querySelector('h4').innerText = '🥀 Archivio storico';
+                archiveSec.querySelector('h4').style.color = 'var(--danger)';
+                archiveBtn.className = 'btn btn-danger';
+                archiveBtn.innerText = 'Archivia pianta';
             }
         }
 
@@ -1547,14 +1564,14 @@ function _internalOpenPlantDetail(id) {
         const labelScientific = document.getElementById('label-scientific');
         const labelOrigin = document.getElementById('label-origin');
         
-        if (labelName) labelName.innerText = plant.name; 
-        if (labelScientific) labelScientific.innerText = plant.scientific || 'Specie Sconosciuta'; 
+        if (labelName) labelName.innerText = plant.name;
+        if (labelScientific) labelScientific.innerText = plant.scientific || 'Specie Sconosciuta';
         if (labelOrigin) labelOrigin.innerText = plant.origin || 'N/D';
         
-        const qrContainer = document.getElementById('detail-qr-code'); 
+        const qrContainer = document.getElementById('detail-qr-code');
         if (qrContainer && typeof QRCode !== 'undefined') {
-            qrContainer.innerHTML = ''; 
-            const qrContent = JSON.stringify({ plant_id: plant.id }); 
+            qrContainer.innerHTML = '';
+            const qrContent = JSON.stringify({ plant_id: plant.id });
             new QRCode(qrContainer, { text: qrContent, width: 100, height: 100, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.L });
         }
     }, 50);
@@ -1592,11 +1609,11 @@ async function autoSaveSpeciesNote() {
         plant.speciesNotes = newSpeciesNotes;
 
         if (plant.scientific) {
-            plantsDatabase.forEach(p => {
-                if (p.scientific === plant.scientific) {
-                    p.speciesNotes = newSpeciesNotes;
+            for (let i = 0; i < plantsDatabase.length; i++) {
+                if (plantsDatabase[i].scientific === plant.scientific) {
+                    plantsDatabase[i].speciesNotes = newSpeciesNotes;
                 }
-            });
+            }
         }
 
         unsavedChanges = true;

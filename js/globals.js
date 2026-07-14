@@ -1,3 +1,6 @@
+// ==========================================
+// CONFIGURAZIONE GLOBALE DELL'APP (APP_CONFIG)
+// ==========================================
 const APP_CONFIG = {
     DB_NAME: 'TropicalGardenDB',
     DB_VERSION: 3,
@@ -54,6 +57,9 @@ window.appInitialized = false;
 
 let dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} };
 
+// ==========================================
+// EVENT EMITTER PER REATTIVITÀ
+// ==========================================
 const AppState = {
     events: {},
     on(eventName, fn) {
@@ -78,6 +84,9 @@ const AppState = {
     }
 };
 
+// ==========================================
+// HELPER E FORMATTAZIONE GLOBALI
+// ==========================================
 function getLocalYYYYMMDD() {
     const tzoffset = (new Date()).getTimezoneOffset() * 60000;
     return (new Date(Date.now() - tzoffset)).toISOString().split('T')[0];
@@ -85,7 +94,7 @@ function getLocalYYYYMMDD() {
 
 function escapeHTML(str) {
     if (str === null || str === undefined) return '';
-    return str.toString().replace(/[&<>'"]/g, function(tag) {
+    return String(str).replace(/[&<>'"]/g, function(tag) {
         const charsToReplace = { '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' };
         return charsToReplace[tag] || tag;
     });
@@ -100,7 +109,7 @@ function formatDateIt(dateStr) {
 
 function renderFornitore(vendorText) {
     if (!vendorText) return 'N/D';
-    let trimmed = vendorText.trim();
+    let trimmed = String(vendorText).trim();
     let displayRaw = trimmed;
     if (displayRaw.length > 35) displayRaw = displayRaw.substring(0, 35) + '...';
 
@@ -137,22 +146,23 @@ function updateConnectionStatusIndicator() {
 }
 
 function parseLocalFloat(value) {
-    if (!value || value.toString().trim() === "") return null;
-    let str = value.toString().replace(',', '.');
+    if (!value || String(value).trim() === "") return null;
+    let str = String(value).replace(',', '.');
     let parsed = parseFloat(str);
     return isNaN(parsed) ? null : parsed;
 }
 
 function formatLocalFloat(value) {
     if (value === null || value === undefined || value === "") return "";
-    return value.toString().replace('.', ',');
+    return String(value).replace('.', ',');
 }
 
 function getModernFertility(val) {
     if (!val) return 'Sconosciuta';
-    if (val === 'Sì' || val === 'Autofertile') return 'Autofertile';
-    if (val === 'No' || val === 'Autosterile') return 'Autosterile';
-    if (val === 'Parzialmente autofertile' || val === 'Incerto') return 'Parzialmente autofertile';
+    const sVal = String(val);
+    if (sVal === 'Sì' || sVal === 'Autofertile') return 'Autofertile';
+    if (sVal === 'No' || sVal === 'Autosterile') return 'Autosterile';
+    if (sVal === 'Parzialmente autofertile' || sVal === 'Incerto') return 'Parzialmente autofertile';
     return 'Sconosciuta';
 }
 
@@ -163,13 +173,19 @@ function safeCloneImage(img) {
     return img;
 }
 
+// FIX SICUREZZA: Generatore ID blindato e senza Race Conditions
 function generateId() {
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-        return crypto.randomUUID();
+    if (typeof crypto !== 'undefined') {
+        if (typeof crypto.randomUUID === 'function') {
+            return crypto.randomUUID();
+        }
+        if (typeof crypto.getRandomValues === 'function') {
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        }
     }
-    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-    );
+    return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 9);
 }
 
 function sanitizeImageSource(src) {
@@ -233,6 +249,9 @@ function cleanupPlantImages(plant) {
     }
 }
 
+// ==========================================
+// MOTORE DATABASE OTTIMIZZATO (INDEXEDDB)
+// ==========================================
 function initDB() {
     return new Promise((resolve, reject) => {
         if (!window.indexedDB) {
@@ -317,11 +336,33 @@ function getSerializableFallbackData() {
     };
 }
 
+// FIX: Standardizzazione rigorosa ID a Stringa al momento del caricamento
+function standardizeDatabaseIds() {
+    if (Array.isArray(plantsDatabase)) {
+        plantsDatabase.forEach(p => {
+            if (p.id) p.id = String(p.id);
+            if (p.mother) p.mother = String(p.mother);
+            if (p.father) p.father = String(p.father);
+            if (Array.isArray(p.logs)) {
+                p.logs.forEach(l => { if (l.id) l.id = String(l.id); });
+            }
+        });
+    }
+    if (Array.isArray(generalExpenses)) {
+        generalExpenses.forEach(e => { if (e.id) e.id = String(e.id); });
+    }
+    if (Array.isArray(wishlist)) {
+        wishlist.forEach(w => { if (w.id) w.id = String(w.id); });
+    }
+}
+
 async function saveToLocal() {
     return new Promise(async (resolve) => {
         if (!Array.isArray(plantsDatabase)) plantsDatabase = [];
         if (!Array.isArray(generalExpenses)) generalExpenses = [];
         if (!Array.isArray(wishlist)) wishlist = [];
+
+        standardizeDatabaseIds();
 
         try {
             const liteData = getSerializableFallbackData();
@@ -390,6 +431,8 @@ async function loadFromLocal() {
                 generalExpenses = Array.isArray(reqExp.result) ? reqExp.result : [];
                 wishlist = Array.isArray(reqWish.result) ? reqWish.result : [];
                 
+                standardizeDatabaseIds();
+
                 plantsDatabase.forEach(p => dbSyncHashes.Plants[p.id] = generateFastHash(p));
                 generalExpenses.forEach(e => dbSyncHashes.Expenses[e.id] = generateFastHash(e));
                 wishlist.forEach(w => dbSyncHashes.Wishlist[w.id] = generateFastHash(w));
@@ -439,6 +482,8 @@ function fallbackLoad() {
             generalExpenses = Array.isArray(data.expenses) ? data.expenses : [];
             wishlist = Array.isArray(data.wishlist) ? data.wishlist : [];
             
+            standardizeDatabaseIds();
+
             plantsDatabase.forEach(p => dbSyncHashes.Plants[p.id] = generateFastHash(p));
             generalExpenses.forEach(e => dbSyncHashes.Expenses[e.id] = generateFastHash(e));
             wishlist.forEach(w => dbSyncHashes.Wishlist[w.id] = generateFastHash(w));

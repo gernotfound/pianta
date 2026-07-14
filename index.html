@@ -41,7 +41,7 @@
 
     <link rel="stylesheet" href="style.css">
     
-    <!-- Ottimizzazione Navigazione 6 Tasti -->
+    <!-- Ottimizzazione Navigazione 6 Tasti e CSS per Chips Filtro (Stile Moderno) -->
     <style>
         .bottom-nav { display: flex; justify-content: space-between; }
         .nav-item { flex: 1; min-width: 0; padding: 8px 2px; }
@@ -49,6 +49,38 @@
         @media (max-width: 400px) { 
             .nav-text { display: none; } 
             .nav-icon { font-size: 26px; margin-bottom: 0; } 
+        }
+
+        /* STILE "CHIPS" PER I FILTRI AVANZATI */
+        .modern-chip-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .chip-radio { display: none; }
+        .chip-radio + label { 
+            padding: 8px 14px; 
+            border-radius: 20px; 
+            border: 1px solid #ddd; 
+            background: #f5f5f5; 
+            font-size: 13px; 
+            cursor: pointer; 
+            color: #444; 
+            transition: all 0.2s ease-in-out; 
+            user-select: none; 
+            display: inline-block; 
+            font-weight: 500;
+        }
+        .chip-radio:hover + label { background: #e0e0e0; }
+        .chip-radio:checked + label { 
+            background: var(--primary); 
+            color: white; 
+            border-color: var(--primary); 
+            box-shadow: 0 4px 10px rgba(46,125,50,0.3); 
+            transform: scale(1.05);
+        }
+        .filter-group-title {
+            font-weight: bold;
+            font-size: 14px;
+            color: var(--primary);
+            margin-bottom: 5px;
+            display: block;
         }
     </style>
 
@@ -148,7 +180,7 @@
     </div>
 
     <!-- NUOVA HOME (DASHBOARD COMANDI) -->
-    <div id="home-view" class="hidden fade-in">
+    <div id="home-view" class="hidden fade-in" style="overflow-x: hidden;">
         <div class="dashboard-panel" style="padding: 20px 25px; margin-bottom: 20px; text-align: center;">
             <h1 class="garden-title" style="justify-content: center; font-size: 28px;">
                 <span id="main-title">🌿 Il mio giardino</span>
@@ -156,25 +188,22 @@
             </h1>
         </div>
         
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 25px;">
-            <button class="btn btn-purple" style="margin:0; padding:15px; display:flex; flex-direction:column; align-items:center; gap:8px; font-weight: bold;" onclick="navigateTab('expenses')"><span style="font-size:26px;">💰</span> Spese</button>
-            <button class="btn btn-warning" style="margin:0; padding:15px; display:flex; flex-direction:column; align-items:center; gap:8px; font-weight: bold;" onclick="navigateTab('wishlist')"><span style="font-size:26px;">🛒</span> Wishlist</button>
-            <button class="btn btn-blue" style="margin:0; padding:15px; display:flex; flex-direction:column; align-items:center; gap:8px; font-weight: bold;" onclick="navigateTab('gallery')"><span style="font-size:26px;">🖼️</span> Archivio Foto</button>
-            <button class="btn" style="background:#1565c0; margin:0; padding:15px; display:flex; flex-direction:column; align-items:center; gap:8px; font-weight: bold;" onclick="navigateTab('scanner')"><span style="font-size:26px;">🏷️</span> Scanner QR</button>
-            <button class="btn" style="background:var(--accent); margin:0; padding:15px; display:flex; flex-direction:column; align-items:center; gap:8px; font-weight: bold;" onclick="navigateTab('macro')"><span style="font-size:26px;">☑️</span> Azioni Macro</button>
-            <button class="btn btn-danger" style="margin:0; padding:15px; display:flex; flex-direction:column; align-items:center; gap:8px; font-weight: bold;" onclick="navigateTab('archive')"><span style="font-size:26px;">🥀</span> Piante Perse</button>
+        <!-- Bottoni Compattati su 2 colonne per evitare bug di scroll -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px;">
+            <button class="btn btn-purple" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTab('expenses')"><span style="font-size:22px;">💰</span> Spese</button>
+            <button class="btn btn-warning" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTab('wishlist')"><span style="font-size:22px;">🛒</span> Wishlist</button>
+            <button class="btn btn-blue" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTab('gallery')"><span style="font-size:22px;">🖼️</span> Archivio Foto</button>
+            <button class="btn" style="background:#1565c0; margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTab('scanner')"><span style="font-size:22px;">🏷️</span> Scanner QR</button>
+            <button class="btn" style="background:var(--accent); margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTab('macro')"><span style="font-size:22px;">☑️</span> Azioni Macro</button>
+            <button class="btn btn-danger" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTab('archive')"><span style="font-size:22px;">🥀</span> Piante Perse</button>
         </div>
 
-        <!-- Sezione Statistiche che verrà popolata dinamicamente dal JS -->
         <h3 style="color: var(--grey); border-bottom: 2px solid #eee; padding-bottom: 10px;">📊 Dati e Statistiche</h3>
-        <div id="my-data-content">
-            <!-- Il JS inietterà qui i riquadri delle statistiche -->
-        </div>
+        <div id="my-data-content"></div>
     </div>
 
     <!-- ELENCO PIANTE (Ex Dashboard) -->
     <div id="dashboard" class="hidden fade-in">
-        <!-- La barra di ricerca, senza i tasti Logout/Backup che sono passati in Impostazioni -->
         <div class="search-sort-bar" style="border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 15px; background: white;">
             <div class="search-input-wrapper">
                 <span class="search-icon">🔍</span>
@@ -233,7 +262,7 @@
         </div>
     </div>
 
-    <!-- MODALE STATO DI SISTEMA (Richiesto) -->
+    <!-- MODALE STATO DI SISTEMA -->
     <div id="system-status-modal" class="fade-in" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100000; justify-content:center; align-items:center;">
         <div style="background:white; padding:25px; border-radius:12px; max-width:400px; width:90%; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
             <h3 style="margin-top:0; color:var(--primary); font-size: 22px;">Stato Sistema</h3>
@@ -256,91 +285,130 @@
     </div>
 
 
-    <!-- SIDEBAR FILTRI AVANZATI (MODERNIZZATA) -->
+    <!-- SIDEBAR FILTRI AVANZATI (RICERCA STILE MODERNO "CHIPS") -->
     <div id="filter-sidebar" class="sidebar-overlay hidden" role="dialog" aria-label="Filtri e Ordine">
-        <div class="sidebar-content" style="width: 360px; display: flex; flex-direction: column;">
-            <div class="sidebar-header" style="position: sticky; top: 0; background: white; z-index: 10;">
+        <div class="sidebar-content" style="width: 380px; display: flex; flex-direction: column;">
+            <div class="sidebar-header" style="position: sticky; top: 0; background: white; z-index: 10; padding-top: 10px;">
                 <h3 style="margin: 0; color: var(--primary);">🛠️ Ricerca Avanzata</h3>
                 <button class="btn btn-grey" style="margin:0; padding: 5px 10px;" onclick="closeFilterSidebar()" aria-label="Chiudi filtri">✖ Chiudi</button>
             </div>
             
-            <div class="sidebar-body" style="gap: 15px; padding-top: 10px; flex-grow: 1;">
+            <div class="sidebar-body" style="gap: 20px; padding-top: 15px; flex-grow: 1; padding-bottom: 20px;">
                 
                 <div class="filter-group">
-                    <label for="sort-plants">🔀 Ordina per:</label>
-                    <select id="sort-plants" style="margin-bottom: 0;">
-                        <option value="name">🔤 Nome (A-Z)</option>
-                        <option value="newest">🆕 Aggiunte di recente</option>
-                        <option value="oldest">🕰️ Meno recenti</option>
-                        <option value="last_updated">🔄 Ultimi eventi</option>
-                        <option value="temp_desc">🌡️ Temp. min (decrescente)</option>
-                        <option value="ph_desc">🧪 pH (decrescente)</option>
-                        <option value="price_desc">💰 Prezzo (decrescente)</option>
-                    </select>
-                </div>
+                    <span class="filter-group-title">🔀 Ordina l'elenco per:</span>
+                    <div class="modern-chip-container">
+                        <input type="radio" name="sort-plants" id="sort-name" class="chip-radio" value="name" checked>
+                        <label for="sort-name">🔤 Nome (A-Z)</label>
+                        
+                        <input type="radio" name="sort-plants" id="sort-newest" class="chip-radio" value="newest">
+                        <label for="sort-newest">🆕 Recenti</label>
+                        
+                        <input type="radio" name="sort-plants" id="sort-oldest" class="chip-radio" value="oldest">
+                        <label for="sort-oldest">🕰️ Vecchi</label>
+                        
+                        <input type="radio" name="sort-plants" id="sort-updated" class="chip-radio" value="last_updated">
+                        <label for="sort-updated">🔄 Ultimi Eventi</label>
 
-                <hr style="border:0.5px solid #eee; margin:15px 0;">
+                        <input type="radio" name="sort-plants" id="sort-temp" class="chip-radio" value="temp_desc">
+                        <label for="sort-temp">🌡️ Temperatura</label>
+
+                        <input type="radio" name="sort-plants" id="sort-ph" class="chip-radio" value="ph_desc">
+                        <label for="sort-ph">🧪 pH</label>
+                    </div>
+                </div>
 
                 <div class="filter-group">
-                    <label for="filter-status">📌 Stato Pianta:</label>
-                    <select id="filter-status" style="margin-bottom: 0;">
-                        <option value="active">🟢 Solo Attive</option>
-                        <option value="archived">🔴 Solo Archiviate</option>
-                        <option value="all">Tutte (Attive e Archiviate)</option>
-                    </select>
+                    <span class="filter-group-title">📌 Stato Pianta:</span>
+                    <div class="modern-chip-container">
+                        <input type="radio" name="filter-status" id="status-active" class="chip-radio" value="active" checked>
+                        <label for="status-active">🟢 Attive</label>
+                        
+                        <input type="radio" name="filter-status" id="status-archived" class="chip-radio" value="archived">
+                        <label for="status-archived">🔴 Archiviate</label>
+                        
+                        <input type="radio" name="filter-status" id="status-all" class="chip-radio" value="all">
+                        <label for="status-all">Tutte</label>
+                    </div>
                 </div>
-
-                <div class="filter-group" style="margin-top: 15px;">
-                    <label for="filter-photo">📸 Presenza Foto:</label>
-                    <select id="filter-photo" style="margin-bottom: 0;">
-                        <option value="all">Indifferente</option>
-                        <option value="yes">🖼️ Solo con foto</option>
-                        <option value="no">🚫 Senza foto</option>
-                    </select>
-                </div>
-
-                <hr style="border:0.5px solid #eee; margin:15px 0;">
 
                 <div class="filter-group">
-                    <label for="filter-placement">🪴 Sistemazione:</label>
-                    <select id="filter-placement" style="margin-bottom: 0;">
-                        <option value="all">Tutte le sistemazioni</option>
-                        <option value="Vaso">In Vaso</option>
-                        <option value="Piena terra">Piena terra</option>
-                        <option value="Idroponica">Idroponica</option>
-                    </select>
+                    <span class="filter-group-title">📸 Presenza Foto:</span>
+                    <div class="modern-chip-container">
+                        <input type="radio" name="filter-photo" id="photo-all" class="chip-radio" value="all" checked>
+                        <label for="photo-all">Indifferente</label>
+                        
+                        <input type="radio" name="filter-photo" id="photo-yes" class="chip-radio" value="yes">
+                        <label for="photo-yes">🖼️ Con Foto</label>
+                        
+                        <input type="radio" name="filter-photo" id="photo-no" class="chip-radio" value="no">
+                        <label for="photo-no">🚫 Senza</label>
+                    </div>
                 </div>
 
-                <div class="filter-group" style="margin-top: 15px;">
-                    <label for="filter-origin">🌱 Origine:</label>
-                    <select id="filter-origin" style="margin-bottom: 0;">
-                        <option value="all">Qualsiasi origine</option>
-                        <option value="Da seme">Da Seme</option>
-                        <option value="Da talea">Da Talea</option>
-                        <option value="Innesto">Innestate</option>
-                        <option value="Margotta">Da Margotta</option>
-                    </select>
+                <div class="filter-group">
+                    <span class="filter-group-title">🪴 Sistemazione:</span>
+                    <div class="modern-chip-container">
+                        <input type="radio" name="filter-placement" id="place-all" class="chip-radio" value="all" checked>
+                        <label for="place-all">Tutte</label>
+                        
+                        <input type="radio" name="filter-placement" id="place-vaso" class="chip-radio" value="Vaso">
+                        <label for="place-vaso">In Vaso</label>
+                        
+                        <input type="radio" name="filter-placement" id="place-terra" class="chip-radio" value="Piena terra">
+                        <label for="place-terra">Piena terra</label>
+                        
+                        <input type="radio" name="filter-placement" id="place-idro" class="chip-radio" value="Idroponica">
+                        <label for="place-idro">Idroponica</label>
+                    </div>
                 </div>
 
-                <div class="filter-group" style="margin-top: 15px;">
-                    <label for="filter-fertility">🌸 Fertilità:</label>
-                    <select id="filter-fertility" style="margin-bottom: 0;">
-                        <option value="all">Tutti i tipi</option>
-                        <option value="Autofertile">Autofertili</option>
-                        <option value="Parzialmente autofertile">Parz. Autofertili</option>
-                        <option value="Autosterile">Autosterili</option>
-                    </select>
+                <div class="filter-group">
+                    <span class="filter-group-title">🌱 Origine / Metodo:</span>
+                    <div class="modern-chip-container">
+                        <input type="radio" name="filter-origin" id="orig-all" class="chip-radio" value="all" checked>
+                        <label for="orig-all">Tutte</label>
+                        
+                        <input type="radio" name="filter-origin" id="orig-seme" class="chip-radio" value="Da seme">
+                        <label for="orig-seme">Da Seme</label>
+                        
+                        <input type="radio" name="filter-origin" id="orig-talea" class="chip-radio" value="Da talea">
+                        <label for="orig-talea">Da Talea</label>
+                        
+                        <input type="radio" name="filter-origin" id="orig-innesto" class="chip-radio" value="Innesto">
+                        <label for="orig-innesto">Innesto</label>
+                        
+                        <input type="radio" name="filter-origin" id="orig-marg" class="chip-radio" value="Margotta">
+                        <label for="orig-marg">Margotta</label>
+                    </div>
                 </div>
 
-                <div class="filter-group" style="margin-top: 20px; background: #f1f8e9; padding: 15px; border-radius: 8px; border: 1px solid #c8e6c9;">
-                    <label for="filter-survival-temp">❄️ Tolleranza Freddo (°C):</label>
+                <div class="filter-group">
+                    <span class="filter-group-title">🌸 Fertilità:</span>
+                    <div class="modern-chip-container">
+                        <input type="radio" name="filter-fertility" id="fert-all" class="chip-radio" value="all" checked>
+                        <label for="fert-all">Tutti</label>
+                        
+                        <input type="radio" name="filter-fertility" id="fert-auto" class="chip-radio" value="Autofertile">
+                        <label for="fert-auto">Autofertili</label>
+                        
+                        <input type="radio" name="filter-fertility" id="fert-parz" class="chip-radio" value="Parzialmente autofertile">
+                        <label for="fert-parz">Parz. Autofertili</label>
+                        
+                        <input type="radio" name="filter-fertility" id="fert-ster" class="chip-radio" value="Autosterile">
+                        <label for="fert-ster">Autosterili</label>
+                    </div>
+                </div>
+
+                <div class="filter-group" style="background: #f1f8e9; padding: 15px; border-radius: 8px; border: 1px solid #c8e6c9;">
+                    <label for="filter-survival-temp" style="font-weight: bold; color: var(--primary);">❄️ Tolleranza Freddo (°C):</label>
                     <p style="font-size: 12px; color: #555; margin-top: 2px; margin-bottom: 10px;">Mostra le piante in grado di tollerare questa temperatura (o una inferiore).</p>
-                    <input type="text" inputmode="decimal" id="filter-survival-temp" placeholder="es. 0" style="margin-bottom: 0;">
+                    <input type="text" inputmode="decimal" id="filter-survival-temp" placeholder="es. 0" style="margin-bottom: 0; width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
                 </div>
             </div>
 
-            <div style="margin-top: 20px; display: flex; gap: 10px; position: sticky; bottom: 0; background: white; padding: 15px 0 10px 0; border-top: 1px solid #eee; z-index: 10;">
-                <button class="btn btn-primary" style="flex:2; margin:0;" onclick="applyFiltersAndClose()">✅ Applica Filtri</button>
+            <div style="margin-top: 10px; display: flex; gap: 10px; position: sticky; bottom: 0; background: white; padding: 15px 0; border-top: 1px solid #eee; z-index: 10;">
+                <button class="btn btn-primary" style="flex:2; margin:0; font-weight: bold;" onclick="applyFiltersAndClose()">✅ Applica Filtri</button>
                 <button class="btn btn-danger" style="flex:1; margin:0;" onclick="resetAllFilters()">🔄 Azzera</button>
             </div>
         </div>
@@ -529,20 +597,11 @@
     <div id="events-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; margin-bottom: 20px;">
         
         <div class="detail-header" style="border-bottom: none; margin-bottom: 10px;">
-            <h2 style="margin:0; color: var(--purple);">📊 Eventi e Allerta Meteo</h2>
+            <h2 style="margin:0; color: var(--purple);">📊 Eventi</h2>
         </div>
 
-        <!-- IMPOSTAZIONE ALLERTA VENTO -->
-        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border: 1px solid #bbdefb; margin-bottom: 20px;">
-            <h4 style="margin: 0 0 10px 0; color: #1565c0; font-size: 14px;">⚙️ Impostazioni Allerta Vento</h4>
-            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                <label for="wind-threshold-input" style="font-size: 13px; color: #333; margin:0;">Avvisami se il vento supera (km/h):</label>
-                <input type="number" id="wind-threshold-input" value="40" style="width: 80px; padding: 6px; font-size: 14px; margin:0;" onchange="saveWindThreshold()">
-                <span id="wind-save-confirm" style="font-size: 12px; color: var(--primary); display: none; font-weight: bold;">Salvato!</span>
-            </div>
-        </div>
-
-        <div id="weather-alerts-container" style="margin-bottom: 30px; display: none;" aria-live="polite"></div>
+        <!-- Il riquadro Allerta Meteo e le impostazioni Vento verranno iniettati qui da tools.js -->
+        <div id="weather-alerts-container" style="margin-bottom: 30px;" aria-live="polite"></div>
 
         <hr style="border: 0; height: 2px; background: #eee; margin-bottom: 25px;">
         
@@ -577,6 +636,7 @@
     <div id="macro-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #e0e0e0;">
         <div class="detail-header">
             <h2 style="margin:0; color: var(--accent);">☑️ Azioni di Massa (Macro)</h2>
+            <button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button>
         </div>
         
         <div id="macro-step-1">
@@ -825,19 +885,19 @@
         </div>
     </div>
 
-    <!-- NUOVA BOTTOM NAVIGATION BAR (6 Tasti) -->
+    <!-- NUOVA BOTTOM NAVIGATION BAR (6 Tasti - Ordine Corretto) -->
     <nav class="bottom-nav" id="bottom-nav" aria-label="Menu principale">
         <button class="nav-item active" id="nav-btn-home" onclick="navigateTab('home')">
             <span class="nav-icon" aria-hidden="true">🏠</span>
             <span class="nav-text">Home</span>
         </button>
-        <button class="nav-item" id="nav-btn-add-plant" onclick="navigateTab('add-plant')">
-            <span class="nav-icon" aria-hidden="true">➕</span>
-            <span class="nav-text">Aggiungi</span>
-        </button>
         <button class="nav-item" id="nav-btn-plants" onclick="navigateTab('plants')">
             <span class="nav-icon" aria-hidden="true">🪴</span>
             <span class="nav-text">Piante</span>
+        </button>
+        <button class="nav-item" id="nav-btn-add-plant" onclick="navigateTab('add-plant')">
+            <span class="nav-icon" aria-hidden="true">➕</span>
+            <span class="nav-text">Aggiungi</span>
         </button>
         <button class="nav-item" id="nav-btn-events" onclick="navigateTab('events')">
             <span class="nav-icon" aria-hidden="true">📊</span>

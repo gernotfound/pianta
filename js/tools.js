@@ -280,7 +280,7 @@ async function saveMacroV2() {
 }
 
 // ==========================================
-// SEZIONE "I MIEI DATI" E STATISTICHE
+// SEZIONE "I MIEI DATI" E STATISTICHE (Dashboard Home)
 // ==========================================
 
 function renderMyData() {
@@ -583,7 +583,6 @@ async function deleteWishlistItem(id) {
 
 let weatherCache = new Map(); 
 
-// Nuova funzione per salvare e aggiornare la soglia del vento personalizzata
 function saveWindThreshold() {
     const input = document.getElementById('wind-threshold-input');
     if (input) {
@@ -607,7 +606,8 @@ async function fetchWeatherData(lat, lng) {
     if (weatherCache.has(cacheKey)) return weatherCache.get(cacheKey);
 
     try {
-        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_min,wind_speed_10m_max&timezone=auto`);
+        // Aggiunto weathercode per rilevare la grandine (Codici WMO)
+        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_min,wind_speed_10m_max,weathercode&timezone=auto`);
         const data = await response.json();
         if (data && data.daily) {
             weatherCache.set(cacheKey, data.daily);
@@ -634,12 +634,8 @@ async function renderWeatherDashboard() {
         return;
     }
     
-    // Recupero la soglia salvata, o imposto il default
     const savedWindThreshold = localStorage.getItem('windAlertThreshold');
     const activeWindThreshold = savedWindThreshold !== null ? parseFloat(savedWindThreshold) : (typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.WIND_ALERT_KMH : 40);
-
-    const windInputEl = document.getElementById('wind-threshold-input');
-    if(windInputEl) windInputEl.value = activeWindThreshold;
 
     const locations = [];
     activePlants.forEach(p => {
@@ -664,6 +660,7 @@ async function renderWeatherDashboard() {
 
     let windAlerts = [];
     let frostAlerts = []; 
+    let hailAlerts = [];
 
     for (const loc of locations) {
         const weather = await fetchWeatherData(loc.lat, loc.lng);
@@ -674,19 +671,25 @@ async function renderWeatherDashboard() {
                 const dateStr = weather.time[i];
                 const windSpeed = weather.wind_speed_10m_max ? weather.wind_speed_10m_max[i] : 0;
                 const minTemp = weather.temperature_2m_min ? weather.temperature_2m_min[i] : 99;
+                const wCode = weather.weathercode ? weather.weathercode[i] : 0;
 
-                // Uso la soglia del vento dinamica appena recuperata
+                // Controllo Vento
                 if (windSpeed > activeWindThreshold) {
                     const alreadyHasWindAlert = windAlerts.some(wa => wa.locationName === loc.name && wa.date === dateStr);
                     if (!alreadyHasWindAlert) {
-                        windAlerts.push({
-                            locationName: loc.name,
-                            date: dateStr,
-                            speed: windSpeed
-                        });
+                        windAlerts.push({ locationName: loc.name, date: dateStr, speed: windSpeed });
                     }
                 }
 
+                // Controllo Grandine (WMO Codes: 96 = Thunderstorm with slight/mod hail, 99 = heavy hail)
+                if (wCode === 96 || wCode === 99) {
+                    const alreadyHasHailAlert = hailAlerts.some(ha => ha.locationName === loc.name && ha.date === dateStr);
+                    if (!alreadyHasHailAlert) {
+                        hailAlerts.push({ locationName: loc.name, date: dateStr });
+                    }
+                }
+
+                // Controllo Gelo (Temperatura < Tolleranza della pianta)
                 activePlants.forEach(p => {
                     if (p.lat !== null && p.lng !== null && p.lat !== undefined && p.lng !== undefined) {
                         const pLat = parseFloat(p.lat.toString().replace(',', '.'));
@@ -711,8 +714,17 @@ async function renderWeatherDashboard() {
         }
     }
 
-    let html = `<div style="background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-                    <h3 style="margin-top:0; color: #2e7d32; display:flex; align-items:center; gap:8px; border-bottom: 2px solid #e8f5e9; padding-bottom: 10px;">🌤️ Allerta Meteo Automatica</h3>`;
+    // Costruzione dell'interfaccia con le Impostazioni Vento integrate nell'intestazione
+    let html = `
+    <div style="background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e8f5e9; padding-bottom: 10px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+            <h3 style="margin: 0; color: #2e7d32; display:flex; align-items:center; gap:8px;">🌤️ Allerta meteo</h3>
+            <div style="display: flex; gap: 10px; align-items: center; background: #e3f2fd; padding: 6px 12px; border-radius: 20px; font-size: 13px;">
+                <label for="wind-threshold-input" style="color: #1565c0; margin:0; font-weight: bold;">Soglia Vento (km/h):</label>
+                <input type="number" id="wind-threshold-input" value="${activeWindThreshold}" style="width: 50px; padding: 4px; font-size: 13px; border: 1px solid #90caf9; border-radius: 4px; text-align: center; background: white;" onchange="saveWindThreshold()">
+                <span id="wind-save-confirm" style="color: #2e7d32; display: none; font-weight: bold;">✔️</span>
+            </div>
+        </div>`;
 
     if (windAlerts.length > 0) {
         html += `<div style="background:#fff3e0; padding:15px; border-radius:8px; border-left: 5px solid #ff9800; margin-bottom:15px; color:#e65100;">
@@ -720,6 +732,17 @@ async function renderWeatherDashboard() {
                     <ul style="margin: 8px 0 0 0; padding-left: 20px; font-size: 14px;">`;
         windAlerts.forEach(wa => {
             html += `<li>Previste raffiche di <strong>${wa.speed.toFixed(1)} km/h</strong> in data <strong>${typeof formatDateIt === 'function' ? formatDateIt(wa.date) : wa.date}</strong> presso <em>${escapeHTML(wa.locationName)}</em>.</li>`;
+        });
+        html += `   </ul>
+                 </div>`;
+    }
+
+    if (hailAlerts.length > 0) {
+        html += `<div style="background:#f3e5f5; padding:15px; border-radius:8px; border-left: 5px solid #8e24aa; margin-bottom:15px; color:#6a1b9a;">
+                    <strong style="font-size: 16px;">🌩️ Allerta Grandine:</strong> 
+                    <ul style="margin: 8px 0 0 0; padding-left: 20px; font-size: 14px;">`;
+        hailAlerts.forEach(ha => {
+            html += `<li>Rischio temporali con grandine in data <strong>${typeof formatDateIt === 'function' ? formatDateIt(ha.date) : ha.date}</strong> presso <em>${escapeHTML(ha.locationName)}</em>. Valuta di proteggere le piante!</li>`;
         });
         html += `   </ul>
                  </div>`;
@@ -749,9 +772,9 @@ async function renderWeatherDashboard() {
         html += `</div>`;
     }
 
-    if (windAlerts.length === 0 && frostAlerts.length === 0) {
+    if (windAlerts.length === 0 && frostAlerts.length === 0 && hailAlerts.length === 0) {
         html += `<div style="color:#2e7d32; font-weight:bold; font-size:14px; padding:12px; background:#e8f5e9; border-radius:8px; border-left: 5px solid #2e7d32; display: flex; align-items: center; gap: 8px;">
-                    <span>✅ Nessun rischio rilevato per vento forte (> ${activeWindThreshold} km/h) o temperature inferiori alla tolleranza delle tue piante per i prossimi 7 giorni.</span>
+                    <span>✅ Nessun rischio rilevato per vento, gelo o grandine nei prossimi 7 giorni.</span>
                  </div>`;
     }
 

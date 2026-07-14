@@ -1,6 +1,3 @@
-// ==========================================
-// GESTIONE FORM PIANTE (UI Dinamica)
-// ==========================================
 function toggleFidelityField() {
     const originEl = document.getElementById('p-origin');
     const container = document.getElementById('fidelity-container');
@@ -24,12 +21,19 @@ function setVendorMode(mode) {
     if (!select || !input || !btn) return;
     
     if (mode === 'select') { 
-        input.style.display = 'none'; select.style.display = 'block'; btn.innerText = '➕ Nuovo'; 
+        input.style.display = 'none'; 
+        select.style.display = 'block'; 
+        btn.innerText = '➕ Nuovo'; 
     } else { 
-        select.style.display = 'none'; input.style.display = 'block'; btn.innerText = '🔄 Storico'; 
+        select.style.display = 'none'; 
+        input.style.display = 'block'; 
+        btn.innerText = '🔄 Storico'; 
     }
 }
-function toggleVendorMode() { setVendorMode(vendorMode === 'select' ? 'input' : 'select'); }
+
+function toggleVendorMode() { 
+    setVendorMode(vendorMode === 'select' ? 'input' : 'select'); 
+}
 
 function setSoilMode(mode) {
     soilMode = mode; 
@@ -39,12 +43,19 @@ function setSoilMode(mode) {
     if (!select || !input || !btn) return;
 
     if (mode === 'select') { 
-        input.style.display = 'none'; select.style.display = 'block'; btn.innerText = '➕ Nuovo'; 
+        input.style.display = 'none'; 
+        select.style.display = 'block'; 
+        btn.innerText = '➕ Nuovo'; 
     } else { 
-        select.style.display = 'none'; input.style.display = 'block'; btn.innerText = '🔄 Storico'; 
+        select.style.display = 'none'; 
+        input.style.display = 'block'; 
+        btn.innerText = '🔄 Storico'; 
     }
 }
-function toggleSoilMode() { setSoilMode(soilMode === 'select' ? 'input' : 'select'); }
+
+function toggleSoilMode() { 
+    setSoilMode(soilMode === 'select' ? 'input' : 'select'); 
+}
 
 function setScientificMode(mode) {
     scientificMode = mode; 
@@ -54,12 +65,19 @@ function setScientificMode(mode) {
     if (!select || !input || !btn) return;
 
     if (mode === 'select') { 
-        input.style.display = 'none'; select.style.display = 'block'; btn.innerText = '➕ Nuovo'; 
+        input.style.display = 'none'; 
+        select.style.display = 'block'; 
+        btn.innerText = '➕ Nuovo'; 
     } else { 
-        select.style.display = 'none'; input.style.display = 'block'; btn.innerText = '🔄 Storico'; 
+        select.style.display = 'none'; 
+        input.style.display = 'block'; 
+        btn.innerText = '🔄 Storico'; 
     }
 }
-function toggleScientificMode() { setScientificMode(scientificMode === 'select' ? 'input' : 'select'); }
+
+function toggleScientificMode() { 
+    setScientificMode(scientificMode === 'select' ? 'input' : 'select'); 
+}
 
 function setLocationMode(mode) {
     locationMode = mode;
@@ -84,7 +102,10 @@ function setLocationMode(mode) {
         if (mapInstructions) mapInstructions.innerText = 'Inserisci un nuovo luogo. Puoi usare i campi sopra o toccare la mappa.';
     }
 }
-function toggleLocationMode() { setLocationMode(locationMode === 'select' ? 'input' : 'select'); }
+
+function toggleLocationMode() { 
+    setLocationMode(locationMode === 'select' ? 'input' : 'select'); 
+}
 
 function togglePotSizeField() {
     const placementEl = document.getElementById('p-placement'); 
@@ -101,24 +122,25 @@ function togglePotSizeField() {
     }
 }
 
-// Reset filtri esteso
 function resetFiltersAndSearch() {
-    ['filter-placement', 'filter-origin', 'filter-fertility', 'filter-photo', 'search-plant', 'filter-survival-temp'].forEach(id => {
+    ['search-plant', 'filter-vuln-cold', 'filter-vuln-hot'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) {
-            if (el.tagName === 'SELECT') {
-                el.value = 'all';
-            } else {
-                el.value = '';
-            }
-        }
+        if (el) el.value = '';
     });
     
-    const statusEl = document.getElementById('filter-status');
-    if (statusEl) statusEl.value = 'active';
-
-    const sortEl = document.getElementById('sort-plants');
-    if (sortEl) sortEl.value = 'name';
+    const defaults = {
+        'sort-name': true,
+        'status-active': true,
+        'photo-all': true,
+        'place-all': true,
+        'orig-all': true,
+        'fert-all': true
+    };
+    
+    for (const [id, checked] of Object.entries(defaults)) {
+        const el = document.getElementById(id);
+        if (el) el.checked = checked;
+    }
 }
 
 function syncSpeciesNotes() {
@@ -175,7 +197,12 @@ function populateFormHelpers() {
         const vendors = [...new Set(plantsDatabase.map(p => p.vendor).filter(v => v && v.trim() !== ''))];
         vendorSelect.innerHTML = '<option value="">-- Seleziona fornitore --</option>';
         if (vendors.length === 0) vendorSelect.innerHTML = '<option value="">Nessun fornitore salvato</option>';
-        else vendors.forEach(v => { const opt = document.createElement('option'); opt.value = escapeHTML(v); opt.innerText = v.length > 40 ? escapeHTML(v.substring(0, 40)) + '...' : escapeHTML(v); vendorSelect.appendChild(opt); });
+        else vendors.forEach(v => { 
+            const opt = document.createElement('option'); 
+            opt.value = escapeHTML(v); 
+            opt.innerText = v.length > 40 ? escapeHTML(v.substring(0, 40)) + '...' : escapeHTML(v); 
+            vendorSelect.appendChild(opt); 
+        });
     }
 
     const soilSelect = document.getElementById('p-soil-select');
@@ -183,7 +210,12 @@ function populateFormHelpers() {
         const soils = [...new Set(plantsDatabase.map(p => p.soil).filter(s => s && s.trim() !== ''))];
         soilSelect.innerHTML = '<option value="">-- Seleziona substrato --</option>';
         if (soils.length === 0) soilSelect.innerHTML = '<option value="">Nessun substrato salvato</option>';
-        else soils.forEach(s => { const opt = document.createElement('option'); opt.value = escapeHTML(s); opt.innerText = s.length > 40 ? escapeHTML(s.substring(0, 40)) + '...' : escapeHTML(s); soilSelect.appendChild(opt); });
+        else soils.forEach(s => { 
+            const opt = document.createElement('option'); 
+            opt.value = escapeHTML(s); 
+            opt.innerText = s.length > 40 ? escapeHTML(s.substring(0, 40)) + '...' : escapeHTML(s); 
+            soilSelect.appendChild(opt); 
+        });
     }
 
     const scientificSelect = document.getElementById('p-scientific-select');
@@ -191,12 +223,18 @@ function populateFormHelpers() {
         const scientifics = [...new Set(plantsDatabase.map(p => p.scientific).filter(v => v && v.trim() !== ''))].sort();
         scientificSelect.innerHTML = '<option value="">-- Seleziona o lascia vuoto --</option>';
         if (scientifics.length === 0) scientificSelect.innerHTML = '<option value="">Nessun nome scientifico salvato</option>';
-        else scientifics.forEach(s => { const opt = document.createElement('option'); opt.value = escapeHTML(s); opt.innerText = escapeHTML(s); scientificSelect.appendChild(opt); });
+        else scientifics.forEach(s => { 
+            const opt = document.createElement('option'); 
+            opt.value = escapeHTML(s); 
+            opt.innerText = escapeHTML(s); 
+            scientificSelect.appendChild(opt); 
+        });
     }
 
     const locSelect = document.getElementById('p-location-select');
     if (locSelect) {
-        const locs = []; const signatures = new Set();
+        const locs = []; 
+        const signatures = new Set();
         plantsDatabase.forEach(p => {
             if (p.location || (p.lat !== null && p.lng !== null)) {
                 let sig = `${p.location}_${p.lat}_${p.lng}`;
@@ -208,7 +246,8 @@ function populateFormHelpers() {
         });
         locSelect.innerHTML = '<option value="">📍 Scegli da "I miei luoghi"...</option>';
         locs.forEach((l, index) => {
-            const opt = document.createElement('option'); opt.value = index + 1; 
+            const opt = document.createElement('option'); 
+            opt.value = index + 1; 
             let text = l.loc || 'Luogo senza nome'; 
             if (l.lat !== null && l.lng !== null && l.lat !== undefined && l.lng !== undefined) text += ` (${l.lat}, ${l.lng})`;
             opt.innerText = escapeHTML(text); 
@@ -250,9 +289,6 @@ function fillSavedLocation() {
     if (typeof updateFormMapFromInputs === 'function') updateFormMapFromInputs();
 }
 
-// ==========================================
-// CRUD PIANTE (Crea, Leggi, Aggiorna, Elimina)
-// ==========================================
 function _internalOpenPlantForm() {
     editingMode = false; 
     currentPlantId = null; 
@@ -283,7 +319,7 @@ function _internalOpenPlantForm() {
 
 function clearForm() {
     document.querySelectorAll('#form-container input, #form-container textarea, #form-container select').forEach(el => { 
-        if (!['p-origin', 'p-placement', 'p-genetic-fidelity', 'search-plant', 'filter-survival-temp'].includes(el.id)) { 
+        if (!['p-origin', 'p-placement', 'p-genetic-fidelity', 'search-plant'].includes(el.id)) { 
             el.value = ''; 
         } 
     });
@@ -427,7 +463,8 @@ async function savePlant() {
     }
 
     try {
-        let finalMainPhoto = ""; let finalFruitPhoto = "";
+        let finalMainPhoto = ""; 
+        let finalFruitPhoto = "";
 
         if (editingMode && currentPlantIdStr !== null) {
             let plantToClean = plantsDatabase.find(x => String(x.id) === currentPlantIdStr);
@@ -552,14 +589,16 @@ async function savePlant() {
     }
 }
 
-function editCurrentPlant() { navigateTo('edit-plant', currentPlantId); }
+function editCurrentPlant() { 
+    navigateTo('edit-plant', currentPlantId); 
+}
 
 function _internalEditPlant(id) {
     if (!plantsDatabase) return;
     const parsedId = String(id);
     const plant = plantsDatabase.find(p => String(p.id) === parsedId);
     if(!plant) { 
-        if(typeof goToHomeTab === 'function') goToHomeTab(); 
+        if(typeof goBack === 'function') goBack(); 
         else window.history.back(); 
         return; 
     }
@@ -608,13 +647,17 @@ function _internalEditPlant(id) {
         setVendorMode('select'); 
         if (document.getElementById('p-vendor-select')) document.getElementById('p-vendor-select').value = plant.vendor; 
         if (document.getElementById('p-vendor-input')) document.getElementById('p-vendor-input').value = plant.vendor; 
-    } else { setVendorMode('select'); }
+    } else { 
+        setVendorMode('select'); 
+    }
     
     if(plant.soil) { 
         setSoilMode('select'); 
         if (document.getElementById('p-soil-select')) document.getElementById('p-soil-select').value = plant.soil; 
         if (document.getElementById('p-soil-input')) document.getElementById('p-soil-input').value = plant.soil; 
-    } else { setSoilMode('select'); }
+    } else { 
+        setSoilMode('select'); 
+    }
     
     if (plant.scientific) { 
         setScientificMode('select'); 
@@ -629,7 +672,9 @@ function _internalEditPlant(id) {
                 if(document.getElementById('p-scientific-input')) document.getElementById('p-scientific-input').value = plant.scientific;
             }
         }
-    } else { setScientificMode('select'); }
+    } else { 
+        setScientificMode('select'); 
+    }
 
     if (plant.location || (plant.lat !== null && plant.lng !== null && plant.lat !== undefined && plant.lng !== undefined)) {
         setLocationMode('select');
@@ -653,7 +698,9 @@ function _internalEditPlant(id) {
                 fillSavedLocation(); 
             }
         }
-    } else { setLocationMode('select'); }
+    } else { 
+        setLocationMode('select'); 
+    }
 
     togglePotSizeField();
 
@@ -666,6 +713,7 @@ function _internalEditPlant(id) {
             if (document.getElementById('remove-btn-main')) document.getElementById('remove-btn-main').style.display = 'block';
         }
     }
+    
     if (plant.fruitPhoto) {
         const pFruit = document.getElementById('preview-fruit');
         if (pFruit) {
@@ -732,7 +780,7 @@ async function deleteCurrentPlant() {
             isFormDirty = false; 
             
             if(typeof AppState !== 'undefined') AppState.emit('plantsUpdated'); 
-            if(typeof goToHomeTab === 'function') goToHomeTab(); 
+            if(typeof goBack === 'function') goBack(); 
             
             Swal.fire({
                 icon: 'info',
@@ -754,9 +802,6 @@ async function deleteCurrentPlant() {
     }
 }
 
-// ==========================================
-// ARCHIVIAZIONE E DUPLICAZIONE
-// ==========================================
 async function toggleArchiveStatus() {
     if (typeof Swal === 'undefined' || !plantsDatabase) return;
     const parsedId = String(currentPlantId);
@@ -776,7 +821,7 @@ async function toggleArchiveStatus() {
                 if(typeof saveToLocal === 'function') await saveToLocal(); 
                 
                 if(typeof AppState !== 'undefined') AppState.emit('plantsUpdated'); 
-                if(typeof goToHomeTab === 'function') goToHomeTab(); 
+                if(typeof goBack === 'function') goBack(); 
                 else window.history.back(); 
             } catch (err) {
                 console.error("Errore ripristino:", err);
@@ -795,7 +840,7 @@ async function toggleArchiveStatus() {
                 if(typeof saveToLocal === 'function') await saveToLocal(); 
                 
                 if(typeof AppState !== 'undefined') AppState.emit('plantsUpdated'); 
-                if(typeof goToHomeTab === 'function') goToHomeTab(); 
+                if(typeof goBack === 'function') goBack(); 
                 else window.history.back(); 
             } catch (err) {
                 console.error("Errore archiviazione:", err);
@@ -858,7 +903,8 @@ async function confirmDuplicate() {
 
     try {
         for (let i = 0; i < qty; i++) {
-            let newName = baseName; let suffixCounter = 1;
+            let newName = baseName; 
+            let suffixCounter = 1;
             if (qty > 1 || plantsDatabase.some(p => (p.name || '').toLowerCase() === baseName.toLowerCase())) {
                 newName = `${baseName} - ${suffixCounter}`;
                 while (plantsDatabase.some(p => (p.name || '').toLowerCase() === newName.toLowerCase())) { 
@@ -872,7 +918,15 @@ async function confirmDuplicate() {
                 clonedLogs = plantToCopy.logs.map((log) => {
                     return {
                         id: typeof generateId === 'function' ? generateId() : crypto.randomUUID(),
-                        date: log.date, type: log.type, height: log.height, harvest: log.harvest, ph: log.ph, placement: log.placement, potSize: log.potSize, graftName: log.graftName, note: log.note,
+                        date: log.date, 
+                        type: log.type, 
+                        height: log.height, 
+                        harvest: log.harvest, 
+                        ph: log.ph, 
+                        placement: log.placement, 
+                        potSize: log.potSize, 
+                        graftName: log.graftName, 
+                        note: log.note,
                         photo: safeCloneImage(log.photo), 
                         photos: log.photos && Array.isArray(log.photos) ? log.photos.map(ph => safeCloneImage(ph)) : [] 
                     };
@@ -920,7 +974,7 @@ async function confirmDuplicate() {
         closeDuplicateModal(); 
         
         if(typeof AppState !== 'undefined') AppState.emit('plantsUpdated');
-        if(typeof goToHomeTab === 'function') goToHomeTab(); 
+        if(typeof goBack === 'function') goBack(); 
         
         if (typeof Swal !== 'undefined') {
             Swal.fire({icon: 'success', title: 'Piante clonate', text: `Hai clonato con successo ${qty} piante.`, timer: 2000, showConfirmButton: false});
@@ -936,9 +990,6 @@ async function confirmDuplicate() {
     }
 }
 
-// ==========================================
-// RENDERIZZAZIONE GRIGLIE ED ELENCHI (INFINITE SCROLL)
-// ==========================================
 let currentPlantsChunkIndex = 0;
 const PLANTS_CHUNK_SIZE = 25;
 let currentFilteredPlants = [];
@@ -960,7 +1011,6 @@ function renderPlants() {
     const statsBar = document.getElementById('dashboard-stats');
     const searchBar = document.querySelector('.search-sort-bar');
     
-    // FIX BUG: Lo Stato Vuoto assoluto si attiva SOLO se il database in toto è vuoto.
     if (plantsDatabase.length === 0) {
         if(emptyState) {
             emptyState.innerHTML = `
@@ -983,54 +1033,61 @@ function renderPlants() {
     }
 
     const searchInput = document.getElementById('search-plant');
-    const sortSelect = document.getElementById('sort-plants');
     const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
-    const sortMode = sortSelect ? sortSelect.value : "name";
     
-    const statusModeEl = document.getElementById('filter-status');
-    const photoModeEl = document.getElementById('filter-photo');
-    const fp = document.getElementById('filter-placement');
-    const fo = document.getElementById('filter-origin');
-    const ff = document.getElementById('filter-fertility');
+    const sortModeEl = document.querySelector('input[name="sort-plants"]:checked');
+    const sortMode = sortModeEl ? sortModeEl.value : "name";
     
-    const statusMode = statusModeEl ? statusModeEl.value : 'active';
-    const photoMode = photoModeEl ? photoModeEl.value : 'all';
-    const filterPlacement = fp ? fp.value : 'all';
-    const filterOrigin = fo ? fo.value : 'all';
-    const filterFertility = ff ? ff.value : 'all';
+    const statusModeEl = document.querySelector('input[name="filter-status"]:checked');
+    const statusMode = statusModeEl ? statusModeEl.value : "active";
     
-    const filterSurvivalEl = document.getElementById('filter-survival-temp');
-    const filterSurvivalInputStr = filterSurvivalEl && filterSurvivalEl.value !== '' ? filterSurvivalEl.value : 'null';
-    const filterSurvival = filterSurvivalEl && filterSurvivalEl.value !== '' ? parseFloat(filterSurvivalEl.value.replace(',','.')) : null;
+    const photoModeEl = document.querySelector('input[name="filter-photo"]:checked');
+    const photoMode = photoModeEl ? photoModeEl.value : "all";
+    
+    const filterPlacementEl = document.querySelector('input[name="filter-placement"]:checked');
+    const filterPlacement = filterPlacementEl ? filterPlacementEl.value : "all";
+    
+    const filterOriginEl = document.querySelector('input[name="filter-origin"]:checked');
+    const filterOrigin = filterOriginEl ? filterOriginEl.value : "all";
+    
+    const filterFertilityEl = document.querySelector('input[name="filter-fertility"]:checked');
+    const filterFertility = filterFertilityEl ? filterFertilityEl.value : "all";
 
-    const currentFilterStateString = `${searchTerm}_${sortMode}_${statusMode}_${photoMode}_${filterPlacement}_${filterOrigin}_${filterFertility}_${filterSurvivalInputStr}`;
+    const vulnColdEl = document.getElementById('filter-vuln-cold');
+    const vulnColdInputStr = vulnColdEl && vulnColdEl.value !== '' ? vulnColdEl.value : 'null';
+    const vulnCold = vulnColdEl && vulnColdEl.value !== '' ? parseFloat(vulnColdEl.value.replace(',','.')) : null;
+
+    const vulnHotEl = document.getElementById('filter-vuln-hot');
+    const vulnHotInputStr = vulnHotEl && vulnHotEl.value !== '' ? vulnHotEl.value : 'null';
+    const vulnHot = vulnHotEl && vulnHotEl.value !== '' ? parseFloat(vulnHotEl.value.replace(',','.')) : null;
+
+    const currentFilterStateString = `${searchTerm}_${sortMode}_${statusMode}_${photoMode}_${filterPlacement}_${filterOrigin}_${filterFertility}_${vulnColdInputStr}_${vulnHotInputStr}`;
     
     let isNewSearchOrFilter = (currentFilterStateString !== lastFilterStateString);
     lastFilterStateString = currentFilterStateString;
 
     let filteredPlants = plantsDatabase.filter(p => {
-        // Filtro 1: Stato Pianta
         if (statusMode === 'active' && p.status === 'archived') return false;
         if (statusMode === 'archived' && p.status !== 'archived') return false;
 
-        // Filtro 2: Presenza Foto
         let hasPhoto = !!(p.photo || p.fruitPhoto);
         if (photoMode === 'yes' && !hasPhoto) return false;
         if (photoMode === 'no' && hasPhoto) return false;
 
-        // Filtro 3: Ricerca Testuale
         const nameMatch = p.name ? p.name.toLowerCase().includes(searchTerm) : false;
         const scientificMatch = p.scientific ? p.scientific.toLowerCase().includes(searchTerm) : false;
         if (searchTerm && !nameMatch && !scientificMatch) return false;
 
-        // Filtro 4: Proprietà botaniche
         if (filterPlacement !== 'all' && p.placement !== filterPlacement && !(p.placement == null && filterPlacement === 'Vaso' && p.potSize)) return false;
         if (filterOrigin !== 'all' && p.origin !== filterOrigin) return false;
         if (filterFertility !== 'all' && getModernFertility(p.autofertile) !== filterFertility) return false;
 
-        if (filterSurvival !== null && !isNaN(filterSurvival)) {
-            if (p.minTemp !== undefined && p.minTemp !== null && filterSurvival < p.minTemp) return false;
-            if (p.maxTemp !== undefined && p.maxTemp !== null && filterSurvival > p.maxTemp) return false;
+        if (vulnCold !== null && !isNaN(vulnCold)) {
+            if (p.minTemp === undefined || p.minTemp === null || p.minTemp <= vulnCold) return false;
+        }
+        
+        if (vulnHot !== null && !isNaN(vulnHot)) {
+            if (p.maxTemp === undefined || p.maxTemp === null || p.maxTemp >= vulnHot) return false;
         }
 
         return true;
@@ -1085,7 +1142,6 @@ function renderPlants() {
 
     currentFilteredPlants = filteredPlants;
 
-    // Se il database contiene piante, ma i filtri le escludono tutte:
     if (filteredPlants.length === 0) {
         grid.innerHTML = '<p style="grid-column: 1 / -1; color: #666; text-align: center; padding: 30px; background: white; border-radius: 8px; border: 1px dashed #ccc;">Nessuna pianta trovata con questi filtri.</p>';
         return;
@@ -1218,7 +1274,6 @@ function renderPlantsChunk(customSize = null) {
     }
 }
 
-// Stessa ottimizzazione per l'Archivio Storico (Dedicato)
 let currentArchiveChunkIndex = 0;
 const ARCHIVE_CHUNK_SIZE = 25;
 let currentArchivedPlants = [];
@@ -1332,15 +1387,12 @@ if(typeof AppState !== 'undefined') {
     AppState.on('plantsUpdated', renderArchive); 
 }
 
-// ==========================================
-// SCHEDA DETTAGLIO PIANTA
-// ==========================================
 function _internalOpenPlantDetail(id) {
     if (!plantsDatabase) return;
     const targetId = String(id);
     const plant = plantsDatabase.find(p => String(p.id) === targetId);
     if(!plant) { 
-        if(typeof goToHomeTab === 'function') goToHomeTab(); 
+        if(typeof goBack === 'function') goBack(); 
         else window.history.back(); 
         return; 
     }

@@ -1,12 +1,6 @@
-// ==========================================
-// VARIABILI MAPPE E GRAFICI
-// ==========================================
 let formMap = null;
 let formMarker = null;
 
-// ==========================================
-// GARBAGE COLLECTION MAPPE (Salva RAM & Batteria)
-// ==========================================
 function cleanupDetailMap() {
     if (typeof map !== 'undefined' && map) {
         map.remove();
@@ -31,13 +25,8 @@ function cleanupGlobalMap() {
     }
 }
 
-// ==========================================
-// MAPPE LEAFLET (Posizionamento Piante)
-// ==========================================
-
 function initMap(plant) {
     if (typeof L === 'undefined') {
-        console.warn("Libreria Leaflet non caricata. Mappa disabilitata.");
         const container = document.getElementById('map-container');
         if (container) container.innerHTML = '<div style="padding:20px;text-align:center;color:#666;font-size:14px;">Mappa offline o non disponibile.</div>';
         return;
@@ -61,7 +50,7 @@ function initMap(plant) {
             map = L.map('map-container').setView([lat, lng], zoom); 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
         } catch (e) {
-            console.error("Errore inizializzazione Leaflet mappa:", e);
+            console.error(e);
             return;
         }
     } else { 
@@ -78,12 +67,8 @@ function updateMapMarker(lat, lng, hasLocation = true) {
     }
 }
 
-// ==========================================
-// MAPPA INTERATTIVA NEL FORM
-// ==========================================
 function initFormMap() {
     if (typeof L === 'undefined') {
-        console.warn("Libreria Leaflet non caricata. Mappa del form disabilitata.");
         const container = document.getElementById('form-map-container');
         if (container) container.innerHTML = '<div style="padding:20px;text-align:center;color:#666;font-size:14px;">Mappa offline o non disponibile.</div>';
         return;
@@ -151,8 +136,6 @@ function initFormMap() {
                                 formMarker = L.marker([clat, clng]).addTo(mapInstance);
                                 
                                 btn.innerHTML = '📍 Usa GPS';
-                                // L'avviso "Posizione trovata" è stato rimosso in modo da renderlo silenzioso e veloce
-                                
                             }, function(error) {
                                 btn.innerHTML = '📍 Usa GPS';
                                 if (typeof Swal !== 'undefined') {
@@ -198,7 +181,7 @@ function initFormMap() {
                 formMarker = L.marker([clat, clng]).addTo(formMap);
             });
         } catch (e) {
-            console.error("Errore Leaflet Form Mappa:", e);
+            console.error(e);
         }
     } else {
         formMap.setView([lat, lng], zoom);
@@ -238,13 +221,8 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// ==========================================
-// MAPPA GLOBALE (Dashboard)
-// ==========================================
-
 function renderGlobalMapFullscreen() {
     if (typeof L === 'undefined' || typeof L.markerClusterGroup === 'undefined') {
-        console.warn("Leaflet o MarkerCluster non caricati. Mappa globale disabilitata.");
         const container = document.getElementById('global-map-fullscreen');
         if (container) container.innerHTML = '<div style="padding:40px;text-align:center;color:#666;font-size:16px;">Mappa globale offline o file dipendenze non caricati.</div>';
         return;
@@ -267,7 +245,7 @@ function renderGlobalMapFullscreen() {
             });
             globalMap.addLayer(globalMapMarkers);
         } catch (e) {
-            console.error("Errore mappa globale:", e);
+            console.error(e);
             return;
         }
     }
@@ -359,11 +337,6 @@ function showMapPlantsList(plantsList) {
     container.appendChild(fragment);
 }
 
-
-// ==========================================
-// GRAFICI CHART.JS (Timeline Pianta & Globale)
-// ==========================================
-
 function updateYearDropdown(plant) {
     const select = document.getElementById('chart-year-filter'); 
     if(!select) return;
@@ -398,10 +371,7 @@ function updateChartsFromDropdown() {
 }
 
 function renderCharts(plant) {
-    if (typeof Chart === 'undefined') {
-        console.warn("Libreria Chart.js non caricata.");
-        return;
-    }
+    if (typeof Chart === 'undefined') return;
 
     if (!plant || !Array.isArray(plant.logs)) return;
 

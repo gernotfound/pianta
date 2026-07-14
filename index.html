@@ -19,7 +19,6 @@
     <link rel="manifest" href="manifest.json">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" integrity="sha512-c42qZA51frwO44A5Nq7OkEtrR1qO7fX5XnEw2XmXwT5A0Aof0U++z1U5wD+r5yE3jK7zN9V0GvXz0aQG0w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.29/sweetalert2.all.min.js" integrity="sha512-cgolxBUBvc5yorfBxXYQCvGEaTbZDdRMDjGrMw8h4G01gm/BfHlN8CO3amP68GbNbw8LY5uj/CFW4qpY9lHyPQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -41,17 +40,16 @@
 
     <link rel="stylesheet" href="style.css">
     
-    <!-- Ottimizzazione Navigazione 6 Tasti e CSS per Chips Filtro (Stile Moderno) -->
     <style>
         .bottom-nav { display: flex; justify-content: space-between; }
         .nav-item { flex: 1; min-width: 0; padding: 8px 2px; }
         .nav-text { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; margin-top: 3px; }
+        
         @media (max-width: 400px) { 
             .nav-text { display: none; } 
             .nav-icon { font-size: 26px; margin-bottom: 0; } 
         }
 
-        /* STILE "CHIPS" PER I FILTRI AVANZATI */
         .modern-chip-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
         .chip-radio { display: none; }
         .chip-radio + label { 
@@ -154,13 +152,17 @@
     <span class="toast-icon">💾</span>
     <span class="toast-label">Salvato</span>
 </div>
-<div id="update-toast" class="hidden" role="button" tabindex="0" aria-label="Aggiorna applicazione" style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background-color: var(--blue); color: white; padding: 12px 20px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 99999; font-size: 14px; font-weight: bold; cursor: pointer;" onclick="safeReload();" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); safeReload();}">🔄 Aggiornamento disponibile! Tocca qui</div>
+
+<div id="update-toast" class="hidden" role="button" tabindex="0" aria-label="Aggiorna applicazione" style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background-color: var(--blue); color: white; padding: 12px 20px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 99999; font-size: 14px; font-weight: bold; cursor: pointer;" onclick="safeReload();" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); safeReload();}">
+    🔄 Aggiornamento disponibile! Tocca qui
+</div>
 
 <div class="container main-content-padding">
     
-    <!-- SCHERMATA INIZIALE -->
     <div id="startup-screen" class="hidden fade-in">
-        <h1 class="startup-title"><span class="startup-icon">🌿</span>Gestione piante</h1>
+        <h1 class="startup-title">
+            <span class="startup-icon">🌿</span>Gestione piante
+        </h1>
         <h2>Benvenuto nel tuo giardino virtuale</h2>
         
         <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px;">
@@ -179,8 +181,7 @@
         </div>
     </div>
 
-    <!-- NUOVA HOME (DASHBOARD COMANDI) -->
-    <div id="home-view" class="hidden fade-in" style="overflow-x: hidden;">
+    <div id="home-view" class="hidden fade-in" style="padding-bottom: 20px;">
         <div class="dashboard-panel" style="padding: 20px 25px; margin-bottom: 20px; text-align: center;">
             <h1 class="garden-title" style="justify-content: center; font-size: 28px;">
                 <span id="main-title">🌿 Il mio giardino</span>
@@ -188,21 +189,34 @@
             </h1>
         </div>
         
-        <!-- Bottoni Compattati su 2 colonne per evitare bug di scroll -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px;">
-            <button class="btn btn-purple" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTab('expenses')"><span style="font-size:22px;">💰</span> Spese</button>
-            <button class="btn btn-warning" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTab('wishlist')"><span style="font-size:22px;">🛒</span> Wishlist</button>
-            <button class="btn btn-blue" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTab('gallery')"><span style="font-size:22px;">🖼️</span> Archivio Foto</button>
-            <button class="btn" style="background:#1565c0; margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTab('scanner')"><span style="font-size:22px;">🏷️</span> Scanner QR</button>
-            <button class="btn" style="background:var(--accent); margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTab('macro')"><span style="font-size:22px;">☑️</span> Azioni Macro</button>
-            <button class="btn btn-danger" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTab('archive')"><span style="font-size:22px;">🥀</span> Piante Perse</button>
+            <button class="btn btn-purple" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('expenses')">
+                <span style="font-size:22px;">💰</span> Spese
+            </button>
+            <button class="btn btn-warning" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('wishlist')">
+                <span style="font-size:22px;">🛒</span> Wishlist
+            </button>
+            <button class="btn btn-blue" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('gallery')">
+                <span style="font-size:22px;">🖼️</span> Archivio Foto
+            </button>
+            <button class="btn" style="background:#1565c0; margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('scanner')">
+                <span style="font-size:22px;">🏷️</span> Scanner QR
+            </button>
+            <button class="btn" style="background:var(--accent); margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('macro')">
+                <span style="font-size:22px;">☑️</span> Azioni Macro
+            </button>
+            <button class="btn btn-danger" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('archive')">
+                <span style="font-size:22px;">🥀</span> Piante Perse
+            </button>
+            <button class="btn" style="background:#00897b; color: white; margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px; grid-column: span 2;" onclick="navigateTo('map')">
+                <span style="font-size:22px;">🗺️</span> Mappa Globale
+            </button>
         </div>
 
         <h3 style="color: var(--grey); border-bottom: 2px solid #eee; padding-bottom: 10px;">📊 Dati e Statistiche</h3>
         <div id="my-data-content"></div>
     </div>
 
-    <!-- ELENCO PIANTE (Ex Dashboard) -->
     <div id="dashboard" class="hidden fade-in">
         <div class="search-sort-bar" style="border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 15px; background: white;">
             <div class="search-input-wrapper">
@@ -217,7 +231,6 @@
             🌿 Piante mostrate: <span id="count-plants">0</span> | 🧬 Specie uniche: <span id="count-species">0</span>
         </div>
 
-        <!-- STATO VUOTO (EMPTY STATE) -->
         <div id="dashboard-empty-state" class="hidden" style="text-align: center; padding: 50px 20px; background: white; border-radius: 12px; border: 2px dashed #ccc; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
             <span style="font-size: 50px;" aria-hidden="true">🌱</span>
             <h3 style="color: var(--primary); margin-bottom: 10px;">Il tuo giardino è vuoto</h3>
@@ -225,11 +238,9 @@
             <button class="btn" style="font-size: 16px; padding: 12px 25px;" onclick="navigateTab('add-plant')">➕ Aggiungi la prima Pianta</button>
         </div>
 
-        <!-- GRIGLIA PIANTE -->
         <div id="plants-grid"></div>
     </div> 
 
-    <!-- IMPOSTAZIONI DI SISTEMA E SALVATAGGI (NUOVA SCHEDA) -->
     <div id="settings-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #e0e0e0;">
         <div class="detail-header">
             <h2 style="margin:0; color: var(--grey);">⚙️ Impostazioni</h2>
@@ -251,7 +262,9 @@
         </div>
 
         <div style="background: #fff8e1; padding: 20px; border-radius: 8px; border: 1px solid #ffe082; display: flex; flex-direction: column;">
-            <label for="global-garden-notes"><h3 style="margin:0; color:var(--accent); padding-bottom: 10px;">📝 Note generali del giardino</h3></label>
+            <label for="global-garden-notes">
+                <h3 style="margin:0; color:var(--accent); padding-bottom: 10px;">📝 Note generali del giardino</h3>
+            </label>
             <p style="font-size: 14px; color: #555; margin-top: 0;">Appunti, idee o promemoria salvati automaticamente.</p>
             <textarea id="global-garden-notes" style="flex-grow: 1; min-height: 200px; border: 1px solid #ccc; border-radius: 5px; padding: 10px; resize: vertical;"></textarea>
         </div>
@@ -262,7 +275,6 @@
         </div>
     </div>
 
-    <!-- MODALE STATO DI SISTEMA -->
     <div id="system-status-modal" class="fade-in" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100000; justify-content:center; align-items:center;">
         <div style="background:white; padding:25px; border-radius:12px; max-width:400px; width:90%; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
             <h3 style="margin-top:0; color:var(--primary); font-size: 22px;">Stato Sistema</h3>
@@ -284,16 +296,14 @@
         </div>
     </div>
 
-
-    <!-- SIDEBAR FILTRI AVANZATI (RICERCA STILE MODERNO "CHIPS") -->
     <div id="filter-sidebar" class="sidebar-overlay hidden" role="dialog" aria-label="Filtri e Ordine">
-        <div class="sidebar-content" style="width: 380px; display: flex; flex-direction: column;">
-            <div class="sidebar-header" style="position: sticky; top: 0; background: white; z-index: 10; padding-top: 10px;">
-                <h3 style="margin: 0; color: var(--primary);">🛠️ Ricerca Avanzata</h3>
-                <button class="btn btn-grey" style="margin:0; padding: 5px 10px;" onclick="closeFilterSidebar()" aria-label="Chiudi filtri">✖ Chiudi</button>
+        <div class="sidebar-content" style="width: 380px; display: flex; flex-direction: column; padding: 0;">
+            
+            <div class="sidebar-header" style="padding: 20px 20px 10px 20px; border-bottom: 2px solid #eee; margin-bottom: 0;">
+                <h3 style="margin: 0; color: var(--primary); font-size: 20px;">🛠️ Ricerca Avanzata</h3>
             </div>
             
-            <div class="sidebar-body" style="gap: 20px; padding-top: 15px; flex-grow: 1; padding-bottom: 20px;">
+            <div class="sidebar-body" style="gap: 20px; padding: 20px; flex-grow: 1;">
                 
                 <div class="filter-group">
                     <span class="filter-group-title">🔀 Ordina l'elenco per:</span>
@@ -315,34 +325,6 @@
 
                         <input type="radio" name="sort-plants" id="sort-ph" class="chip-radio" value="ph_desc">
                         <label for="sort-ph">🧪 pH</label>
-                    </div>
-                </div>
-
-                <div class="filter-group">
-                    <span class="filter-group-title">📌 Stato Pianta:</span>
-                    <div class="modern-chip-container">
-                        <input type="radio" name="filter-status" id="status-active" class="chip-radio" value="active" checked>
-                        <label for="status-active">🟢 Attive</label>
-                        
-                        <input type="radio" name="filter-status" id="status-archived" class="chip-radio" value="archived">
-                        <label for="status-archived">🔴 Archiviate</label>
-                        
-                        <input type="radio" name="filter-status" id="status-all" class="chip-radio" value="all">
-                        <label for="status-all">Tutte</label>
-                    </div>
-                </div>
-
-                <div class="filter-group">
-                    <span class="filter-group-title">📸 Presenza Foto:</span>
-                    <div class="modern-chip-container">
-                        <input type="radio" name="filter-photo" id="photo-all" class="chip-radio" value="all" checked>
-                        <label for="photo-all">Indifferente</label>
-                        
-                        <input type="radio" name="filter-photo" id="photo-yes" class="chip-radio" value="yes">
-                        <label for="photo-yes">🖼️ Con Foto</label>
-                        
-                        <input type="radio" name="filter-photo" id="photo-no" class="chip-radio" value="no">
-                        <label for="photo-no">🚫 Senza</label>
                     </div>
                 </div>
 
@@ -400,21 +382,55 @@
                     </div>
                 </div>
 
-                <div class="filter-group" style="background: #f1f8e9; padding: 15px; border-radius: 8px; border: 1px solid #c8e6c9;">
-                    <label for="filter-survival-temp" style="font-weight: bold; color: var(--primary);">❄️ Tolleranza Freddo (°C):</label>
-                    <p style="font-size: 12px; color: #555; margin-top: 2px; margin-bottom: 10px;">Mostra le piante in grado di tollerare questa temperatura (o una inferiore).</p>
-                    <input type="text" inputmode="decimal" id="filter-survival-temp" placeholder="es. 0" style="margin-bottom: 0; width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
+                <div class="filter-group" style="background: #fff3e0; padding: 15px; border-radius: 8px; border: 1px solid #ffe0b2;">
+                    <span class="filter-group-title" style="color: var(--accent);">⚠️ Vulnerabilità Termica</span>
+                    <p style="font-size: 12px; color: #555; margin-top: 2px; margin-bottom: 12px;">Mostra le piante che <strong>NON resistono</strong> a queste temperature estreme.</p>
+                    
+                    <label for="filter-vuln-cold" style="font-size: 13px; font-weight: bold;">❄️ Muoiono sotto i (°C):</label>
+                    <input type="text" inputmode="decimal" id="filter-vuln-cold" placeholder="es. 5" style="margin-bottom: 12px; width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+
+                    <label for="filter-vuln-hot" style="font-size: 13px; font-weight: bold;">🔥 Muoiono sopra i (°C):</label>
+                    <input type="text" inputmode="decimal" id="filter-vuln-hot" placeholder="es. 35" style="margin-bottom: 0; width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
                 </div>
+
+                <div class="filter-group">
+                    <span class="filter-group-title">📸 Presenza Foto:</span>
+                    <div class="modern-chip-container">
+                        <input type="radio" name="filter-photo" id="photo-all" class="chip-radio" value="all" checked>
+                        <label for="photo-all">Indifferente</label>
+                        
+                        <input type="radio" name="filter-photo" id="photo-yes" class="chip-radio" value="yes">
+                        <label for="photo-yes">🖼️ Con Foto</label>
+                        
+                        <input type="radio" name="filter-photo" id="photo-no" class="chip-radio" value="no">
+                        <label for="photo-no">🚫 Senza</label>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <span class="filter-group-title">📌 Stato Pianta:</span>
+                    <div class="modern-chip-container">
+                        <input type="radio" name="filter-status" id="status-active" class="chip-radio" value="active" checked>
+                        <label for="status-active">🟢 Attive</label>
+                        
+                        <input type="radio" name="filter-status" id="status-archived" class="chip-radio" value="archived">
+                        <label for="status-archived">🔴 Archiviate</label>
+                        
+                        <input type="radio" name="filter-status" id="status-all" class="chip-radio" value="all">
+                        <label for="status-all">Tutte</label>
+                    </div>
+                </div>
+
             </div>
 
-            <div style="margin-top: 10px; display: flex; gap: 10px; position: sticky; bottom: 0; background: white; padding: 15px 0; border-top: 1px solid #eee; z-index: 10;">
-                <button class="btn btn-primary" style="flex:2; margin:0; font-weight: bold;" onclick="applyFiltersAndClose()">✅ Applica Filtri</button>
-                <button class="btn btn-danger" style="flex:1; margin:0;" onclick="resetAllFilters()">🔄 Azzera</button>
+            <div style="display: flex; gap: 8px; position: sticky; bottom: 0; background: white; padding: 15px 20px; border-top: 1px solid #eee; z-index: 10; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);">
+                <button class="btn btn-grey" style="flex:1; margin:0; font-size: 13px;" onclick="closeFilterSidebar()">✖ Chiudi</button>
+                <button class="btn btn-danger" style="flex:1; margin:0; font-size: 13px;" onclick="resetAllFilters()">🔄 Azzera</button>
+                <button class="btn btn-primary" style="flex:2; margin:0; font-size: 14px; font-weight: bold;" onclick="applyFiltersAndClose()">✅ Applica</button>
             </div>
         </div>
     </div>
 
-    <!-- FORM AGGIUNGI/MODIFICA PIANTA -->
     <div id="form-container" class="hidden fade-in">
         <h2 id="form-title" style="margin-top:0; color:var(--primary); padding-bottom:5px;">Aggiungi nuova pianta</h2>
         <div class="accordion-group">
@@ -449,7 +465,10 @@
                             </div>
                         </div>
 
-                        <div style="grid-column: span 2;"><label for="p-name">Nome (obbligatorio):</label><input type="text" id="p-name" placeholder="es. Yellow pitahaya 1"></div>
+                        <div style="grid-column: span 2;">
+                            <label for="p-name">Nome (obbligatorio):</label>
+                            <input type="text" id="p-name" placeholder="es. Yellow pitahaya 1">
+                        </div>
                         
                         <div style="grid-column: span 2;">
                             <label for="p-scientific-select">Nome scientifico:</label>
@@ -474,19 +493,37 @@
                         <div>
                             <label for="p-origin">Origine / Propagazione:</label>
                             <select id="p-origin" onchange="toggleFidelityField()">
-                                <option value="Da seme">Da seme</option><option value="Da talea">Da talea</option><option value="Innesto">Innesto</option><option value="Margotta">Margotta</option><option value="Non so / Altro">Non so / Altro</option>
+                                <option value="Da seme">Da seme</option>
+                                <option value="Da talea">Da talea</option>
+                                <option value="Innesto">Innesto</option>
+                                <option value="Margotta">Margotta</option>
+                                <option value="Non so / Altro">Non so / Altro</option>
                             </select>
                         </div>
-                        <div><label for="p-sowing-date">Data semina / Inizio:</label><input type="date" id="p-sowing-date"></div>
+                        <div>
+                            <label for="p-sowing-date">Data semina / Inizio:</label>
+                            <input type="date" id="p-sowing-date">
+                        </div>
                         <div id="fidelity-container" style="grid-column: span 2; display: none;">
                             <label for="p-genetic-fidelity">🧬 Fedeltà al seme:</label>
-                            <select id="p-genetic-fidelity"><option value="Non ancora valutato">Non ancora valutato</option><option value="Identico alla madre">Identico alla madre</option><option value="Molto simile">Molto simile</option><option value="Diverso">Diverso</option></select>
+                            <select id="p-genetic-fidelity">
+                                <option value="Non ancora valutato">Non ancora valutato</option>
+                                <option value="Identico alla madre">Identico alla madre</option>
+                                <option value="Molto simile">Molto simile</option>
+                                <option value="Diverso">Diverso</option>
+                            </select>
                         </div>
                         <div style="grid-column: span 2;">
                             <div style="margin-bottom: 5px; font-weight: bold;">🧬 Albero genealogico:</div>
                             <div style="display:flex; gap:15px; flex-wrap: wrap; margin-top: 5px;">
-                                <div style="flex:1; min-width: 200px;"><label for="p-mother">Pianta madre:</label><select id="p-mother"></select></div>
-                                <div style="flex:1; min-width: 200px;"><label for="p-father">Pianta padre:</label><select id="p-father"></select></div>
+                                <div style="flex:1; min-width: 200px;">
+                                    <label for="p-mother">Pianta madre:</label>
+                                    <select id="p-mother"></select>
+                                </div>
+                                <div style="flex:1; min-width: 200px;">
+                                    <label for="p-father">Pianta padre:</label>
+                                    <select id="p-father"></select>
+                                </div>
                             </div>
                         </div>
                         <div style="grid-column: span 2;">
@@ -512,9 +549,14 @@
                         <div id="form-placement-section" style="grid-column: span 2;">
                             <label for="p-placement">Sistemazione iniziale:</label>
                             <div style="display: flex; gap: 10px;">
-                                <select id="p-placement" onchange="togglePotSizeField()" style="flex: 1;"><option value="Vaso">Vaso</option><option value="Piena terra">Piena terra</option><option value="Idroponica">Idroponica</option></select>
+                                <select id="p-placement" onchange="togglePotSizeField()" style="flex: 1;">
+                                    <option value="Vaso">Vaso</option>
+                                    <option value="Piena terra">Piena terra</option>
+                                    <option value="Idroponica">Idroponica</option>
+                                </select>
                                 <div id="pot-size-container" style="display: flex; align-items: center; gap: 5px; flex: 1;">
-                                    <input type="text" inputmode="decimal" id="p-pot-size" placeholder="es. 15" style="width: 100%;" aria-label="Dimensione vaso in litri"><span style="font-size: 14px;">Litri</span>
+                                    <input type="text" inputmode="decimal" id="p-pot-size" placeholder="es. 15" style="width: 100%;" aria-label="Dimensione vaso in litri">
+                                    <span style="font-size: 14px;">Litri</span>
                                 </div>
                             </div>
                         </div>
@@ -528,25 +570,34 @@
                             </div>
                         </div>
 
-                        <!-- MODIFICA PH RAGGRUPPATO -->
                         <div style="grid-column: span 2; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
                             <label style="font-weight: bold; display: block; margin-bottom: 10px; color: var(--primary);">🧪 pH ottimale:</label>
                             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                                <div style="flex: 1; min-width: 150px;"><label for="p-ph-min" style="font-size: 13px;">Minimo:</label><input type="text" inputmode="decimal" id="p-ph-min" placeholder="es. 5,5"></div>
-                                <div style="flex: 1; min-width: 150px;"><label for="p-ph-max" style="font-size: 13px;">Massimo:</label><input type="text" inputmode="decimal" id="p-ph-max" placeholder="es. 6,5"></div>
+                                <div style="flex: 1; min-width: 150px;">
+                                    <label for="p-ph-min" style="font-size: 13px;">Minimo:</label>
+                                    <input type="text" inputmode="decimal" id="p-ph-min" placeholder="es. 5,5">
+                                </div>
+                                <div style="flex: 1; min-width: 150px;">
+                                    <label for="p-ph-max" style="font-size: 13px;">Massimo:</label>
+                                    <input type="text" inputmode="decimal" id="p-ph-max" placeholder="es. 6,5">
+                                </div>
                             </div>
                         </div>
 
-                        <!-- MODIFICA TEMPERATURA RAGGRUPPATA -->
                         <div style="grid-column: span 2; background: #fff3e0; padding: 15px; border-radius: 8px; border: 1px solid #ffe0b2;">
                             <label style="font-weight: bold; display: block; margin-bottom: 10px; color: var(--accent);">🌡️ Temperatura ottimale (°C):</label>
                             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                                <div style="flex: 1; min-width: 150px;"><label for="p-min-temp" style="font-size: 13px;">Minima (°C):</label><input type="text" inputmode="decimal" id="p-min-temp" placeholder="es. 5"></div>
-                                <div style="flex: 1; min-width: 150px;"><label for="p-max-temp" style="font-size: 13px;">Massima (°C):</label><input type="text" inputmode="decimal" id="p-max-temp" placeholder="es. 38"></div>
+                                <div style="flex: 1; min-width: 150px;">
+                                    <label for="p-min-temp" style="font-size: 13px;">Minima (°C):</label>
+                                    <input type="text" inputmode="decimal" id="p-min-temp" placeholder="es. 5">
+                                </div>
+                                <div style="flex: 1; min-width: 150px;">
+                                    <label for="p-max-temp" style="font-size: 13px;">Massima (°C):</label>
+                                    <input type="text" inputmode="decimal" id="p-max-temp" placeholder="es. 38">
+                                </div>
                             </div>
                         </div>
                         
-                        <!-- MAPPA INSERITA NEL FORM -->
                         <div style="grid-column: span 2;">
                             <label for="p-location-select" style="margin-bottom: 5px; display: block;">📍 Posizione e coordinate:</label>
                             <div style="display: flex; gap: 5px; margin-bottom: 10px;">
@@ -572,7 +623,10 @@
                 </div>
                 <div class="accordion-content" style="display: none;" aria-hidden="true">
                     <div class="form-grid">
-                        <div><label for="p-price">Costo / Prezzo d'acquisto (€):</label><input type="text" inputmode="decimal" id="p-price" placeholder="es. 15,50"></div>
+                        <div>
+                            <label for="p-price">Costo / Prezzo d'acquisto (€):</label>
+                            <input type="text" inputmode="decimal" id="p-price" placeholder="es. 15,50">
+                        </div>
                         <div style="grid-column: span 2;">
                             <label for="p-vendor-select">Fornitore (Link o nome):</label>
                             <div style="display: flex; gap: 5px;">
@@ -600,7 +654,6 @@
             <h2 style="margin:0; color: var(--purple);">📊 Eventi</h2>
         </div>
 
-        <!-- Il riquadro Allerta Meteo e le impostazioni Vento verranno iniettati qui da tools.js -->
         <div id="weather-alerts-container" style="margin-bottom: 30px;" aria-live="polite"></div>
 
         <hr style="border: 0; height: 2px; background: #eee; margin-bottom: 25px;">
@@ -624,11 +677,14 @@
     <div id="global-map-page" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
         <div class="detail-header">
             <h2 style="margin:0; color: var(--blue);">🗺️ Mappa globale</h2>
+            <button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button>
         </div>
         <div id="global-map-fullscreen" style="height: 60vh; width: 100%; border-radius: 8px; border: 2px solid var(--blue); z-index: 1;"></div>
         <div style="margin-top: 25px; border-top: 2px solid #eee; padding-top: 20px;">
             <h3 style="margin-top:0; color: var(--primary);">📍 Piante in questa posizione:</h3>
-            <div id="map-plants-list" class="my-data-grid"><p style="color: #666; grid-column: 1 / -1;">Tocca un indicatore sulla mappa per vederle qui sotto.</p></div>
+            <div id="map-plants-list" class="my-data-grid">
+                <p style="color: #666; grid-column: 1 / -1;">Tocca un indicatore sulla mappa per vederle qui sotto.</p>
+            </div>
         </div>
     </div>
 
@@ -681,8 +737,7 @@
                 <input type="date" id="macro-global-date" style="margin-top: 5px;">
             </div>
 
-            <div id="macro-inputs-container" style="display: flex; flex-direction: column; gap: 15px; max-height: 40vh; overflow-y: auto; padding-right: 5px;">
-            </div>
+            <div id="macro-inputs-container" style="display: flex; flex-direction: column; gap: 15px; max-height: 40vh; overflow-y: auto; padding-right: 5px;"></div>
 
             <div style="display: flex; gap: 10px; margin-top: 20px;">
                 <button class="btn btn-grey" style="flex:1;" onclick="backToMacroStep2()">⬅️ Indietro</button>
@@ -690,7 +745,6 @@
             </div>
         </div>
     </div>
-
 
     <!-- VISTA SCANNER QR -->
     <div id="labels-scanner-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; text-align: center;">
@@ -711,7 +765,10 @@
             <button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button>
         </div>
         <div class="form-grid" style="background: #f3e5f5; padding: 15px; border-radius: 8px; border: 1px solid #e1bee7; margin-bottom: 20px;">
-            <div><label for="exp-date">Data:</label><input type="date" id="exp-date"></div>
+            <div>
+                <label for="exp-date">Data:</label>
+                <input type="date" id="exp-date">
+            </div>
             <div>
                 <label for="exp-category">Categoria:</label>
                 <select id="exp-category">
@@ -722,9 +779,17 @@
                     <option value="Altro">Altro</option>
                 </select>
             </div>
-            <div><label for="exp-desc">Descrizione:</label><input type="text" id="exp-desc" placeholder="es. Sacco torba 50L"></div>
-            <div><label for="exp-cost">Costo (€):</label><input type="text" inputmode="decimal" id="exp-cost" placeholder="es. 10,00"></div>
-            <div style="grid-column: span 2;"><button class="btn btn-purple" style="width:100%" onclick="addExpense()">➕ Aggiungi spesa</button></div>
+            <div>
+                <label for="exp-desc">Descrizione:</label>
+                <input type="text" id="exp-desc" placeholder="es. Sacco torba 50L">
+            </div>
+            <div>
+                <label for="exp-cost">Costo (€):</label>
+                <input type="text" inputmode="decimal" id="exp-cost" placeholder="es. 10,00">
+            </div>
+            <div style="grid-column: span 2;">
+                <button class="btn btn-purple" style="width:100%" onclick="addExpense()">➕ Aggiungi spesa</button>
+            </div>
         </div>
         <div id="expenses-summary" style="background: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px; text-align: center;">
             <h3 style="margin:0;">Totale Spese Giardino: <span id="total-expenses-cost" style="color:var(--danger);">0,00 €</span></h3>
@@ -735,26 +800,49 @@
 
     <!-- VISTA WISHLIST -->
     <div id="wishlist-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e0e0e0;">
-        <div class="detail-header"><h2 style="margin:0; color: var(--accent);">🛒 Wishlist Piante</h2><button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button></div>
+        <div class="detail-header">
+            <h2 style="margin:0; color: var(--accent);">🛒 Wishlist Piante</h2>
+            <button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button>
+        </div>
         <div class="form-grid" style="background: #fff8e1; padding: 15px; border-radius: 8px; border: 1px solid #ffecb3; margin-bottom: 20px;">
-            <div><label for="wl-name">Nome Pianta:</label><input type="text" id="wl-name"></div>
-            <div><label for="wl-price">Prezzo stimato (€):</label><input type="text" inputmode="decimal" id="wl-price"></div>
-            <div style="grid-column: span 2;"><label for="wl-notes">Link / Note:</label><input type="text" id="wl-notes"></div>
-            <div style="grid-column: span 2;"><label for="wl-photo">Foto:</label><input type="file" id="wl-photo" accept="image/*"></div>
-            <div style="grid-column: span 2;"><button class="btn btn-warning" style="width:100%" onclick="addWishlistItem()">➕ Aggiungi</button></div>
+            <div>
+                <label for="wl-name">Nome Pianta:</label>
+                <input type="text" id="wl-name">
+            </div>
+            <div>
+                <label for="wl-price">Prezzo stimato (€):</label>
+                <input type="text" inputmode="decimal" id="wl-price">
+            </div>
+            <div style="grid-column: span 2;">
+                <label for="wl-notes">Link / Note:</label>
+                <input type="text" id="wl-notes">
+            </div>
+            <div style="grid-column: span 2;">
+                <label for="wl-photo">Foto:</label>
+                <input type="file" id="wl-photo" accept="image/*">
+            </div>
+            <div style="grid-column: span 2;">
+                <button class="btn btn-warning" style="width:100%" onclick="addWishlistItem()">➕ Aggiungi</button>
+            </div>
         </div>
         <div id="wishlist-grid" class="my-data-grid"></div>
     </div>
 
-    <!-- VISTA GALLERIA (Ora Archivio Foto) -->
+    <!-- VISTA GALLERIA -->
     <div id="gallery-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e0e0e0;">
-        <div class="detail-header"><h2 style="margin:0; color: var(--blue);">🖼️ Archivio Foto</h2><button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button></div>
+        <div class="detail-header">
+            <h2 style="margin:0; color: var(--blue);">🖼️ Archivio Foto</h2>
+            <button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button>
+        </div>
         <div id="gallery-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:10px;"></div>
     </div>
 
     <!-- VISTA ARCHIVIO STORICO -->
     <div id="archive-page" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e0e0e0;">
-        <div class="detail-header"><h2 style="margin:0; color: var(--danger);">🥀 Archivio piante perse</h2><button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button></div>
+        <div class="detail-header">
+            <h2 style="margin:0; color: var(--danger);">🥀 Archivio piante perse</h2>
+            <button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button>
+        </div>
         <div id="archive-grid"></div>
     </div>
 
@@ -787,33 +875,101 @@
                 <div class="diary-section">
                     <h3 style="margin:0 0 15px 0;">📝 Aggiungi evento al diario</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                        <div><label for="log-date">Data:</label><input type="date" id="log-date"></div>
+                        <div>
+                            <label for="log-date">Data:</label>
+                            <input type="date" id="log-date">
+                        </div>
                         <div>
                             <label for="log-type">Tipo di evento:</label>
                             <select id="log-type" onchange="toggleDynamicFields()">
-                                <option value="Misurazione">📏 Misurazione altezza</option><option value="Misurazione pH">🧪 Misurazione pH</option><option value="Concimazione">🧪 Concimazione / Nutrimento</option><option value="Stato di Salute">Stato di salute</option><option value="Fioritura">🌸 Fioritura</option><option value="Fruttificazione">🍋 Fruttificazione</option><option value="Raccolto">🧺 Raccolto</option><option value="Rinvaso / Sistemazione">🪴 Rinvaso / Cambio sistemazione</option><option value="Innesto">🔪 Innesto (cambio varietà)</option><option value="Spostamento">🚚 Spostamento</option>
+                                <option value="Misurazione">📏 Misurazione altezza</option>
+                                <option value="Misurazione pH">🧪 Misurazione pH</option>
+                                <option value="Concimazione">🧪 Concimazione / Nutrimento</option>
+                                <option value="Stato di Salute">Stato di salute</option>
+                                <option value="Fioritura">🌸 Fioritura</option>
+                                <option value="Fruttificazione">🍋 Fruttificazione</option>
+                                <option value="Raccolto">🧺 Raccolto</option>
+                                <option value="Rinvaso / Sistemazione">🪴 Rinvaso / Cambio sistemazione</option>
+                                <option value="Innesto">🔪 Innesto (cambio varietà)</option>
+                                <option value="Spostamento">🚚 Spostamento</option>
                             </select>
                         </div>
                     </div>
                     
-                    <div id="height-container" style="margin-bottom: 10px;"><label for="log-height">Altezza:</label><div style="display: flex; align-items: center; gap: 8px;"><input type="text" inputmode="decimal" id="log-height" style="width: auto; flex-grow: 1;"><span style="font-weight: bold; color: var(--primary); font-size: 16px;">cm</span></div></div>
-                    <div id="ph-container" style="display:none; margin-bottom: 10px;"><label for="log-ph">Valore pH (da 0 a 14):</label><div style="display: flex; align-items: center; gap: 8px;"><input type="text" inputmode="decimal" id="log-ph" style="width: auto; flex-grow: 1;"><span style="font-weight: bold; color: var(--primary); font-size: 16px;">pH</span></div></div>
-                    <div id="harvest-container" style="display:none; margin-bottom: 10px;"><label for="log-harvest">Quantità raccolto:</label><input type="text" id="log-harvest" placeholder="es. 2 kg, 15 frutti..."></div>
-                    <div id="repot-container" style="display:none; margin-bottom: 10px; background: #e8f5e9; padding: 10px; border-radius: 5px; border: 1px solid var(--secondary);"><label style="color: var(--primary); font-weight: bold;" for="log-placement">Nuova sistemazione:</label><div style="display: flex; gap: 10px; margin-top: 5px;"><select id="log-placement" onchange="toggleLogPotSize()" style="flex: 1;"><option value="Vaso">Vaso</option><option value="Piena terra">Piena terra</option><option value="Idroponica">Idroponica</option></select><div id="log-pot-container" style="display: flex; align-items: center; gap: 5px; flex: 1;"><input type="text" inputmode="decimal" id="log-pot-size" placeholder="es. 20" style="width: 100%;" aria-label="Litri"><span style="font-size: 14px;">Litri</span></div></div></div>
-                    <div id="graft-container" style="display:none; margin-bottom: 10px; background: #fff3e0; padding: 10px; border-radius: 5px; border: 1px solid var(--accent);"><label style="color: var(--accent); font-weight: bold;" for="log-graft-name">Nuovo nome pianta:</label><input type="text" id="log-graft-name" style="width: 100%; margin-top: 5px;" placeholder="es. Avocado Beacon"></div>
-                    <label for="log-note">Note sull'evento:</label><textarea id="log-note" rows="2"></textarea>
-                    <div style="margin-top: 10px;"><label for="log-photos">Foto evento:</label><input type="file" id="log-photos" accept="image/*" multiple></div>
+                    <div id="height-container" style="margin-bottom: 10px;">
+                        <label for="log-height">Altezza:</label>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="text" inputmode="decimal" id="log-height" style="width: auto; flex-grow: 1;">
+                            <span style="font-weight: bold; color: var(--primary); font-size: 16px;">cm</span>
+                        </div>
+                    </div>
+                    
+                    <div id="ph-container" style="display:none; margin-bottom: 10px;">
+                        <label for="log-ph">Valore pH (da 0 a 14):</label>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="text" inputmode="decimal" id="log-ph" style="width: auto; flex-grow: 1;">
+                            <span style="font-weight: bold; color: var(--primary); font-size: 16px;">pH</span>
+                        </div>
+                    </div>
+                    
+                    <div id="harvest-container" style="display:none; margin-bottom: 10px;">
+                        <label for="log-harvest">Quantità raccolto:</label>
+                        <input type="text" id="log-harvest" placeholder="es. 2 kg, 15 frutti...">
+                    </div>
+                    
+                    <div id="repot-container" style="display:none; margin-bottom: 10px; background: #e8f5e9; padding: 10px; border-radius: 5px; border: 1px solid var(--secondary);">
+                        <label style="color: var(--primary); font-weight: bold;" for="log-placement">Nuova sistemazione:</label>
+                        <div style="display: flex; gap: 10px; margin-top: 5px;">
+                            <select id="log-placement" onchange="toggleLogPotSize()" style="flex: 1;">
+                                <option value="Vaso">Vaso</option>
+                                <option value="Piena terra">Piena terra</option>
+                                <option value="Idroponica">Idroponica</option>
+                            </select>
+                            <div id="log-pot-container" style="display: flex; align-items: center; gap: 5px; flex: 1;">
+                                <input type="text" inputmode="decimal" id="log-pot-size" placeholder="es. 20" style="width: 100%;" aria-label="Litri">
+                                <span style="font-size: 14px;">Litri</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="graft-container" style="display:none; margin-bottom: 10px; background: #fff3e0; padding: 10px; border-radius: 5px; border: 1px solid var(--accent);">
+                        <label style="color: var(--accent); font-weight: bold;" for="log-graft-name">Nuovo nome pianta:</label>
+                        <input type="text" id="log-graft-name" style="width: 100%; margin-top: 5px;" placeholder="es. Avocado Beacon">
+                    </div>
+                    
+                    <label for="log-note">Note sull'evento:</label>
+                    <textarea id="log-note" rows="2"></textarea>
+                    
+                    <div style="margin-top: 10px;">
+                        <label for="log-photos">Foto evento:</label>
+                        <input type="file" id="log-photos" accept="image/*" multiple>
+                    </div>
+                    
                     <button class="btn" style="width: 100%; margin-top: 15px;" onclick="addDiaryLog()">➕ Salva nel diario</button>
                 </div>
-                <div class="timeline-wrapper"><ul class="timeline" id="detail-timeline"></ul></div>
+                <div class="timeline-wrapper">
+                    <ul class="timeline" id="detail-timeline"></ul>
+                </div>
             </div>
 
             <div>
                 <div class="charts-header">
                     <h3 style="margin: 0;">📊 Analisi grafica</h3>
-                    <div><label for="chart-year-filter" style="font-size: 14px; font-weight: bold;">Filtra per anno:</label><select id="chart-year-filter" onchange="updateChartsFromDropdown()" style="padding: 4px; border-radius: 4px; border: 1px solid var(--secondary);"><option value="all">Tutti gli anni</option></select></div>
+                    <div>
+                        <label for="chart-year-filter" style="font-size: 14px; font-weight: bold;">Filtra per anno:</label>
+                        <select id="chart-year-filter" onchange="updateChartsFromDropdown()" style="padding: 4px; border-radius: 4px; border: 1px solid var(--secondary);">
+                            <option value="all">Tutti gli anni</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="charts-wrapper"><div class="chart-container"><canvas id="growthChart" aria-label="Grafico crescita" role="img"></canvas></div><div class="chart-container"><canvas id="eventsChart" aria-label="Grafico eventi" role="img"></canvas></div></div>
+                <div class="charts-wrapper">
+                    <div class="chart-container">
+                        <canvas id="growthChart" aria-label="Grafico crescita" role="img"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="eventsChart" aria-label="Grafico eventi" role="img"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -855,6 +1011,7 @@
         <div style="background:white; padding:25px; border-radius:8px; max-width:400px; width:90%; box-shadow: 0 4px 15px rgba(0,0,0,0.3);" role="dialog" aria-modal="true" aria-labelledby="dup-modal-title">
             <h3 id="dup-modal-title" style="margin-top:0; color:var(--primary);">📑 Duplica pianta</h3>
             <p style="font-size:14px; margin-bottom:15px; color:#444;">Imposta il nome base e quante copie vuoi creare.</p>
+            
             <label for="dup-base-name" style="font-weight:bold;">Nome nuova pianta (base):</label>
             <input type="text" id="dup-base-name" style="margin-bottom:15px; border: 1px solid var(--secondary); width: 100%; padding: 8px; border-radius: 4px;">
             
@@ -885,7 +1042,7 @@
         </div>
     </div>
 
-    <!-- NUOVA BOTTOM NAVIGATION BAR (6 Tasti - Ordine Corretto) -->
+    <!-- NUOVA BOTTOM NAVIGATION BAR (5 Tasti - Ordine Corretto) -->
     <nav class="bottom-nav" id="bottom-nav" aria-label="Menu principale">
         <button class="nav-item active" id="nav-btn-home" onclick="navigateTab('home')">
             <span class="nav-icon" aria-hidden="true">🏠</span>
@@ -902,10 +1059,6 @@
         <button class="nav-item" id="nav-btn-events" onclick="navigateTab('events')">
             <span class="nav-icon" aria-hidden="true">📊</span>
             <span class="nav-text">Eventi</span>
-        </button>
-        <button class="nav-item" id="nav-btn-map" onclick="navigateTab('map')">
-            <span class="nav-icon" aria-hidden="true">🗺️</span>
-            <span class="nav-text">Mappa</span>
         </button>
         <button class="nav-item" id="nav-btn-settings" onclick="navigateTab('settings')">
             <span class="nav-icon" aria-hidden="true">⚙️</span>

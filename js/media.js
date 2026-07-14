@@ -1,6 +1,3 @@
-// ==========================================
-// CROPPER.JS - TAGLIO FOTO
-// ==========================================
 let cropperInstance = null;
 let cropType = '';
 
@@ -24,7 +21,6 @@ function handleSmartUpload(event, type) {
         return;
     }
 
-    // FALLBACK OFFLINE: Se la libreria Cropper non è caricata (es. aereo/nessuna rete)
     if (typeof Cropper === 'undefined') {
         if (typeof Swal !== 'undefined') {
             Swal.fire({
@@ -39,7 +35,6 @@ function handleSmartUpload(event, type) {
         }
         
         compressImageAsync(file).then(blob => {
-            // FIX RACE CONDITION: Utilizziamo 'type' dallo scope locale invece della variabile globale cropType
             if (window.smartCropBlobs && window.smartCropBlobs[type] && typeof revokeBlob === 'function') {
                 revokeBlob(window.smartCropBlobs[type]);
             }
@@ -50,12 +45,11 @@ function handleSmartUpload(event, type) {
             const removeBtn = document.getElementById('remove-btn-' + type);
             
             if (preview && placeholder && removeBtn) {
-                // FIX MEMORY LEAK: Revoca URL precedente
                 if(preview.src && preview.src.startsWith('blob:')) {
                     URL.revokeObjectURL(preview.src);
                 }
                 const newUrl = URL.createObjectURL(blob);
-                blob._url = newUrl; // Associa per la Garbage Collection
+                blob._url = newUrl;
                 preview.src = newUrl;
                 preview.style.display = 'block';
                 placeholder.style.display = 'none';
@@ -67,14 +61,13 @@ function handleSmartUpload(event, type) {
             
             isFormDirty = true;
         }).catch(err => {
-            console.error("Errore ridimensionamento offline:", err);
+            console.error(err);
         });
         
         event.target.value = '';
         return;
     }
 
-    // Flusso Normale (Libreria presente)
     cropType = type;
     const reader = new FileReader();
     
@@ -86,7 +79,6 @@ function handleSmartUpload(event, type) {
             const modal = document.getElementById('cropper-modal');
             if (modal) modal.style.display = 'flex';
             
-            // FIX UX: Blocca lo scorrimento della pagina dietro il modale
             document.body.style.overflow = 'hidden';
 
             if (cropperInstance) { cropperInstance.destroy(); }
@@ -106,7 +98,7 @@ function handleSmartUpload(event, type) {
                     toggleDragModeOnDblclick: false
                 });
             } catch (err) {
-                console.error("Errore inizializzazione Cropper:", err);
+                console.error(err);
                 closeCropper();
             }
         };
@@ -131,7 +123,6 @@ function closeCropper() {
     const modal = document.getElementById('cropper-modal');
     if (modal) modal.style.display = 'none';
     
-    // FIX UX: Sblocca lo scorrimento
     document.body.style.overflow = '';
 
     if (cropperInstance) {
@@ -139,7 +130,6 @@ function closeCropper() {
         cropperInstance = null;
     }
     
-    // FIX MEMORY: Pulizia pulita dell'immagine sorgente
     const img = document.getElementById('cropper-img');
     if (img) {
         img.src = '';
@@ -147,7 +137,6 @@ function closeCropper() {
         img.onerror = null;
     }
     
-    // FIX INPUT INCANTATI: Assicuriamoci che l'input file venga resettato
     const pPhotoHidden = document.getElementById('p-photo-hidden');
     const pFruitPhotoHidden = document.getElementById('p-fruit-photo-hidden');
     if (pPhotoHidden) pPhotoHidden.value = '';
@@ -157,7 +146,6 @@ function closeCropper() {
 function confirmCropper() {
     if (!cropperInstance) return;
     
-    // Usa le costanti globali per mantenere l'app uniforme
     const canvas = cropperInstance.getCroppedCanvas({
         width: typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.IMG_MAX_DIMENSION : 1200, 
         height: typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.IMG_MAX_DIMENSION : 1200,
@@ -170,7 +158,6 @@ function confirmCropper() {
         return;
     }
     
-    // Sfondo bianco fisso prima di esportare, evita il nero sui PNG trasparenti
     const ctx = canvas.getContext('2d');
     ctx.globalCompositeOperation = 'destination-over';
     ctx.fillStyle = '#ffffff';
@@ -195,12 +182,11 @@ function confirmCropper() {
         const removeBtn = document.getElementById('remove-btn-' + cropType);
         
         if (preview && placeholder && removeBtn) {
-            // FIX MEMORY LEAK: Rigorosa rimozione dell'URL precedente
             if(preview.src && preview.src.startsWith('blob:')) {
                 URL.revokeObjectURL(preview.src);
             }
             const newUrl = URL.createObjectURL(blob);
-            blob._url = newUrl; // Associa per la Garbage Collection
+            blob._url = newUrl;
             preview.src = newUrl;
             preview.style.display = 'block';
             placeholder.style.display = 'none';
@@ -212,7 +198,6 @@ function confirmCropper() {
         
         isFormDirty = true;
         
-        // FIX MEMORY: Distruzione del canvas generato da Cropper.js
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         canvas.width = 0;
         canvas.height = 0;
@@ -231,7 +216,6 @@ function removeSmartPhoto(event, type) {
     
     const preview = document.getElementById('preview-' + type);
     if (preview) {
-        // FIX MEMORY LEAK: Assicuriamoci che l'anteprima venga sganciata dalla RAM
         if (preview.src && preview.src.startsWith('blob:')) {
             URL.revokeObjectURL(preview.src);
         }
@@ -258,9 +242,6 @@ function removeSmartPhoto(event, type) {
     isFormDirty = true;
 }
 
-// ==========================================
-// MODALE IMMAGINE SCHERMO INTERO
-// ==========================================
 function openImageModal(src, label, plantId = null) {
     try { let parsedUrl = new URL(src); if (parsedUrl.hostname === 'via.placeholder.com') return; } catch (e) {}
 
@@ -268,10 +249,19 @@ function openImageModal(src, label, plantId = null) {
     if (!modal) {
         modal = document.createElement('div'); 
         modal.id = 'fullscreen-image-modal';
-        modal.style.position = 'fixed'; modal.style.top = '0'; modal.style.left = '0'; modal.style.width = '100%'; modal.style.height = '100%';
-        modal.style.backgroundColor = 'rgba(0,0,0,0.95)'; modal.style.zIndex = '100000';
-        modal.style.display = 'flex'; modal.style.flexDirection = 'column'; modal.style.alignItems = 'center'; modal.style.justifyContent = 'center';
-        modal.className = 'animate__animated animate__fadeIn'; modal.style.animationDuration = '0.3s';
+        modal.style.position = 'fixed';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.width = '100%';
+        modal.style.height = '100%';
+        modal.style.backgroundColor = 'rgba(0,0,0,0.95)';
+        modal.style.zIndex = '100000';
+        modal.style.display = 'flex';
+        modal.style.flexDirection = 'column';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        modal.className = 'animate__animated animate__fadeIn';
+        modal.style.animationDuration = '0.3s';
         
         modal.onclick = function(e) { 
             if(e.target === modal) {
@@ -282,9 +272,11 @@ function openImageModal(src, label, plantId = null) {
 
         const img = document.createElement('img'); 
         img.id = 'fullscreen-image-element';
-        img.style.maxWidth = '95%'; img.style.maxHeight = '80%'; img.style.borderRadius = '8px'; img.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
+        img.style.maxWidth = '95%';
+        img.style.maxHeight = '80%';
+        img.style.borderRadius = '8px';
+        img.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
         
-        // Fallback visivo se l'immagine ingrandita si rompe
         img.onerror = function() {
             this.onerror = null;
             this.src = typeof OFFLINE_PLACEHOLDER !== 'undefined' ? OFFLINE_PLACEHOLDER : '';
@@ -292,7 +284,12 @@ function openImageModal(src, label, plantId = null) {
         
         const title = document.createElement('div'); 
         title.id = 'fullscreen-image-title';
-        title.style.color = 'white'; title.style.marginTop = '15px'; title.style.fontSize = '16px'; title.style.fontWeight = 'bold'; title.style.textAlign = 'center'; title.style.padding = '0 15px';
+        title.style.color = 'white';
+        title.style.marginTop = '15px';
+        title.style.fontSize = '16px';
+        title.style.fontWeight = 'bold';
+        title.style.textAlign = 'center';
+        title.style.padding = '0 15px';
 
         const btnContainer = document.createElement('div');
         btnContainer.style.position = 'absolute';
@@ -344,9 +341,6 @@ function openImageModal(src, label, plantId = null) {
     document.body.style.overflow = 'hidden'; 
 }
 
-// ==========================================
-// ARCHIVIO FOTOGRAFICO (EX GALLERIA)
-// ==========================================
 function renderGallery() {
     const grid = document.getElementById('gallery-grid'); 
     if (!grid) return;
@@ -372,7 +366,9 @@ function renderGallery() {
     }
     
     if (typeof wishlist !== 'undefined' && Array.isArray(wishlist)) {
-        wishlist.forEach(w => { if(w.photo) allPhotos.push({ src: w.photo, label: w.name + " (Wishlist)", plantId: null }); });
+        wishlist.forEach(w => {
+            if(w.photo) allPhotos.push({ src: w.photo, label: w.name + " (Wishlist)", plantId: null });
+        });
     }
     
     if(allPhotos.length === 0) {
@@ -391,7 +387,6 @@ function renderGallery() {
         let imgSrc = (typeof getImageUrl === 'function') ? getImageUrl(photoObj.src) : photoObj.src;
         let safeLabel = escapeHTML(photoObj.label);
 
-        // Aggiunto "onerror" per sicurezza contro file corrotti
         div.innerHTML = `
             <img src="${imgSrc}" onerror="this.onerror=null; this.src='${fallbackSrc}';" style="width:100%; height:150px; object-fit:cover; border-radius:6px; border:1px solid #ccc;" title="${safeLabel}" alt="Foto">
             <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.6); color:white; font-size:11px; padding:6px; border-bottom-left-radius:6px; border-bottom-right-radius:6px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
@@ -404,9 +399,6 @@ function renderGallery() {
     grid.appendChild(fragment);
 }
 
-// ==========================================
-// SCANNER CODICI QR (Libreria Html5Qrcode)
-// ==========================================
 function startScanner() { 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         if (typeof Swal !== 'undefined') {
@@ -487,9 +479,7 @@ function processScanData(plantId) {
     }
 }
 
-function onScanFailure(error) { 
-    // Ignoriamo gli errori di scansione continui finché non trova un QR valido
-}
+function onScanFailure(error) {}
 
 window.addEventListener('popstate', () => {
     if(html5QrcodeScanner) {
@@ -500,16 +490,12 @@ window.addEventListener('popstate', () => {
     }
 });
 
-// ==========================================
-// COMPRESSIONE IMMAGINI (Salva RAM, Qualità & Fix EXIF)
-// ==========================================
 function compressImageAsync(file) {
     return new Promise(async (resolve, reject) => {
         if (!file || !file.type.startsWith('image/')) {
             return reject(new Error('File non valido per la compressione'));
         }
 
-        // Usa le costanti se disponibili, altrimenti fallback
         const MAX_DIM = typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.IMG_MAX_DIMENSION : 1200;
         const threshold = typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.IMG_COMPRESSION_THRESHOLD : 2000000;
         const qLow = typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.IMG_QUALITY_LOW : 0.60;
@@ -518,7 +504,6 @@ function compressImageAsync(file) {
         const targetQuality = file.size > threshold ? qLow : qHigh;
 
         try {
-            // FIX EXIF STRUTTURALE (2): Prevenzione foto ruotate su iOS e browser moderni
             if (window.createImageBitmap) {
                 const bitmap = await window.createImageBitmap(file, { imageOrientation: 'from-image' });
                 const imgWidth = bitmap.width;
@@ -545,7 +530,7 @@ function compressImageAsync(file) {
                     ctx.clearRect(0, 0, width, height);
                     canvas.width = 0;
                     canvas.height = 0;
-                    bitmap.close(); // Liberiamo immediatamente la memoria hardware allocata dal browser
+                    bitmap.close();
 
                     if (blob) {
                         resolve(blob);
@@ -555,7 +540,6 @@ function compressImageAsync(file) {
                 }, 'image/webp', targetQuality);
 
             } else {
-                // Fallback classico per browser più vecchi che non supportano createImageBitmap
                 const reader = new FileReader();
                 reader.onload = function (event) {
                     const img = new Image();

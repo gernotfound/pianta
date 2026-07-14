@@ -1,44 +1,27 @@
-// ==========================================
-// CONFIGURAZIONE GLOBALE DELL'APP (APP_CONFIG)
-// ==========================================
 const APP_CONFIG = {
-    // Database
     DB_NAME: 'TropicalGardenDB',
     DB_VERSION: 3,
-    
-    // UI e Tempi
-    TOAST_TIMEOUT: 2200,       
-    DEBOUNCE_DELAY: 300,       
-    
-    // Gestione Immagini e RAM
-    IMG_MAX_DIMENSION: 1200,   
-    IMG_QUALITY_HIGH: 0.72,    
-    IMG_QUALITY_LOW: 0.60,     
-    IMG_COMPRESSION_THRESHOLD: 2000000, 
-    
-    // Esportazione Dati
-    MAX_BACKUP_WARNING_SIZE: 262144000, 
-    
-    // Mappe (Leaflet)
+    TOAST_TIMEOUT: 2200,
+    DEBOUNCE_DELAY: 300,
+    IMG_MAX_DIMENSION: 1200,
+    IMG_QUALITY_HIGH: 0.72,
+    IMG_QUALITY_LOW: 0.60,
+    IMG_COMPRESSION_THRESHOLD: 2000000,
+    MAX_BACKUP_WARNING_SIZE: 262144000,
     MAP_DEFAULT_LAT: 20.0,
     MAP_DEFAULT_LNG: 0.0,
-    MAP_WORLD_ZOOM: 2,         
-    MAP_PLANT_ZOOM: 15,        
-    
-    // Meteo e Allerte (Default, modificabile in Impostazioni)
-    WIND_ALERT_KMH: 40         
+    MAP_WORLD_ZOOM: 2,
+    MAP_PLANT_ZOOM: 15,
+    WIND_ALERT_KMH: 40
 };
 
-// ==========================================
-// COSTANTI E VARIABILI GLOBALI DI STATO
-// ==========================================
 const OFFLINE_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23e0e0e0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%23757575'%3ENessuna Foto%3C/text%3E%3C/svg%3E";
 
-let gardenTitle = "🌿 Gestione Piante Tropicali - Pro"; 
-let gardenNotes = ""; 
+let gardenTitle = "🌿 Gestione Piante Tropicali - Pro";
+let gardenNotes = "";
 let plantsDatabase = [];
-let generalExpenses = []; 
-let wishlist = [];        
+let generalExpenses = [];
+let wishlist = [];
 
 let currentPlantId = null;
 let map = null;
@@ -46,11 +29,10 @@ let marker = null;
 let growthChart = null;
 let eventsChart = null;
 let globalEvChart = null;
-let html5QrcodeScanner = null; 
+let html5QrcodeScanner = null;
 let editingMode = false;
 let unsavedChanges = false;
-let isFormDirty = false; 
-let currentQuickFilter = 'all';
+let isFormDirty = false;
 
 let globalMap = null;
 let globalMapMarkers = null;
@@ -62,21 +44,16 @@ let vendorMode = 'select';
 let soilMode = 'select';
 let scientificMode = 'select';
 let locationMode = 'select';
-let mainPhotoRemoved = false; 
-let fruitPhotoRemoved = false; 
+let mainPhotoRemoved = false;
+let fruitPhotoRemoved = false;
 
 let searchDebounceTimer = null;
-let hasCheckedWeather = false;
 
 window.smartCropBlobs = { main: null, fruit: null };
 window.appInitialized = false;
 
-// Memoria delle impronte digitali per salvataggi incrementali
 let dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} };
 
-// ==========================================
-// EVENT EMITTER PER REATTIVITÀ
-// ==========================================
 const AppState = {
     events: {},
     on(eventName, fn) {
@@ -91,15 +68,16 @@ const AppState = {
     emit(eventName, data) {
         if (this.events[eventName]) {
             this.events[eventName].forEach(fn => {
-                try { fn(data); } catch (e) { console.error(`Errore evento ${eventName}:`, e); }
+                try {
+                    fn(data);
+                } catch (e) {
+                    console.error(`Errore evento ${eventName}:`, e);
+                }
             });
         }
     }
 };
 
-// ==========================================
-// HELPER E FORMATTAZIONE GLOBALI
-// ==========================================
 function getLocalYYYYMMDD() {
     const tzoffset = (new Date()).getTimezoneOffset() * 60000;
     return (new Date(Date.now() - tzoffset)).toISOString().split('T')[0];
@@ -122,17 +100,17 @@ function formatDateIt(dateStr) {
 
 function renderFornitore(vendorText) {
     if (!vendorText) return 'N/D';
-    let trimmed = vendorText.trim(); 
+    let trimmed = vendorText.trim();
     let displayRaw = trimmed;
     if (displayRaw.length > 35) displayRaw = displayRaw.substring(0, 35) + '...';
-    
-    let safeHref = escapeHTML(trimmed); 
+
+    let safeHref = escapeHTML(trimmed);
     let safeDisplay = escapeHTML(displayRaw);
-    
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) { 
-        return `<a href="${safeHref}" target="_blank" style="color: var(--primary); font-weight:bold; text-decoration: underline;">${safeDisplay}</a>`; 
-    } else if (trimmed.startsWith('www.')) { 
-        return `<a href="https://${safeHref}" target="_blank" style="color: var(--primary); font-weight:bold; text-decoration: underline;">${safeDisplay}</a>`; 
+
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+        return `<a href="${safeHref}" target="_blank" style="color: var(--primary); font-weight:bold; text-decoration: underline;">${safeDisplay}</a>`;
+    } else if (trimmed.startsWith('www.')) {
+        return `<a href="https://${safeHref}" target="_blank" style="color: var(--primary); font-weight:bold; text-decoration: underline;">${safeDisplay}</a>`;
     }
     return escapeHTML(trimmed);
 }
@@ -141,16 +119,20 @@ function debouncedRenderPlants() {
     if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
     searchDebounceTimer = setTimeout(() => {
         if (typeof renderPlants === 'function') renderPlants();
-    }, APP_CONFIG.DEBOUNCE_DELAY); 
+    }, APP_CONFIG.DEBOUNCE_DELAY);
 }
 
-// Spostato qui per funzionare in background su tutte le pagine
 function updateConnectionStatusIndicator() {
-    const isOnline = navigator.onLine;
-    const indicator = document.getElementById('connection-status-indicator');
-    if (indicator) {
-        indicator.textContent = isOnline ? 'Online' : 'Offline';
-        indicator.style.background = isOnline ? '#2e7d32' : '#d32f2f';
+    const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+    const homeIndicator = document.getElementById('connection-status-indicator');
+    if (homeIndicator) {
+        homeIndicator.textContent = isOnline ? 'Online' : 'Offline';
+        homeIndicator.style.background = isOnline ? '#2e7d32' : '#d32f2f';
+    }
+    const modalConnStatus = document.getElementById('modal-conn-status');
+    if (modalConnStatus) {
+        modalConnStatus.textContent = isOnline ? 'Online' : 'Offline';
+        modalConnStatus.style.background = isOnline ? '#2e7d32' : '#d32f2f';
     }
 }
 
@@ -177,13 +159,10 @@ function getModernFertility(val) {
 function safeCloneImage(img) {
     if (!img) return null;
     if (img instanceof Blob) return new Blob([img], { type: img.type });
-    if (typeof img === 'string') return img; 
+    if (typeof img === 'string') return img;
     return img;
 }
 
-// ==========================================
-// GESTIONE ID UNIVOCI (UUID) E XSS
-// ==========================================
 function generateId() {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
         return crypto.randomUUID();
@@ -201,9 +180,6 @@ function sanitizeImageSource(src) {
     return OFFLINE_PLACEHOLDER;
 }
 
-// ==========================================
-// HASHING VELOCE (Per Salvataggio Incrementale)
-// ==========================================
 function generateFastHash(obj) {
     const str = JSON.stringify(obj, (key, value) => {
         if (value instanceof Blob || (typeof value === 'string' && value.startsWith('blob:'))) return null;
@@ -213,19 +189,18 @@ function generateFastHash(obj) {
     for (let i = 0; i < str.length; i++) {
         const char = str.charCodeAt(i);
         hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; 
+        hash = hash & hash;
     }
     return hash;
 }
 
-// ==========================================
-// GESTIONE MEMORIA E IMMAGINI (BLOBS)
-// ==========================================
 function getImageUrl(imageObj) {
     if (!imageObj) return '';
-    if (typeof imageObj === 'string') return sanitizeImageSource(imageObj); 
+    if (typeof imageObj === 'string') return sanitizeImageSource(imageObj);
     if (imageObj instanceof Blob || imageObj instanceof File) {
-        if (!imageObj._url) { imageObj._url = URL.createObjectURL(imageObj); }
+        if (!imageObj._url) {
+            imageObj._url = URL.createObjectURL(imageObj);
+        }
         return sanitizeImageSource(imageObj._url);
     }
     return '';
@@ -234,9 +209,15 @@ function getImageUrl(imageObj) {
 function revokeBlob(blobObj) {
     if (!blobObj) return;
     try {
-        if (typeof blobObj === 'string' && blobObj.startsWith('blob:')) { URL.revokeObjectURL(blobObj); } 
-        else if (blobObj instanceof Blob && blobObj._url) { URL.revokeObjectURL(blobObj._url); delete blobObj._url; }
-    } catch(e) { console.warn("Errore revoca blob", e); }
+        if (typeof blobObj === 'string' && blobObj.startsWith('blob:')) {
+            URL.revokeObjectURL(blobObj);
+        } else if (blobObj instanceof Blob && blobObj._url) {
+            URL.revokeObjectURL(blobObj._url);
+            delete blobObj._url;
+        }
+    } catch(e) {
+        console.warn("Errore revoca blob", e);
+    }
 }
 
 function cleanupPlantImages(plant) {
@@ -245,20 +226,24 @@ function cleanupPlantImages(plant) {
     if (plant.fruitPhoto) revokeBlob(plant.fruitPhoto);
     if (plant.logs && Array.isArray(plant.logs)) {
         plant.logs.forEach(log => {
-            if (log.photos && Array.isArray(log.photos)) { log.photos.forEach(ph => revokeBlob(ph)); }
+            if (log.photos && Array.isArray(log.photos)) {
+                log.photos.forEach(ph => revokeBlob(ph));
+            }
         });
     }
 }
 
-// ==========================================
-// MOTORE DATABASE OTTIMIZZATO (INDEXEDDB)
-// ==========================================
 function initDB() {
     return new Promise((resolve, reject) => {
-        if (!window.indexedDB) { return reject("IndexedDB non supportato"); }
+        if (!window.indexedDB) {
+            return reject("IndexedDB non supportato");
+        }
         let request;
-        try { request = indexedDB.open(APP_CONFIG.DB_NAME, APP_CONFIG.DB_VERSION); } 
-        catch (e) { return reject("Impossibile inizializzare IndexedDB"); }
+        try {
+            request = indexedDB.open(APP_CONFIG.DB_NAME, APP_CONFIG.DB_VERSION);
+        } catch (e) {
+            return reject("Impossibile inizializzare IndexedDB");
+        }
 
         request.onupgradeneeded = function(e) {
             let db = e.target.result;
@@ -267,8 +252,12 @@ function initDB() {
             if (!db.objectStoreNames.contains('Expenses')) db.createObjectStore('Expenses', { keyPath: 'id' });
             if (!db.objectStoreNames.contains('Wishlist')) db.createObjectStore('Wishlist', { keyPath: 'id' });
         };
-        request.onsuccess = function(e) { resolve(e.target.result); };
-        request.onerror = function(e) { reject(e.target.error); };
+        request.onsuccess = function(e) {
+            resolve(e.target.result);
+        };
+        request.onerror = function(e) {
+            reject(e.target.error);
+        };
     });
 }
 
@@ -281,17 +270,17 @@ function syncStore(store, ramArray, storeName) {
             let dbKeys = reqKeys.result;
             let ramKeys = ramArray.map(item => String(item.id));
             
-            dbKeys.forEach(key => { 
+            dbKeys.forEach(key => {
                 if (!ramKeys.includes(String(key))) {
-                    store.delete(key); 
+                    store.delete(key);
                     delete dbSyncHashes[storeName][key];
                 }
             });
             
-            ramArray.forEach(item => { 
+            ramArray.forEach(item => {
                 let currentHash = generateFastHash(item);
                 if (dbSyncHashes[storeName][item.id] !== currentHash) {
-                    store.put(item); 
+                    store.put(item);
                     dbSyncHashes[storeName][item.id] = currentHash;
                 }
             });
@@ -306,8 +295,11 @@ function getSerializableFallbackData() {
     const stripPhotos = (obj) => {
         if (!obj) return obj;
         let copy = { ...obj };
-        copy.photo = null; copy.fruitPhoto = null;
-        if (copy.logs && Array.isArray(copy.logs)) { copy.logs = copy.logs.map(l => ({ ...l, photos: [] })); }
+        copy.photo = null;
+        copy.fruitPhoto = null;
+        if (copy.logs && Array.isArray(copy.logs)) {
+            copy.logs = copy.logs.map(l => ({ ...l, photos: [] }));
+        }
         return copy;
     };
     const wStrip = (w) => {
@@ -317,9 +309,11 @@ function getSerializableFallbackData() {
         return copy;
     };
     return {
-        title: gardenTitle, notes: gardenNotes,
+        title: gardenTitle,
+        notes: gardenNotes,
         plants: plantsDatabase.map(stripPhotos),
-        expenses: generalExpenses, wishlist: wishlist.map(wStrip)
+        expenses: generalExpenses,
+        wishlist: wishlist.map(wStrip)
     };
 }
 
@@ -346,16 +340,19 @@ async function saveToLocal() {
             syncStore(tx.objectStore('Expenses'), generalExpenses, 'Expenses').catch(e => {});
             syncStore(tx.objectStore('Wishlist'), wishlist, 'Wishlist').catch(e => {});
             
-            tx.oncomplete = function() { showAutoSaveToast(); resolve(true); };
-            tx.onerror = function(e) { 
+            tx.oncomplete = function() {
+                showAutoSaveToast();
+                resolve(true);
+            };
+            tx.onerror = function(e) {
                 console.error("[DB] Transazione fallita:", e.target.error);
                 if (e.target.error && e.target.error.name === 'QuotaExceededError') {
                     if (typeof Swal !== 'undefined') Swal.fire({icon: 'error', title: 'Memoria Piena!', text: 'Spazio esaurito nel browser. Elimina foto vecchie o archivia piante.', confirmButtonColor: '#d32f2f'});
                 }
-                resolve(false); 
+                resolve(false);
             };
         } catch(e) {
-            showAutoSaveToast(); 
+            showAutoSaveToast();
             resolve(false);
         }
     });
@@ -376,7 +373,7 @@ async function loadFromLocal() {
             if (!sysData && (!reqPl.result || reqPl.result.length === 0)) {
                 const fallback = localStorage.getItem('garden_full_backup_v1');
                 if (fallback) {
-                    try { 
+                    try {
                         let fd = JSON.parse(fallback);
                         sysData = { title: fd.title, notes: fd.notes };
                         if (fd.plants) reqPl.result = Array.isArray(fd.plants) ? fd.plants : [];
@@ -398,11 +395,17 @@ async function loadFromLocal() {
                 wishlist.forEach(w => dbSyncHashes.Wishlist[w.id] = generateFastHash(w));
 
                 finalizeLoad(true);
-            } else { finalizeLoad(false); }
+            } else {
+                finalizeLoad(false);
+            }
         };
-        tx.onerror = function() { fallbackLoad(); };
+        tx.onerror = function() {
+            fallbackLoad();
+        };
 
-    } catch(e) { fallbackLoad(); }
+    } catch(e) {
+        fallbackLoad();
+    }
 }
 
 function finalizeLoad(hasData = true) {
@@ -456,34 +459,42 @@ function showAutoSaveToast(message = 'Salvato') {
         if (label) label.textContent = message;
         toast.classList.remove('hidden');
         clearTimeout(toast._hideTimer);
-        toast._hideTimer = setTimeout(() => { toast.classList.add('hidden'); }, APP_CONFIG.TOAST_TIMEOUT);
+        toast._hideTimer = setTimeout(() => {
+            toast.classList.add('hidden');
+        }, APP_CONFIG.TOAST_TIMEOUT);
     }
 }
 
 async function saveGardenNotes() {
     const notesArea = document.getElementById('global-garden-notes');
-    if (notesArea) { gardenNotes = notesArea.value; await saveToLocal(); }
+    if (notesArea) {
+        gardenNotes = notesArea.value;
+        await saveToLocal();
+    }
 }
 
-// ==========================================
-// EVENT LISTENERS GLOBALI
-// ==========================================
 window.addEventListener('DOMContentLoaded', () => {
     if (window.appInitialized) return;
     updateConnectionStatusIndicator();
-    window.addEventListener('online', updateConnectionStatusIndicator); 
+    window.addEventListener('online', updateConnectionStatusIndicator);
     window.addEventListener('offline', updateConnectionStatusIndicator);
 
     loadFromLocal();
     
     const notesArea = document.getElementById('global-garden-notes');
-    if (notesArea) { notesArea.addEventListener('blur', async () => { if (notesArea.value !== gardenNotes) await saveGardenNotes(); }); }
+    if (notesArea) {
+        notesArea.addEventListener('blur', async () => {
+            if (notesArea.value !== gardenNotes) await saveGardenNotes();
+        });
+    }
 });
 
 ['input', 'change'].forEach(evt => {
     document.addEventListener(evt, (e) => {
         if (!e.target || typeof e.target.closest !== 'function') return;
-        if (e.target.closest('#form-container') || e.target.closest('#expenses-view') || e.target.closest('#wishlist-view') || e.target.closest('.diary-section')) { isFormDirty = true; }
+        if (e.target.closest('#form-container') || e.target.closest('#expenses-view') || e.target.closest('#wishlist-view') || e.target.closest('.diary-section')) {
+            isFormDirty = true;
+        }
     });
 });
 
@@ -495,8 +506,13 @@ document.addEventListener('visibilitychange', async () => {
 });
 
 window.addEventListener('beforeunload', function (e) {
-    if (isFormDirty) { e.preventDefault(); e.returnValue = 'Hai dati non salvati nel modulo! Sei sicuro di voler uscire?'; } 
-    else if (unsavedChanges) { e.preventDefault(); e.returnValue = 'Hai delle modifiche non salvate in ZIP!'; }
+    if (isFormDirty) {
+        e.preventDefault();
+        e.returnValue = 'Hai dati non salvati nel modulo! Sei sicuro di voler uscire?';
+    } else if (unsavedChanges) {
+        e.preventDefault();
+        e.returnValue = 'Hai delle modifiche non salvate in ZIP!';
+    }
 });
 
 function logout() {
@@ -504,30 +520,49 @@ function logout() {
     Swal.fire({
         title: 'Sei sicuro di voler ripartire da zero?',
         text: "Tutti i dati verranno eliminati. Se non hai fatto un Backup (ZIP), li perderai per sempre.",
-        icon: 'warning', showCancelButton: true, confirmButtonColor: '#d32f2f', cancelButtonColor: '#607d8b', confirmButtonText: 'Sì, cancella ed esci', cancelButtonText: 'Annulla'
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d32f2f',
+        cancelButtonColor: '#607d8b',
+        confirmButtonText: 'Sì, cancella ed esci',
+        cancelButtonText: 'Annulla'
     }).then(async (result) => {
         if (result.isConfirmed) {
             try {
                 let db = await initDB();
                 let tx = db.transaction(['System', 'Plants', 'Expenses', 'Wishlist'], 'readwrite');
-                tx.objectStore('System').clear(); tx.objectStore('Plants').clear();
-                tx.objectStore('Expenses').clear(); tx.objectStore('Wishlist').clear();
+                tx.objectStore('System').clear();
+                tx.objectStore('Plants').clear();
+                tx.objectStore('Expenses').clear();
+                tx.objectStore('Wishlist').clear();
             } catch(e) {}
-            localStorage.removeItem('garden_full_backup_v1'); 
-            plantsDatabase = []; generalExpenses = []; wishlist = []; gardenTitle = "🌿 Gestione Piante Tropicali - Pro"; gardenNotes = "";
-            dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} }; 
-            window.location.hash = '#/startup'; window.location.reload();
+            localStorage.removeItem('garden_full_backup_v1');
+            plantsDatabase = [];
+            generalExpenses = [];
+            wishlist = [];
+            gardenTitle = "🌿 Gestione Piante Tropicali - Pro";
+            gardenNotes = "";
+            dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} };
+            window.location.hash = '#/startup';
+            window.location.reload();
         }
     });
 }
 
 function createNewGarden() {
-    gardenTitle = "🌿 Il mio giardino"; plantsDatabase = []; generalExpenses = []; wishlist = []; gardenNotes = "";
-    dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} }; 
+    gardenTitle = "🌿 Il mio giardino";
+    plantsDatabase = [];
+    generalExpenses = [];
+    wishlist = [];
+    gardenNotes = "";
+    dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} };
     saveToLocal().then(() => {
-        const titleEl = document.getElementById('main-title'); if(titleEl) titleEl.innerText = gardenTitle;
-        const startScreen = document.getElementById('startup-screen'); const navBar = document.getElementById('bottom-nav');
-        if(startScreen) startScreen.classList.add('hidden'); if(navBar) navBar.classList.remove('hidden-nav');
+        const titleEl = document.getElementById('main-title');
+        if(titleEl) titleEl.innerText = gardenTitle;
+        const startScreen = document.getElementById('startup-screen');
+        const navBar = document.getElementById('bottom-nav');
+        if(startScreen) startScreen.classList.add('hidden');
+        if(navBar) navBar.classList.remove('hidden-nav');
         if(typeof navigateTab === 'function') navigateTab('home');
     });
 }

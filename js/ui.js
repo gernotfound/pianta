@@ -1,7 +1,3 @@
-// ==========================================
-// INTERFACCIA E MODALI BASE
-// ==========================================
-
 function toggleAccordion(headerEl) {
     if (!headerEl || !headerEl.parentElement) return;
     
@@ -46,9 +42,9 @@ async function editMainTitle() {
         
         unsavedChanges = true;
         try {
-            if(typeof saveToLocal === 'function') await saveToLocal();
-        } catch(e) {
-            console.error("Errore salvataggio nuovo titolo:", e);
+            if (typeof saveToLocal === 'function') await saveToLocal();
+        } catch (e) {
+            console.error(e);
         }
     }
 }
@@ -66,7 +62,7 @@ function cancelAddPlant() {
                 confirmButtonText: 'Sì, annulla',
                 cancelButtonText: 'Continua a scrivere'
             }).then((res) => {
-                if(res.isConfirmed) {
+                if (res.isConfirmed) {
                     finalizeCancelAddPlant();
                 }
             });
@@ -89,7 +85,7 @@ function finalizeCancelAddPlant() {
     editingMode = false; 
     currentPlantId = null;
     
-    if(typeof clearForm === 'function') clearForm();
+    if (typeof clearForm === 'function') clearForm();
     
     if (wasEditing && savedId && typeof navigateTo === 'function') {
         navigateTo('plant-detail', savedId);
@@ -104,7 +100,7 @@ function toggleGeneralList() {
     const el = document.getElementById('general-list-container');
     const btn = document.getElementById('btn-toggle-list');
     
-    if(el) {
+    if (el) {
         el.classList.toggle('hidden');
         if (btn) {
             const isHidden = el.classList.contains('hidden');
@@ -114,17 +110,12 @@ function toggleGeneralList() {
     }
 }
 
-// ==========================================
-// MODALE STATO SISTEMA (Rete e Meteo)
-// ==========================================
-
 async function openSystemStatusModal() {
     const modal = document.getElementById('system-status-modal');
     if (!modal) return;
     
     modal.style.display = 'flex';
     
-    // Controlla Rete Dispositivo
     const connSpan = document.getElementById('modal-conn-status');
     const isOnline = navigator.onLine;
     
@@ -136,7 +127,6 @@ async function openSystemStatusModal() {
         connSpan.style.background = '#d32f2f';
     }
 
-    // Controlla API Meteo Open-Meteo
     const weatherSpan = document.getElementById('modal-weather-status');
     const weatherDesc = document.getElementById('modal-weather-desc');
     
@@ -152,9 +142,8 @@ async function openSystemStatusModal() {
     }
 
     try {
-        // Ping leggerissimo all'API meteo (Uso le coordinate di Roma solo come test server)
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondi di timeout massimo
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
         
         const response = await fetch("https://api.open-meteo.com/v1/forecast?latitude=41.90&longitude=12.49&current_weather=true", { 
             cache: "no-store",
@@ -180,11 +169,6 @@ async function openSystemStatusModal() {
     }
 }
 
-
-// ==========================================
-// RICERCA E FILTRI
-// ==========================================
-
 function handleSearchInput() {
     const input = document.getElementById('search-plant');
     const clearBtn = document.getElementById('clear-search-btn');
@@ -197,7 +181,7 @@ function handleSearchInput() {
         }
     }
     
-    if(typeof debouncedRenderPlants === 'function') debouncedRenderPlants();
+    if (typeof debouncedRenderPlants === 'function') debouncedRenderPlants();
 }
 
 function clearSearch() {
@@ -211,7 +195,7 @@ function clearSearch() {
     if (input) input.value = '';
     if (clearBtn) clearBtn.style.display = 'none';
     
-    if(typeof renderPlants === 'function') renderPlants();
+    if (typeof renderPlants === 'function') renderPlants();
 }
 
 function openFilterSidebar() {
@@ -226,11 +210,11 @@ function closeFilterSidebar() {
 
 function applyFiltersAndClose() {
     closeFilterSidebar();
-    if(typeof renderPlants === 'function') renderPlants();
+    if (typeof renderPlants === 'function') renderPlants();
 }
 
 function resetAllFilters() {
-    if(typeof resetFiltersAndSearch === 'function') resetFiltersAndSearch();
-    if(typeof renderPlants === 'function') renderPlants();
+    if (typeof resetFiltersAndSearch === 'function') resetFiltersAndSearch();
+    if (typeof renderPlants === 'function') renderPlants();
     closeFilterSidebar();
 }

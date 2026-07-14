@@ -1,7 +1,3 @@
-// ==========================================
-// AZIONI DI MASSA (MACRO V2)
-// ==========================================
-
 function resetMacroView() {
     const step1 = document.getElementById('macro-step-1');
     const step2 = document.getElementById('macro-step-2');
@@ -127,11 +123,15 @@ function renderMacroInputs() {
         if (!p) return;
 
         let specificInput = '';
-        if (type === 'Misurazione') specificInput = `<input type="text" inputmode="decimal" class="m-val" placeholder="Altezza (cm)" aria-label="Altezza" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:6px;">`;
-        else if (type === 'Misurazione pH') specificInput = `<input type="text" inputmode="decimal" class="m-val" placeholder="pH (0-14)" aria-label="pH" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:6px;">`;
-        else if (type === 'Raccolto') specificInput = `<input type="text" class="m-val" placeholder="Quantità (es. 2kg)" aria-label="Quantità" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:6px;">`;
-        else if (type === 'Innesto') specificInput = `<input type="text" class="m-val" placeholder="Nuova varietà" aria-label="Nome innesto" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:6px;">`;
-        else if (type === 'Rinvaso / Sistemazione') {
+        if (type === 'Misurazione') {
+            specificInput = `<input type="text" inputmode="decimal" class="m-val" placeholder="Altezza (cm)" aria-label="Altezza" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:6px;">`;
+        } else if (type === 'Misurazione pH') {
+            specificInput = `<input type="text" inputmode="decimal" class="m-val" placeholder="pH (0-14)" aria-label="pH" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:6px;">`;
+        } else if (type === 'Raccolto') {
+            specificInput = `<input type="text" class="m-val" placeholder="Quantità (es. 2kg)" aria-label="Quantità" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:6px;">`;
+        } else if (type === 'Innesto') {
+            specificInput = `<input type="text" class="m-val" placeholder="Nuova varietà" aria-label="Nome innesto" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:6px;">`;
+        } else if (type === 'Rinvaso / Sistemazione') {
             specificInput = `
                 <select class="m-placement" aria-label="Sistemazione" style="flex:1; padding:8px; border:1px solid #ccc; border-radius:6px;"><option value="Vaso">Vaso</option><option value="Piena terra">Piena terra</option><option value="Idroponica">Idroponica</option></select>
                 <input type="text" inputmode="decimal" class="m-pot" placeholder="Litri (es. 20)" aria-label="Litri" style="flex:1; padding:8px; border:1px solid #ccc; border-radius:6px;">
@@ -174,7 +174,7 @@ async function saveMacroV2() {
     const typeEl = document.getElementById('macro-type-select');
     const type = typeEl ? typeEl.value : 'Concimazione';
     
-    if(!date) {
+    if (!date) {
         if (typeof Swal !== 'undefined') return Swal.fire({icon: 'error', title: 'Data mancante', text: "Inserisci la data dell'evento.", confirmButtonColor: '#2e7d32'});
         return;
     }
@@ -190,7 +190,7 @@ async function saveMacroV2() {
         let successCount = 0;
         let errors = 0;
 
-        rows.forEach((row, idx) => {
+        rows.forEach((row) => {
             const pid = String(row.dataset.id);
             const p = plantsDatabase.find(x => String(x.id) === pid);
             if (!p) return;
@@ -207,22 +207,18 @@ async function saveMacroV2() {
                 height = typeof parseLocalFloat === 'function' ? parseLocalFloat(valEl.value) : parseFloat(valEl.value); 
                 if ((height === null || isNaN(height)) && !note) isRowValid = false; 
                 else if (height !== null && height < 0) isRowValid = false; 
-            }
-            else if (type === 'Misurazione pH') { 
+            } else if (type === 'Misurazione pH') { 
                 ph = typeof parseLocalFloat === 'function' ? parseLocalFloat(valEl.value) : parseFloat(valEl.value); 
                 if ((ph === null || isNaN(ph)) && !note) isRowValid = false; 
                 else if (ph !== null && (ph < 0 || ph > 14)) isRowValid = false; 
-            }
-            else if (type === 'Raccolto') { 
+            } else if (type === 'Raccolto') { 
                 harvest = valEl.value.trim(); 
                 if (!harvest && !note) isRowValid = false; 
-            }
-            else if (type === 'Innesto') { 
+            } else if (type === 'Innesto') { 
                 graftName = valEl.value.trim(); 
                 if (!graftName) isRowValid = false; 
                 else { p.name = graftName; p.origin = 'Innesto'; } 
-            }
-            else if (type === 'Rinvaso / Sistemazione') {
+            } else if (type === 'Rinvaso / Sistemazione') {
                 const plEl = row.querySelector('.m-placement');
                 const ptEl = row.querySelector('.m-pot');
                 newPlacement = plEl ? plEl.value : 'Vaso';
@@ -253,7 +249,7 @@ async function saveMacroV2() {
 
         unsavedChanges = true;
         
-        if(typeof saveToLocal === 'function') await saveToLocal();
+        if (typeof saveToLocal === 'function') await saveToLocal();
 
         let msg = `Evento salvato con successo per ${successCount} piante!`;
         if (errors > 0) msg += ` (Ignorate ${errors} piante con dati incompleti o non validi)`;
@@ -278,10 +274,6 @@ async function saveMacroV2() {
         }
     }
 }
-
-// ==========================================
-// SEZIONE "I MIEI DATI" E STATISTICHE (Dashboard Home)
-// ==========================================
 
 function renderMyData() {
     const container = document.getElementById('my-data-content');
@@ -333,13 +325,9 @@ function renderMyData() {
     }
 }
 
-// ==========================================
-// TRACCIAMENTO SPESE
-// ==========================================
-
 function renderExpenses() {
     const ul = document.getElementById('expenses-list');
-    if(!ul) return;
+    if (!ul) return;
     ul.innerHTML = '';
     
     if (!generalExpenses) generalExpenses = [];
@@ -403,7 +391,7 @@ async function addExpense() {
         });
         
         unsavedChanges = true;
-        if(typeof saveToLocal === 'function') await saveToLocal();
+        if (typeof saveToLocal === 'function') await saveToLocal();
         
         isFormDirty = false;
         
@@ -424,13 +412,9 @@ async function deleteExpense(id) {
     generalExpenses = generalExpenses.filter(e => String(e.id) !== targetId);
     unsavedChanges = true;
     
-    if(typeof saveToLocal === 'function') await saveToLocal();
+    if (typeof saveToLocal === 'function') await saveToLocal();
     renderExpenses();
 }
-
-// ==========================================
-// WISHLIST (PIANTE DESIDERATE)
-// ==========================================
 
 function initWishlistPreview() {
     const wlPhoto = document.getElementById('wl-photo');
@@ -474,7 +458,7 @@ document.addEventListener('DOMContentLoaded', initWishlistPreview);
 
 function renderWishlist() {
     const grid = document.getElementById('wishlist-grid');
-    if(!grid) return;
+    if (!grid) return;
     grid.innerHTML = '';
     
     if (!wishlist) wishlist = [];
@@ -530,7 +514,7 @@ async function addWishlistItem() {
         let photoBlob = null;
         if (photoInput && photoInput.files && photoInput.files.length > 0) {
             try {
-                if(typeof compressImageAsync === 'function') {
+                if (typeof compressImageAsync === 'function') {
                     photoBlob = await compressImageAsync(photoInput.files[0]);
                 } else {
                     photoBlob = photoInput.files[0];
@@ -547,7 +531,7 @@ async function addWishlistItem() {
         });
         
         unsavedChanges = true;
-        if(typeof saveToLocal === 'function') await saveToLocal();
+        if (typeof saveToLocal === 'function') await saveToLocal();
 
         isFormDirty = false;
 
@@ -573,13 +557,9 @@ async function deleteWishlistItem(id) {
     wishlist = wishlist.filter(w => String(w.id) !== targetId);
     unsavedChanges = true;
     
-    if(typeof saveToLocal === 'function') await saveToLocal();
+    if (typeof saveToLocal === 'function') await saveToLocal();
     renderWishlist();
 }
-
-// ==========================================
-// ALLERTA METEO AUTOMATICA (DASHBOARD EVENTI)
-// ==========================================
 
 let weatherCache = new Map(); 
 
@@ -606,7 +586,6 @@ async function fetchWeatherData(lat, lng) {
     if (weatherCache.has(cacheKey)) return weatherCache.get(cacheKey);
 
     try {
-        // Aggiunto weathercode per rilevare la grandine (Codici WMO)
         const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_min,wind_speed_10m_max,weathercode&timezone=auto`);
         const data = await response.json();
         if (data && data.daily) {
@@ -673,7 +652,6 @@ async function renderWeatherDashboard() {
                 const minTemp = weather.temperature_2m_min ? weather.temperature_2m_min[i] : 99;
                 const wCode = weather.weathercode ? weather.weathercode[i] : 0;
 
-                // Controllo Vento
                 if (windSpeed > activeWindThreshold) {
                     const alreadyHasWindAlert = windAlerts.some(wa => wa.locationName === loc.name && wa.date === dateStr);
                     if (!alreadyHasWindAlert) {
@@ -681,7 +659,6 @@ async function renderWeatherDashboard() {
                     }
                 }
 
-                // Controllo Grandine (WMO Codes: 96 = Thunderstorm with slight/mod hail, 99 = heavy hail)
                 if (wCode === 96 || wCode === 99) {
                     const alreadyHasHailAlert = hailAlerts.some(ha => ha.locationName === loc.name && ha.date === dateStr);
                     if (!alreadyHasHailAlert) {
@@ -689,7 +666,6 @@ async function renderWeatherDashboard() {
                     }
                 }
 
-                // Controllo Gelo (Temperatura < Tolleranza della pianta)
                 activePlants.forEach(p => {
                     if (p.lat !== null && p.lng !== null && p.lat !== undefined && p.lng !== undefined) {
                         const pLat = parseFloat(p.lat.toString().replace(',', '.'));
@@ -714,7 +690,6 @@ async function renderWeatherDashboard() {
         }
     }
 
-    // Costruzione dell'interfaccia con le Impostazioni Vento integrate nell'intestazione
     let html = `
     <div style="background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e8f5e9; padding-bottom: 10px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">

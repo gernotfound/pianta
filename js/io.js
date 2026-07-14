@@ -343,7 +343,7 @@ async function exportData() {
         }
     } finally { 
         if (btn) {
-            btn.innerHTML = "💾 Backup"; 
+            btn.innerHTML = "💾 Backup ZIP"; 
             btn.disabled = false; 
         }
     }
@@ -359,7 +359,7 @@ function exportToCSV() {
         return;
     }
 
-    // AGGIORNATO: Sostituito pH Ottimale con pH Minimo e Massimo
+    // Le colonne aggiornate per rispecchiare fedelmente i dati separati (Min/Max per Temperatura e pH)
     const headers = [
         "Nome", "Nome Scientifico", "Costo (€)", "Origine/Propagazione", "Madre", "Padre", "Fertilità", "Data Semina/Inizio",
         "Fedeltà Varietale", "Sistemazione", "Litri Vaso", "Substrato", "pH Minimo", "pH Massimo",
@@ -416,7 +416,6 @@ function exportToCSV() {
         let safeMin = p.minTemp !== null && p.minTemp !== undefined ? p.minTemp.toString().replace('.', ',') : "";
         let safeMax = p.maxTemp !== null && p.maxTemp !== undefined ? p.maxTemp.toString().replace('.', ',') : "";
         
-        // Formattazione per Excel dei due nuovi campi pH
         let safePhMin = p.phMin !== null && p.phMin !== undefined ? p.phMin.toString().replace('.', ',') : "";
         let safePhMax = p.phMax !== null && p.phMax !== undefined ? p.phMax.toString().replace('.', ',') : "";
 

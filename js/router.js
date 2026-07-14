@@ -2,9 +2,11 @@
 // VARIABILI DI STATO DEL ROUTER
 // ==========================================
 let currentTab = 'home';
-let homeTabState = { view: 'dashboard', param: null };
-let dataTabState = { view: 'data', param: null };
-let currentAppRoute = window.location.hash || '#/dashboard'; 
+let homeTabState = { view: 'home', param: null };
+let plantsTabState = { view: 'plants', param: null };
+let currentAppRoute = window.location.hash || '#/home'; 
+let plantsScrollPosition = 0; 
+let homeScrollPosition = 0; 
 
 // ==========================================
 // ROUTER MULTITASKING (Vera App Nativa)
@@ -26,6 +28,11 @@ function initRouter(hasData) {
         const dupModal = document.getElementById('duplicate-modal-overlay');
         if (dupModal && dupModal.style.display !== 'none') {
             dupModal.style.display = 'none';
+        }
+
+        const sysModal = document.getElementById('system-status-modal');
+        if (sysModal && sysModal.style.display !== 'none') {
+            sysModal.style.display = 'none';
         }
 
         if (isFormDirty && currentTab === 'add-plant') {
@@ -75,9 +82,10 @@ function initRouter(hasData) {
         return;
     }
 
+    // Se l'app si apre senza percorsi specifici, vai alla nuova Home
     if (!window.location.hash || window.location.hash === '#/' || window.location.hash === '' || window.location.hash === '#/startup') {
-        history.replaceState({ view: 'dashboard' }, '', '#/dashboard');
-        executeTabSwitch('dashboard');
+        history.replaceState({ view: 'home' }, '', '#/home');
+        executeTabSwitch('home');
     } else {
         parseHashAndNavigate(hasData); 
     }
@@ -95,44 +103,68 @@ function parseHashAndNavigate(hasData) {
     const view = parts[0];
     const param = parts[1] || null;
     
-    const validViews = ['dashboard', 'data', 'expenses', 'wishlist', 'gallery', 'archive', 'add-plant', 'map', 'scanner', 'plant-detail', 'edit-plant', 'events', 'macro'];
+    // Aggiornata lista delle view valide con il nuovo schema
+    const validViews = ['home', 'plants', 'settings', 'expenses', 'wishlist', 'gallery', 'archive', 'add-plant', 'map', 'scanner', 'plant-detail', 'edit-plant', 'events', 'macro'];
     
     if (validViews.includes(view)) {
         restoreTabState(view, param);
         history.replaceState({ view, param }, '', window.location.hash);
         executeTabSwitch(view, param);
     } else {
-        history.replaceState({ view: 'dashboard' }, '', '#/dashboard');
-        executeTabSwitch('dashboard');
+        history.replaceState({ view: 'home' }, '', '#/home');
+        executeTabSwitch('home');
     }
 }
 
 function restoreTabState(view, param) {
-    if (['dashboard', 'plant-detail'].includes(view)) {
+    // Sottopagine della HOME
+    if (['home', 'expenses', 'wishlist', 'gallery', 'archive', 'scanner', 'macro'].includes(view)) {
         currentTab = 'home';
         homeTabState = { view, param };
-    } else if (['data', 'expenses', 'wishlist', 'gallery', 'archive', 'scanner'].includes(view)) {
-        currentTab = 'data';
-        dataTabState = { view, param };
-    } else if (view === 'add-plant' || view === 'edit-plant') {
+    } 
+    // Sottopagine di PIANTE
+    else if (['plants', 'plant-detail', 'edit-plant'].includes(view)) {
+        currentTab = 'plants';
+        plantsTabState = { view, param };
+    } 
+    // Tab indipendenti
+    else if (view === 'settings') {
+        currentTab = 'settings';
+    } else if (view === 'add-plant') {
         currentTab = 'add-plant';
     } else if (view === 'events') {
         currentTab = 'events';
     } else if (view === 'map') {
         currentTab = 'map';
-    } else if (view === 'macro') {
-        currentTab = 'macro';
+    }
+}
+
+// Funzione generica per tornare al tab principale logico (usata dal tasto "Indietro")
+function goBack() {
+    if (currentTab === 'home') {
+        homeTabState = { view: 'home', param: null };
+        history.pushState(homeTabState, '', '#/home');
+        executeTabSwitch('home');
+    } else if (currentTab === 'plants') {
+        plantsTabState = { view: 'plants', param: null };
+        history.pushState(plantsTabState, '', '#/plants');
+        executeTabSwitch('plants');
+    } else {
+        // Fallback sicuro se ci si perde
+        homeTabState = { view: 'home', param: null };
+        history.pushState(homeTabState, '', '#/home');
+        executeTabSwitch('home');
     }
 }
 
 function goToHomeTab() {
     if (currentTab === 'home') {
-        if (homeTabState.view === 'dashboard') {
+        if (homeTabState.view === 'home') {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
-            homeTabState = { view: 'dashboard', param: null };
-            history.pushState({ view: 'dashboard' }, '', '#/dashboard');
-            executeTabSwitch('dashboard');
+            homeTabState = { view: 'home', param: null };
+            history.pushState({ view: 'home' }, '', '#/home');
+            executeTabSwitch('home');
         }
     } else {
         currentTab = 'home';
@@ -142,9 +174,28 @@ function goToHomeTab() {
     }
 }
 
+function goToPlantsTab() {
+    if (currentTab === 'plants') {
+        if (plantsTabState.view === 'plants') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            plantsTabState = { view: 'plants', param: null };
+            history.pushState({ view: 'plants' }, '', '#/plants');
+            executeTabSwitch('plants');
+        }
+    } else {
+        currentTab = 'plants';
+        let targetUrl = `#/${plantsTabState.view}${plantsTabState.param ? '/' + plantsTabState.param : ''}`;
+        history.pushState(plantsTabState, '', targetUrl);
+        executeTabSwitch(plantsTabState.view, plantsTabState.param);
+    }
+}
+
 function navigateTab(tab) {
     if (tab === 'home') {
         goToHomeTab();
+    } else if (tab === 'plants') {
+        goToPlantsTab();
     } else if (tab === 'add-plant') {
         currentTab = 'add-plant';
         if (!isFormDirty && !editingMode) {
@@ -152,12 +203,8 @@ function navigateTab(tab) {
         }
         history.pushState({ view: 'add-plant' }, '', '#/add-plant');
         executeTabSwitch('add-plant');
-    } else if (tab === 'data') {
-        currentTab = 'data';
-        let targetUrl = `#/${dataTabState.view}${dataTabState.param ? '/' + dataTabState.param : ''}`;
-        history.pushState(dataTabState, '', targetUrl);
-        executeTabSwitch(dataTabState.view, dataTabState.param);
     } else {
+        // eventi, mappa, opzioni (settings)
         currentTab = tab;
         history.pushState({ view: tab }, '', `#/${tab}`);
         executeTabSwitch(tab);
@@ -165,40 +212,33 @@ function navigateTab(tab) {
 }
 
 function navigateTo(view, param = null) {
-    const dashboardEl = document.getElementById('dashboard');
+    // Salva lo scroll della griglia Piante
+    const dashboardEl = document.getElementById('dashboard'); 
     if (dashboardEl && !dashboardEl.classList.contains('hidden')) {
-        lastScrollPosition = window.scrollY || document.documentElement.scrollTop;
+        plantsScrollPosition = window.scrollY || document.documentElement.scrollTop;
     }
     
-    const myDataPageEl = document.getElementById('my-data-page');
-    if (myDataPageEl && !myDataPageEl.classList.contains('hidden')) {
-        dataScrollPosition = window.scrollY || document.documentElement.scrollTop;
+    // Salva lo scroll della nuova Dashboard Home
+    const homeViewEl = document.getElementById('home-view'); 
+    if (homeViewEl && !homeViewEl.classList.contains('hidden')) {
+        homeScrollPosition = window.scrollY || document.documentElement.scrollTop;
     }
     
     if (['plant-detail', 'edit-plant'].includes(view)) {
+        currentTab = 'plants';
+        plantsTabState = { view, param };
+    } else if (['expenses', 'wishlist', 'gallery', 'archive', 'scanner', 'macro'].includes(view)) {
         currentTab = 'home';
         homeTabState = { view, param };
-    } else if (['expenses', 'wishlist', 'gallery', 'archive', 'scanner'].includes(view)) {
-        currentTab = 'data';
-        dataTabState = { view, param };
+    } else if (view === 'dashboard') {
+        // Fallback per vecchi link generati: reindirizza al nuovo tab Piante
+        view = 'plants';
+        currentTab = 'plants';
+        plantsTabState = { view: 'plants', param: null };
     }
 
     history.pushState({ view, param }, '', `#/${view}${param ? '/' + param : ''}`);
     executeTabSwitch(view, param);
-}
-
-function goBack() {
-    if (currentTab === 'home') {
-        homeTabState = { view: 'dashboard', param: null };
-        history.pushState(homeTabState, '', '#/dashboard');
-        executeTabSwitch('dashboard');
-    } else if (currentTab === 'data') {
-        dataTabState = { view: 'data', param: null };
-        history.pushState(dataTabState, '', '#/data');
-        executeTabSwitch('data');
-    } else {
-        goToHomeTab(); 
-    }
 }
 
 function executeTabSwitch(view, param = null) {
@@ -220,7 +260,7 @@ function executeTabSwitch(view, param = null) {
                 html5QrcodeScanner = null;
             }
         }
-        // Force kill a livello DOM per device ostici (iOS Safari)
+        // Force kill a livello DOM
         document.querySelectorAll('video').forEach(video => {
             if (video.srcObject) {
                 const tracks = video.srcObject.getTracks();
@@ -243,10 +283,12 @@ function executeTabSwitch(view, param = null) {
         cleanupGlobalMap();
     }
 
+    // Nasconde tutte le finestre dell'App
     const views = [
-        'startup-screen', 'dashboard', 'my-data-page', 'expenses-view', 'wishlist-view', 
-        'gallery-view', 'archive-page', 'plant-detail-view',
-        'form-container', 'global-map-page', 'labels-scanner-view', 'events-view', 'macro-view'
+        'startup-screen', 'home-view', 'dashboard', 'settings-view', 
+        'expenses-view', 'wishlist-view', 'gallery-view', 'archive-page', 
+        'plant-detail-view', 'form-container', 'global-map-page', 
+        'labels-scanner-view', 'events-view', 'macro-view'
     ];
     
     views.forEach(v => {
@@ -254,19 +296,23 @@ function executeTabSwitch(view, param = null) {
         if(el) el.classList.add('hidden');
     });
 
+    // Pulisce le icone del menu in basso e riaccende quella giusta
     document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-    if (currentTab === 'home') { document.getElementById('nav-btn-dashboard')?.classList.add('active'); }
+    
+    if (currentTab === 'home') { document.getElementById('nav-btn-home')?.classList.add('active'); }
     else if (currentTab === 'add-plant') { document.getElementById('nav-btn-add-plant')?.classList.add('active'); }
-    else if (currentTab === 'data') { document.getElementById('nav-btn-data')?.classList.add('active'); }
+    else if (currentTab === 'plants') { document.getElementById('nav-btn-plants')?.classList.add('active'); }
     else if (currentTab === 'events') { document.getElementById('nav-btn-events')?.classList.add('active'); }
     else if (currentTab === 'map') { document.getElementById('nav-btn-map')?.classList.add('active'); }
-    else if (currentTab === 'macro') { document.getElementById('nav-btn-macro')?.classList.add('active'); }
+    else if (currentTab === 'settings') { document.getElementById('nav-btn-settings')?.classList.add('active'); }
 
+    // Determina l'ID HTML da mostrare in base alla view richiesta
     let targetId = '';
     switch (view) {
         case 'startup': targetId = 'startup-screen'; break;
-        case 'dashboard': targetId = 'dashboard'; break;
-        case 'data': targetId = 'my-data-page'; break;
+        case 'home': targetId = 'home-view'; break;
+        case 'plants': targetId = 'dashboard'; break; // il contenitore della griglia ha ancora id 'dashboard'
+        case 'settings': targetId = 'settings-view'; break;
         case 'archive': targetId = 'archive-page'; break;
         case 'add-plant': 
         case 'edit-plant': targetId = 'form-container'; break;
@@ -282,23 +328,30 @@ function executeTabSwitch(view, param = null) {
         targetViewEl.classList.remove('hidden');
     }
 
+    // Trigger funzionali specifici per ogni pagina
     switch(view) {
-        case 'dashboard':
-            if (typeof renderPlants === 'function') renderPlants();
-            setTimeout(() => { window.scrollTo({ top: lastScrollPosition || 0, behavior: 'instant' }); }, 10);
+        case 'home':
+            if(typeof renderMyData === 'function') renderMyData();
+            setTimeout(() => { window.scrollTo({ top: homeScrollPosition || 0, behavior: 'instant' }); }, 10);
             break;
             
+        case 'plants':
+            if (typeof renderPlants === 'function') renderPlants();
+            setTimeout(() => { window.scrollTo({ top: plantsScrollPosition || 0, behavior: 'instant' }); }, 10);
+            break;
+            
+        case 'settings':
+            const globalNotes = document.getElementById('global-garden-notes');
+            if(globalNotes && typeof gardenNotes !== 'undefined') globalNotes.value = gardenNotes || ""; 
+            // FIX: Popola l'elenco testuale delle piante all'apertura delle Impostazioni!
+            if(typeof renderMyData === 'function') renderMyData(); 
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            break;
+
         case 'events':
             if(typeof renderGlobalChart === 'function') renderGlobalChart();
             if(typeof renderWeatherDashboard === 'function') renderWeatherDashboard();
             window.scrollTo({ top: 0, behavior: 'instant' });
-            break;
-
-        case 'data':
-            const globalNotes = document.getElementById('global-garden-notes');
-            if(globalNotes && typeof gardenNotes !== 'undefined') globalNotes.value = gardenNotes || ""; 
-            if(typeof renderMyData === 'function') renderMyData();
-            setTimeout(() => { window.scrollTo({ top: dataScrollPosition || 0, behavior: 'instant' }); }, 10);
             break;
 
         case 'expenses':

@@ -46,7 +46,6 @@ async function editMainTitle() {
         
         unsavedChanges = true;
         try {
-            // Attesa asincrona del salvataggio con protezione da errori
             if(typeof saveToLocal === 'function') await saveToLocal();
         } catch(e) {
             console.error("Errore salvataggio nuovo titolo:", e);
@@ -94,8 +93,8 @@ function finalizeCancelAddPlant() {
     
     if (wasEditing && savedId && typeof navigateTo === 'function') {
         navigateTo('plant-detail', savedId);
-    } else if(typeof goToHomeTab === 'function') {
-        goToHomeTab();
+    } else if (typeof goBack === 'function') {
+        goBack();
     } else {
         window.history.back();
     }
@@ -103,17 +102,84 @@ function finalizeCancelAddPlant() {
 
 function toggleGeneralList() {
     const el = document.getElementById('general-list-container');
-    const btn = document.querySelector('button[onclick="toggleGeneralList()"]');
+    const btn = document.getElementById('btn-toggle-list');
     
     if(el) {
         el.classList.toggle('hidden');
         if (btn) {
             const isHidden = el.classList.contains('hidden');
             btn.setAttribute('aria-expanded', (!isHidden).toString());
-            btn.innerHTML = isHidden ? '📋 Mostra elenco' : '❌ Nascondi elenco';
+            btn.innerHTML = isHidden ? '📋 Elenco Piante (Testo)' : '❌ Nascondi elenco';
         }
     }
 }
+
+// ==========================================
+// MODALE STATO SISTEMA (Rete e Meteo)
+// ==========================================
+
+async function openSystemStatusModal() {
+    const modal = document.getElementById('system-status-modal');
+    if (!modal) return;
+    
+    modal.style.display = 'flex';
+    
+    // Controlla Rete Dispositivo
+    const connSpan = document.getElementById('modal-conn-status');
+    const isOnline = navigator.onLine;
+    
+    if (isOnline) {
+        connSpan.innerText = 'Online';
+        connSpan.style.background = '#2e7d32';
+    } else {
+        connSpan.innerText = 'Offline';
+        connSpan.style.background = '#d32f2f';
+    }
+
+    // Controlla API Meteo Open-Meteo
+    const weatherSpan = document.getElementById('modal-weather-status');
+    const weatherDesc = document.getElementById('modal-weather-desc');
+    
+    weatherSpan.innerText = 'In attesa...';
+    weatherSpan.style.background = '#607d8b';
+    weatherDesc.innerText = "Sto verificando la connessione al server meteo Open-Meteo...";
+
+    if (!isOnline) {
+        weatherSpan.innerText = 'Offline';
+        weatherSpan.style.background = '#d32f2f';
+        weatherDesc.innerText = "Nessuna rete. Le allerte meteo si baseranno sull'ultimo salvataggio offline locale.";
+        return;
+    }
+
+    try {
+        // Ping leggerissimo all'API meteo (Uso le coordinate di Roma solo come test server)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondi di timeout massimo
+        
+        const response = await fetch("https://api.open-meteo.com/v1/forecast?latitude=41.90&longitude=12.49&current_weather=true", { 
+            cache: "no-store",
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+            weatherSpan.innerText = 'Connesso e Attivo';
+            weatherSpan.style.background = '#2e7d32';
+            
+            const now = new Date();
+            const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+            weatherDesc.innerHTML = `L'API Meteo è in funzione. Il monitoraggio per Vento e Gelo è attivo.<br><strong>Ultimo controllo:</strong> oggi alle ${timeStr}.`;
+        } else {
+            throw new Error("Risposta non valida dal server");
+        }
+    } catch (e) {
+        weatherSpan.innerText = 'Server Irraggiungibile';
+        weatherSpan.style.background = '#f57f17';
+        weatherDesc.innerHTML = "L'app è online ma il server meteo non risponde. Potrebbe esserci un blocco di rete aziendale, una VPN, o Open-Meteo è temporaneamente giù.";
+    }
+}
+
 
 // ==========================================
 // RICERCA E FILTRI
@@ -131,12 +197,10 @@ function handleSearchInput() {
         }
     }
     
-    // Scatena la ricerca con il ritardo (debounce)
     if(typeof debouncedRenderPlants === 'function') debouncedRenderPlants();
 }
 
 function clearSearch() {
-    // Spegniamo il timer pendente per evitare sfarfallii doppi
     if (typeof searchDebounceTimer !== 'undefined' && searchDebounceTimer) {
         clearTimeout(searchDebounceTimer);
     }
@@ -147,7 +211,6 @@ function clearSearch() {
     if (input) input.value = '';
     if (clearBtn) clearBtn.style.display = 'none';
     
-    // Aggiorna istantaneamente la griglia rimuovendo il filtro di testo
     if(typeof renderPlants === 'function') renderPlants();
 }
 

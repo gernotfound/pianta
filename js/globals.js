@@ -2,7 +2,7 @@
 // CONFIGURAZIONE GLOBALE DELL'APP (APP_CONFIG)
 // ==========================================
 const APP_CONFIG = {
-    // Database (V3 per struttura a UUID pura)
+    // Database
     DB_NAME: 'TropicalGardenDB',
     DB_VERSION: 3,
     
@@ -25,7 +25,7 @@ const APP_CONFIG = {
     MAP_WORLD_ZOOM: 2,         
     MAP_PLANT_ZOOM: 15,        
     
-    // Meteo e Allerte
+    // Meteo e Allerte (Default, modificabile in Impostazioni)
     WIND_ALERT_KMH: 40         
 };
 
@@ -67,9 +67,6 @@ let fruitPhotoRemoved = false;
 
 let searchDebounceTimer = null;
 let hasCheckedWeather = false;
-
-let dataScrollPosition = 0; 
-let lastScrollPosition = 0; 
 
 window.smartCropBlobs = { main: null, fruit: null };
 window.appInitialized = false;
@@ -147,12 +144,14 @@ function debouncedRenderPlants() {
     }, APP_CONFIG.DEBOUNCE_DELAY); 
 }
 
+// Spostato qui per funzionare in background su tutte le pagine
 function updateConnectionStatusIndicator() {
+    const isOnline = navigator.onLine;
     const indicator = document.getElementById('connection-status-indicator');
-    if (!indicator) return; // Se la vista non è "Dati" o l'elemento manca, ignora in silenzio.
-    const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
-    indicator.textContent = isOnline ? 'Online' : 'Offline';
-    indicator.style.background = isOnline ? '#2e7d32' : '#d32f2f';
+    if (indicator) {
+        indicator.textContent = isOnline ? 'Online' : 'Offline';
+        indicator.style.background = isOnline ? '#2e7d32' : '#d32f2f';
+    }
 }
 
 function parseLocalFloat(value) {
@@ -394,7 +393,6 @@ async function loadFromLocal() {
                 generalExpenses = Array.isArray(reqExp.result) ? reqExp.result : [];
                 wishlist = Array.isArray(reqWish.result) ? reqWish.result : [];
                 
-                // Popolamento iniziale delle impronte digitali
                 plantsDatabase.forEach(p => dbSyncHashes.Plants[p.id] = generateFastHash(p));
                 generalExpenses.forEach(e => dbSyncHashes.Expenses[e.id] = generateFastHash(e));
                 wishlist.forEach(w => dbSyncHashes.Wishlist[w.id] = generateFastHash(w));
@@ -422,6 +420,7 @@ function finalizeLoad(hasData = true) {
         if(startScreen) startScreen.classList.remove('hidden');
         if(navBar) navBar.classList.add('hidden-nav');
     }
+    
     if(typeof initRouter === 'function') initRouter(hasData);
 }
 

@@ -101,8 +101,9 @@ function togglePotSizeField() {
     }
 }
 
+// Reset filtri esteso
 function resetFiltersAndSearch() {
-    ['filter-placement', 'filter-origin', 'filter-fertility', 'filter-survival-temp', 'search-plant'].forEach(id => {
+    ['filter-placement', 'filter-origin', 'filter-fertility', 'filter-photo', 'search-plant', 'filter-survival-temp'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             if (el.tagName === 'SELECT') {
@@ -112,6 +113,10 @@ function resetFiltersAndSearch() {
             }
         }
     });
+    
+    const statusEl = document.getElementById('filter-status');
+    if (statusEl) statusEl.value = 'active';
+
     const sortEl = document.getElementById('sort-plants');
     if (sortEl) sortEl.value = 'name';
 }
@@ -373,7 +378,6 @@ async function savePlant() {
     let minTemp = document.getElementById('p-min-temp') ? parseLocalFloat(document.getElementById('p-min-temp').value) : null;
     let maxTemp = document.getElementById('p-max-temp') ? parseLocalFloat(document.getElementById('p-max-temp').value) : null;
     
-    // VALIDAZIONE NUOVO RANGE pH
     let phMin = document.getElementById('p-ph-min') ? parseLocalFloat(document.getElementById('p-ph-min').value) : null;
     let phMax = document.getElementById('p-ph-max') ? parseLocalFloat(document.getElementById('p-ph-max').value) : null;
 
@@ -956,9 +960,17 @@ function renderPlants() {
     const statsBar = document.getElementById('dashboard-stats');
     const searchBar = document.querySelector('.search-sort-bar');
     
-    const totalActive = plantsDatabase.filter(p => p.status !== 'archived').length;
-    if (totalActive === 0) {
-        if(emptyState) emptyState.classList.remove('hidden');
+    // FIX BUG: Lo Stato Vuoto assoluto si attiva SOLO se il database in toto è vuoto.
+    if (plantsDatabase.length === 0) {
+        if(emptyState) {
+            emptyState.innerHTML = `
+                <span style="font-size: 50px;" aria-hidden="true">🌱</span>
+                <h3 style="color: var(--primary); margin-bottom: 10px;">Il tuo giardino è vuoto</h3>
+                <p style="color: #666; font-size: 15px; margin-bottom: 25px;">Inizia ad aggiungere le tue piante per tenere traccia della loro crescita e degli eventi.</p>
+                <button class="btn" style="font-size: 16px; padding: 12px 25px;" onclick="navigateTab('add-plant')">➕ Aggiungi la prima Pianta</button>
+            `;
+            emptyState.classList.remove('hidden');
+        }
         grid.classList.add('hidden');
         if(statsBar) statsBar.style.display = 'none';
         if(searchBar) searchBar.style.display = 'none';
@@ -975,9 +987,14 @@ function renderPlants() {
     const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
     const sortMode = sortSelect ? sortSelect.value : "name";
     
+    const statusModeEl = document.getElementById('filter-status');
+    const photoModeEl = document.getElementById('filter-photo');
     const fp = document.getElementById('filter-placement');
     const fo = document.getElementById('filter-origin');
     const ff = document.getElementById('filter-fertility');
+    
+    const statusMode = statusModeEl ? statusModeEl.value : 'active';
+    const photoMode = photoModeEl ? photoModeEl.value : 'all';
     const filterPlacement = fp ? fp.value : 'all';
     const filterOrigin = fo ? fo.value : 'all';
     const filterFertility = ff ? ff.value : 'all';
@@ -986,35 +1003,38 @@ function renderPlants() {
     const filterSurvivalInputStr = filterSurvivalEl && filterSurvivalEl.value !== '' ? filterSurvivalEl.value : 'null';
     const filterSurvival = filterSurvivalEl && filterSurvivalEl.value !== '' ? parseFloat(filterSurvivalEl.value.replace(',','.')) : null;
 
-    const currentFilterStateString = `${searchTerm}_${sortMode}_${filterPlacement}_${filterOrigin}_${filterFertility}_${filterSurvivalInputStr}`;
+    const currentFilterStateString = `${searchTerm}_${sortMode}_${statusMode}_${photoMode}_${filterPlacement}_${filterOrigin}_${filterFertility}_${filterSurvivalInputStr}`;
     
     let isNewSearchOrFilter = (currentFilterStateString !== lastFilterStateString);
     lastFilterStateString = currentFilterStateString;
 
-    let filteredPlants = plantsDatabase.filter(p => p.status !== 'archived').filter(p => {
+    let filteredPlants = plantsDatabase.filter(p => {
+        // Filtro 1: Stato Pianta
+        if (statusMode === 'active' && p.status === 'archived') return false;
+        if (statusMode === 'archived' && p.status !== 'archived') return false;
+
+        // Filtro 2: Presenza Foto
+        let hasPhoto = !!(p.photo || p.fruitPhoto);
+        if (photoMode === 'yes' && !hasPhoto) return false;
+        if (photoMode === 'no' && hasPhoto) return false;
+
+        // Filtro 3: Ricerca Testuale
         const nameMatch = p.name ? p.name.toLowerCase().includes(searchTerm) : false;
         const scientificMatch = p.scientific ? p.scientific.toLowerCase().includes(searchTerm) : false;
-        return nameMatch || scientificMatch;
+        if (searchTerm && !nameMatch && !scientificMatch) return false;
+
+        // Filtro 4: Proprietà botaniche
+        if (filterPlacement !== 'all' && p.placement !== filterPlacement && !(p.placement == null && filterPlacement === 'Vaso' && p.potSize)) return false;
+        if (filterOrigin !== 'all' && p.origin !== filterOrigin) return false;
+        if (filterFertility !== 'all' && getModernFertility(p.autofertile) !== filterFertility) return false;
+
+        if (filterSurvival !== null && !isNaN(filterSurvival)) {
+            if (p.minTemp !== undefined && p.minTemp !== null && filterSurvival < p.minTemp) return false;
+            if (p.maxTemp !== undefined && p.maxTemp !== null && filterSurvival > p.maxTemp) return false;
+        }
+
+        return true;
     });
-    
-    if (filterPlacement !== 'all') {
-        filteredPlants = filteredPlants.filter(p => p.placement === filterPlacement || (!p.placement && filterPlacement==='Vaso' && p.potSize));
-    }
-    if (filterOrigin !== 'all') {
-        filteredPlants = filteredPlants.filter(p => p.origin === filterOrigin);
-    }
-    if (filterFertility !== 'all') {
-        filteredPlants = filteredPlants.filter(p => getModernFertility(p.autofertile) === filterFertility);
-    }
-    
-    if (filterSurvival !== null && !isNaN(filterSurvival)) {
-        filteredPlants = filteredPlants.filter(p => {
-            let survives = true;
-            if (p.minTemp !== undefined && p.minTemp !== null && filterSurvival < p.minTemp) survives = false; 
-            if (p.maxTemp !== undefined && p.maxTemp !== null && filterSurvival > p.maxTemp) survives = false; 
-            return survives;
-        });
-    }
 
     filteredPlants.sort((a, b) => {
         if (sortMode === 'name') return (a.name || '').localeCompare(b.name || '');
@@ -1065,8 +1085,9 @@ function renderPlants() {
 
     currentFilteredPlants = filteredPlants;
 
+    // Se il database contiene piante, ma i filtri le escludono tutte:
     if (filteredPlants.length === 0) {
-        grid.innerHTML = '<p style="grid-column: 1 / -1; color: #666; text-align: center; padding: 20px;">Nessuna pianta corrisponde ai filtri o alla ricerca.</p>';
+        grid.innerHTML = '<p style="grid-column: 1 / -1; color: #666; text-align: center; padding: 30px; background: white; border-radius: 8px; border: 1px dashed #ccc;">Nessuna pianta trovata con questi filtri.</p>';
         return;
     }
 
@@ -1095,8 +1116,11 @@ function renderPlantsChunk(customSize = null) {
 
     chunk.forEach(plant => {
         const card = document.createElement('div');
+        
+        let archiveStyle = plant.status === 'archived' ? ' border-left-color: var(--danger); opacity: 0.85;' : '';
         card.className = 'plant-card animate__animated animate__fadeIn'; 
         card.style.animationDuration = '0.5s';
+        if (archiveStyle) card.style.cssText += archiveStyle;
         
         card.setAttribute('role', 'button');
         card.setAttribute('tabindex', '0');
@@ -1142,13 +1166,17 @@ function renderPlantsChunk(customSize = null) {
         let modernFertility = getModernFertility(plant.autofertile);
         let fertilityText = modernFertility !== 'Sconosciuta' ? escapeHTML(modernFertility) : 'N/D';
 
+        let nameColor = plant.status === 'archived' ? 'var(--danger)' : 'var(--primary)';
+        let archiveBadge = plant.status === 'archived' ? `<span style="background:#ffebee; color:#d32f2f; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:bold;">Archiviata</span>` : '';
+
         card.innerHTML = `
-            <img src="${imgSrc}" onerror="this.onerror=null; this.src='${fallbackSrc}';" loading="lazy" alt="${escapeHTML(plant.name)}">
-            <h3 style="margin:0 0 2px 0; color:var(--primary); font-size:20px; line-height:1.2;">${escapeHTML(plant.name)}</h3>
+            <img src="${imgSrc}" onerror="this.onerror=null; this.src='${fallbackSrc}';" loading="lazy" alt="${escapeHTML(plant.name)}" class="${plant.status === 'archived' ? 'grayscale-img' : ''}">
+            <h3 style="margin:0 0 2px 0; color:${nameColor}; font-size:20px; line-height:1.2;">${escapeHTML(plant.name)}</h3>
             <p style="margin:0 0 12px 0; font-size:14px; color:#666; font-style:italic;">${escapeHTML(plant.scientific) || '&nbsp;'}</p>
             
             <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:15px; align-items:center;">
                 <span style="background:var(--secondary); color:white; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:bold;">${escapeHTML(origLabel)}</span>
+                ${archiveBadge}
                 ${tempBadge}
                 ${maxTempBadge}
                 ${phBadge}
@@ -1190,7 +1218,7 @@ function renderPlantsChunk(customSize = null) {
     }
 }
 
-// Stessa ottimizzazione per l'Archivio Storico
+// Stessa ottimizzazione per l'Archivio Storico (Dedicato)
 let currentArchiveChunkIndex = 0;
 const ARCHIVE_CHUNK_SIZE = 25;
 let currentArchivedPlants = [];

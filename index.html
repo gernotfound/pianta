@@ -180,63 +180,92 @@
         <div id="plants-grid"></div>
     </div> 
 
-    <!-- SIDEBAR FILTRI AVANZATI -->
+    <!-- SIDEBAR FILTRI AVANZATI (MODERNIZZATA) -->
     <div id="filter-sidebar" class="sidebar-overlay hidden" role="dialog" aria-label="Filtri e Ordine">
-        <div class="sidebar-content">
-            <div class="sidebar-header">
-                <h3 style="margin: 0; color: var(--primary);">🛠️ Filtri e Ordine</h3>
+        <div class="sidebar-content" style="width: 360px; display: flex; flex-direction: column;">
+            <div class="sidebar-header" style="position: sticky; top: 0; background: white; z-index: 10;">
+                <h3 style="margin: 0; color: var(--primary);">🛠️ Ricerca Avanzata</h3>
                 <button class="btn btn-grey" style="margin:0; padding: 5px 10px;" onclick="closeFilterSidebar()" aria-label="Chiudi filtri">✖ Chiudi</button>
             </div>
             
-            <div class="sidebar-body">
-                <label for="sort-plants">🔀 Ordina l'elenco per:</label>
-                <select id="sort-plants">
-                    <option value="name">🔤 Nome (A-Z)</option>
-                    <option value="newest">🆕 Aggiunte di recente</option>
-                    <option value="oldest">🕰️ Meno recenti</option>
-                    <option value="last_updated">🔄 Ultimi eventi</option>
-                    <option value="temp_desc">🌡️ Temp. min (decrescente)</option>
-                    <option value="ph_desc">🧪 pH (decrescente)</option>
-                    <option value="price_desc">💰 Prezzo (decrescente)</option>
-                </select>
-
-                <hr style="border:0.5px solid #eee; margin:10px 0 20px 0; width:100%;">
-
-                <label for="filter-placement">🪴 Sistemazione:</label>
-                <select id="filter-placement">
-                    <option value="all">Tutte</option>
-                    <option value="Vaso">In Vaso</option>
-                    <option value="Piena terra">Piena terra</option>
-                    <option value="Idroponica">Idroponica</option>
-                </select>
-
-                <label for="filter-origin" style="margin-top: 10px;">🌱 Origine / Propagazione:</label>
-                <select id="filter-origin">
-                    <option value="all">Tutte</option>
-                    <option value="Da seme">Da Seme</option>
-                    <option value="Da talea">Da Talea</option>
-                    <option value="Innesto">Innestate</option>
-                    <option value="Margotta">Da Margotta</option>
-                </select>
-
-                <label for="filter-fertility" style="margin-top: 10px;">🌸 Fertilità:</label>
-                <select id="filter-fertility">
-                    <option value="all">Tutte</option>
-                    <option value="Autofertile">Autofertili</option>
-                    <option value="Parzialmente autofertile">Parz. Autofertili</option>
-                    <option value="Autosterile">Autosterili</option>
-                </select>
-
-                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
-                    <label for="filter-survival-temp">🌡️ Verifica Sopravvivenza a (°C):</label>
-                    <p style="font-size: 12px; color: #666; margin-top: 2px;">Mostra le piante in grado di tollerare questa temperatura.</p>
-                    <input type="text" inputmode="decimal" id="filter-survival-temp" placeholder="es. 0">
+            <div class="sidebar-body" style="gap: 15px; padding-top: 10px; flex-grow: 1;">
+                
+                <div class="filter-group">
+                    <label for="sort-plants">🔀 Ordina per:</label>
+                    <select id="sort-plants" style="margin-bottom: 0;">
+                        <option value="name">🔤 Nome (A-Z)</option>
+                        <option value="newest">🆕 Aggiunte di recente</option>
+                        <option value="oldest">🕰️ Meno recenti</option>
+                        <option value="last_updated">🔄 Ultimi eventi</option>
+                        <option value="temp_desc">🌡️ Temp. min (decrescente)</option>
+                        <option value="ph_desc">🧪 pH (decrescente)</option>
+                        <option value="price_desc">💰 Prezzo (decrescente)</option>
+                    </select>
                 </div>
 
-                <div style="margin-top: 25px; display: flex; gap: 10px;">
-                    <button class="btn btn-primary" style="flex:2; margin:0;" onclick="applyFiltersAndClose()">✅ Conferma</button>
-                    <button class="btn btn-danger" style="flex:1; margin:0;" onclick="resetAllFilters()">🔄 Azzera</button>
+                <hr style="border:0.5px solid #eee; margin:15px 0;">
+
+                <div class="filter-group">
+                    <label for="filter-status">📌 Stato Pianta:</label>
+                    <select id="filter-status" style="margin-bottom: 0;">
+                        <option value="active">🟢 Solo Attive</option>
+                        <option value="archived">🔴 Solo Archiviate</option>
+                        <option value="all">Tutte (Attive e Archiviate)</option>
+                    </select>
                 </div>
+
+                <div class="filter-group" style="margin-top: 15px;">
+                    <label for="filter-photo">📸 Presenza Foto:</label>
+                    <select id="filter-photo" style="margin-bottom: 0;">
+                        <option value="all">Indifferente</option>
+                        <option value="yes">🖼️ Solo con foto</option>
+                        <option value="no">🚫 Senza foto</option>
+                    </select>
+                </div>
+
+                <hr style="border:0.5px solid #eee; margin:15px 0;">
+
+                <div class="filter-group">
+                    <label for="filter-placement">🪴 Sistemazione:</label>
+                    <select id="filter-placement" style="margin-bottom: 0;">
+                        <option value="all">Tutte le sistemazioni</option>
+                        <option value="Vaso">In Vaso</option>
+                        <option value="Piena terra">Piena terra</option>
+                        <option value="Idroponica">Idroponica</option>
+                    </select>
+                </div>
+
+                <div class="filter-group" style="margin-top: 15px;">
+                    <label for="filter-origin">🌱 Origine:</label>
+                    <select id="filter-origin" style="margin-bottom: 0;">
+                        <option value="all">Qualsiasi origine</option>
+                        <option value="Da seme">Da Seme</option>
+                        <option value="Da talea">Da Talea</option>
+                        <option value="Innesto">Innestate</option>
+                        <option value="Margotta">Da Margotta</option>
+                    </select>
+                </div>
+
+                <div class="filter-group" style="margin-top: 15px;">
+                    <label for="filter-fertility">🌸 Fertilità:</label>
+                    <select id="filter-fertility" style="margin-bottom: 0;">
+                        <option value="all">Tutti i tipi</option>
+                        <option value="Autofertile">Autofertili</option>
+                        <option value="Parzialmente autofertile">Parz. Autofertili</option>
+                        <option value="Autosterile">Autosterili</option>
+                    </select>
+                </div>
+
+                <div class="filter-group" style="margin-top: 20px; background: #f1f8e9; padding: 15px; border-radius: 8px; border: 1px solid #c8e6c9;">
+                    <label for="filter-survival-temp">❄️ Tolleranza Freddo (°C):</label>
+                    <p style="font-size: 12px; color: #555; margin-top: 2px; margin-bottom: 10px;">Mostra le piante in grado di tollerare questa temperatura (o una inferiore).</p>
+                    <input type="text" inputmode="decimal" id="filter-survival-temp" placeholder="es. 0" style="margin-bottom: 0;">
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; gap: 10px; position: sticky; bottom: 0; background: white; padding: 15px 0 10px 0; border-top: 1px solid #eee; z-index: 10;">
+                <button class="btn btn-primary" style="flex:2; margin:0;" onclick="applyFiltersAndClose()">✅ Applica Filtri</button>
+                <button class="btn btn-danger" style="flex:1; margin:0;" onclick="resetAllFilters()">🔄 Azzera</button>
             </div>
         </div>
     </div>
@@ -355,15 +384,22 @@
                             </div>
                         </div>
 
-                        <!-- MODIFICA PH: Range di valori -->
-                        <div style="grid-column: span 2; display: flex; gap: 15px; flex-wrap: wrap;">
-                            <div style="flex: 1; min-width: 150px;"><label for="p-ph-min">pH ottimale (Min):</label><input type="text" inputmode="decimal" id="p-ph-min" placeholder="es. 5,5"></div>
-                            <div style="flex: 1; min-width: 150px;"><label for="p-ph-max">pH ottimale (Max):</label><input type="text" inputmode="decimal" id="p-ph-max" placeholder="es. 6,5"></div>
+                        <!-- MODIFICA PH RAGGRUPPATO -->
+                        <div style="grid-column: span 2; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+                            <label style="font-weight: bold; display: block; margin-bottom: 10px; color: var(--primary);">🧪 pH ottimale:</label>
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <div style="flex: 1; min-width: 150px;"><label for="p-ph-min" style="font-size: 13px;">Minimo:</label><input type="text" inputmode="decimal" id="p-ph-min" placeholder="es. 5,5"></div>
+                                <div style="flex: 1; min-width: 150px;"><label for="p-ph-max" style="font-size: 13px;">Massimo:</label><input type="text" inputmode="decimal" id="p-ph-max" placeholder="es. 6,5"></div>
+                            </div>
                         </div>
 
-                        <div style="grid-column: span 2; display: flex; gap: 15px; flex-wrap: wrap;">
-                            <div style="flex: 1; min-width: 150px;"><label for="p-min-temp">Temp. minima (°C):</label><input type="text" inputmode="decimal" id="p-min-temp" placeholder="es. 5"></div>
-                            <div style="flex: 1; min-width: 150px;"><label for="p-max-temp">Temp. massima (°C):</label><input type="text" inputmode="decimal" id="p-max-temp" placeholder="es. 38"></div>
+                        <!-- MODIFICA TEMPERATURA RAGGRUPPATA -->
+                        <div style="grid-column: span 2; background: #fff3e0; padding: 15px; border-radius: 8px; border: 1px solid #ffe0b2;">
+                            <label style="font-weight: bold; display: block; margin-bottom: 10px; color: var(--accent);">🌡️ Temperatura ottimale (°C):</label>
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <div style="flex: 1; min-width: 150px;"><label for="p-min-temp" style="font-size: 13px;">Minima (°C):</label><input type="text" inputmode="decimal" id="p-min-temp" placeholder="es. 5"></div>
+                                <div style="flex: 1; min-width: 150px;"><label for="p-max-temp" style="font-size: 13px;">Massima (°C):</label><input type="text" inputmode="decimal" id="p-max-temp" placeholder="es. 38"></div>
+                            </div>
                         </div>
                         
                         <!-- MAPPA INSERITA NEL FORM -->
@@ -418,6 +454,16 @@
         
         <div class="detail-header" style="border-bottom: none; margin-bottom: 10px;">
             <h2 style="margin:0; color: var(--purple);">📊 Eventi e Allerta Meteo</h2>
+        </div>
+
+        <!-- IMPOSTAZIONE ALLERTA VENTO -->
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border: 1px solid #bbdefb; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 10px 0; color: #1565c0; font-size: 14px;">⚙️ Impostazioni Allerta Vento</h4>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <label for="wind-threshold-input" style="font-size: 13px; color: #333; margin:0;">Avvisami se il vento supera (km/h):</label>
+                <input type="number" id="wind-threshold-input" value="40" style="width: 80px; padding: 6px; font-size: 14px; margin:0;" onchange="saveWindThreshold()">
+                <span id="wind-save-confirm" style="font-size: 12px; color: var(--primary); display: none; font-weight: bold;">Salvato!</span>
+            </div>
         </div>
 
         <div id="weather-alerts-container" style="margin-bottom: 30px; display: none;" aria-live="polite"></div>
@@ -514,7 +560,6 @@
         <div class="detail-header">
             <h2 style="margin:0; color: var(--grey); display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
                 📂 Il mio centro dati
-                <span id="connection-status-indicator" style="font-size: 13px; font-weight: bold; padding: 4px 12px; border-radius: 20px; color: white; background: #2e7d32; display: inline-block; transition: background 0.3s;">Online</span>
             </h2>
         </div>
         
@@ -549,6 +594,12 @@
                 <p style="font-size: 14px; color: #555; margin-top: 0;">Appunta qui idee o promemoria. Il salvataggio avviene automaticamente quando chiudi la pagina.</p>
                 <textarea id="global-garden-notes" style="flex-grow: 1; min-height: 250px; border: 1px solid #ccc; border-radius: 5px; padding: 10px; resize: vertical;"></textarea>
             </div>
+        </div>
+
+        <!-- INDICATORE ONLINE/OFFLINE SPOSTATO A FONDO PAGINA -->
+        <div style="text-align: center; margin-top: 30px; padding-top: 15px; border-top: 1px solid #eee;">
+            <span style="font-size: 13px; color: #666; font-weight: bold; margin-right: 5px;">Stato Connessione App: </span>
+            <span id="connection-status-indicator" style="font-size: 13px; font-weight: bold; padding: 4px 12px; border-radius: 20px; color: white; background: #2e7d32; display: inline-block; transition: background 0.3s;">Online</span>
         </div>
     </div>
 

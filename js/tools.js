@@ -405,7 +405,6 @@ async function addExpense() {
         unsavedChanges = true;
         if(typeof saveToLocal === 'function') await saveToLocal();
         
-        // FIX FASE 4: Sblocco del form per evitare il popup "Dati non salvati" alla navigazione
         isFormDirty = false;
         
         if (descEl) descEl.value = '';
@@ -550,7 +549,6 @@ async function addWishlistItem() {
         unsavedChanges = true;
         if(typeof saveToLocal === 'function') await saveToLocal();
 
-        // FIX FASE 4: Sblocco del form per evitare avvisi di chiusura
         isFormDirty = false;
 
         if (nameEl) nameEl.value = '';
@@ -585,6 +583,25 @@ async function deleteWishlistItem(id) {
 
 let weatherCache = new Map(); 
 
+// Nuova funzione per salvare e aggiornare la soglia del vento personalizzata
+function saveWindThreshold() {
+    const input = document.getElementById('wind-threshold-input');
+    if (input) {
+        let val = parseFloat(input.value);
+        if (!isNaN(val) && val >= 0) {
+            localStorage.setItem('windAlertThreshold', val);
+            const confirmSpan = document.getElementById('wind-save-confirm');
+            if (confirmSpan) {
+                confirmSpan.style.display = 'inline';
+                setTimeout(() => confirmSpan.style.display = 'none', 2000);
+            }
+            renderWeatherDashboard();
+        } else {
+            if (typeof Swal !== 'undefined') Swal.fire('Errore', 'Inserisci un valore numerico valido e positivo.', 'error');
+        }
+    }
+}
+
 async function fetchWeatherData(lat, lng) {
     const cacheKey = `${lat.toFixed(2)},${lng.toFixed(2)}`;
     if (weatherCache.has(cacheKey)) return weatherCache.get(cacheKey);
@@ -616,6 +633,13 @@ async function renderWeatherDashboard() {
         container.style.display = 'none';
         return;
     }
+    
+    // Recupero la soglia salvata, o imposto il default
+    const savedWindThreshold = localStorage.getItem('windAlertThreshold');
+    const activeWindThreshold = savedWindThreshold !== null ? parseFloat(savedWindThreshold) : (typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.WIND_ALERT_KMH : 40);
+
+    const windInputEl = document.getElementById('wind-threshold-input');
+    if(windInputEl) windInputEl.value = activeWindThreshold;
 
     const locations = [];
     activePlants.forEach(p => {
@@ -651,9 +675,8 @@ async function renderWeatherDashboard() {
                 const windSpeed = weather.wind_speed_10m_max ? weather.wind_speed_10m_max[i] : 0;
                 const minTemp = weather.temperature_2m_min ? weather.temperature_2m_min[i] : 99;
 
-                const windThreshold = typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.WIND_ALERT_KMH : 40;
-
-                if (windSpeed > windThreshold) {
+                // Uso la soglia del vento dinamica appena recuperata
+                if (windSpeed > activeWindThreshold) {
                     const alreadyHasWindAlert = windAlerts.some(wa => wa.locationName === loc.name && wa.date === dateStr);
                     if (!alreadyHasWindAlert) {
                         windAlerts.push({
@@ -728,7 +751,7 @@ async function renderWeatherDashboard() {
 
     if (windAlerts.length === 0 && frostAlerts.length === 0) {
         html += `<div style="color:#2e7d32; font-weight:bold; font-size:14px; padding:12px; background:#e8f5e9; border-radius:8px; border-left: 5px solid #2e7d32; display: flex; align-items: center; gap: 8px;">
-                    <span>✅ Nessun rischio rilevato per vento forte (> 40 km/h) o temperature inferiori alla tolleranza delle tue piante per i prossimi 7 giorni.</span>
+                    <span>✅ Nessun rischio rilevato per vento forte (> ${activeWindThreshold} km/h) o temperature inferiori alla tolleranza delle tue piante per i prossimi 7 giorni.</span>
                  </div>`;
     }
 

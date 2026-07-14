@@ -151,16 +151,8 @@ function initFormMap() {
                                 formMarker = L.marker([clat, clng]).addTo(mapInstance);
                                 
                                 btn.innerHTML = '📍 Usa GPS';
+                                // L'avviso "Posizione trovata" è stato rimosso in modo da renderlo silenzioso e veloce
                                 
-                                if (typeof Swal !== 'undefined') {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Posizione Trovata',
-                                        text: 'Il Pin è stato aggiornato con la tua posizione reale.',
-                                        timer: 2000,
-                                        showConfirmButton: false
-                                    });
-                                }
                             }, function(error) {
                                 btn.innerHTML = '📍 Usa GPS';
                                 if (typeof Swal !== 'undefined') {

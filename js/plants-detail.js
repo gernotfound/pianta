@@ -232,7 +232,7 @@ async function deleteCurrentPlant() {
                 timer: 2000
             });
         } catch (err) {
-            console.error("Errore cancellazione:", err);
+            console.error(err);
             Swal.fire({icon: 'error', title: 'Errore', text: 'Impossibile eliminare la pianta.', confirmButtonColor: '#d32f2f'});
         } finally {
             if (deleteBtn) {
@@ -265,7 +265,7 @@ async function toggleArchiveStatus() {
                 if (typeof goBack === 'function') goBack();
                 else window.history.back();
             } catch (err) {
-                console.error("Errore ripristino:", err);
+                console.error(err);
             } finally {
                 if (btn) btn.disabled = false;
             }
@@ -284,7 +284,7 @@ async function toggleArchiveStatus() {
                 if (typeof goBack === 'function') goBack();
                 else window.history.back();
             } catch (err) {
-                console.error("Errore archiviazione:", err);
+                console.error(err);
             } finally {
                 if (btn) btn.disabled = false;
             }
@@ -421,7 +421,7 @@ async function confirmDuplicate() {
             Swal.fire({icon: 'success', title: 'Piante clonate', text: `Hai clonato con successo ${qty} piante.`, timer: 2000, showConfirmButton: false});
         }
     } catch (err) {
-        console.error("Errore clonazione:", err);
+        console.error(err);
         if (typeof Swal !== 'undefined') Swal.fire({icon: 'error', title: 'Errore', text: 'Impossibile clonare le piante.', confirmButtonColor: '#d32f2f'});
     } finally {
         if (btnContainer) {

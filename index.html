@@ -18,7 +18,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" integrity="sha512-c42qZA51frwO44A5Nq7OkEtrR1qO7fX5XnEw2XmXwT5A0Aof0U++z1U5wD+r5yE3jK7zN9V0GvXz0aQG0w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Animazioni CSS (Senza blocco di integrità) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" referrerpolicy="no-referrer" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.29/sweetalert2.all.min.js" integrity="sha512-cgolxBUBvc5yorfBxXYQCvGEaTbZDdRMDjGrMw8h4G01gm/BfHlN8CO3amP68GbNbw8LY5uj/CFW4qpY9lHyPQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
@@ -976,6 +977,25 @@
                 </div>
             </div>
         </div>
+        
+        <div id="archive-section" style="margin-top: 30px; padding: 20px; background: #ffebee; border: 1px solid #ffcdd2; border-radius: 8px; text-align: center;">
+            <h4 style="margin-top: 0; margin-bottom: 5px; color: var(--danger);">🥀 Archivio storico</h4>
+            <p style="font-size: 14px; color: #555; margin-top: 0;">Sposta la pianta nell'archivio per conservarne la storia.</p>
+            <button id="btn-archive-toggle" class="btn btn-danger" onclick="toggleArchiveStatus()">Archivia pianta</button>
+        </div>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid var(--secondary); text-align: center;">
+            <h3 style="color: var(--primary);">🏷️ Etichetta stampabile</h3>
+            <button class="btn btn-blue" onclick="window.print()">🖨️ Stampa questa etichetta</button>
+            <div style="margin-top: 20px;">
+                <div id="print-area" class="print-label">
+                    <h3 id="label-name">Nome Pianta</h3>
+                    <p><em id="label-scientific">Specie</em></p>
+                    <p><strong>Origine:</strong> <span id="label-origin">Seme</span></p>
+                    <div class="qrcode-container" id="detail-qr-code"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- MODALE DUPLICAZIONE PIANTA -->
@@ -1014,7 +1034,6 @@
         </div>
     </div>
 
-    <!-- NUOVA BOTTOM NAVIGATION BAR -->
     <nav class="bottom-nav" id="bottom-nav" aria-label="Menu principale">
         <button class="nav-item active" id="nav-btn-home" onclick="navigateTab('home')">
             <span class="nav-icon" aria-hidden="true">🏠</span>
@@ -1057,7 +1076,6 @@
         }
     </script>
 
-    <!-- Script inclusi aggiornati -->
     <script src="js/globals.js"></script>
     <script src="js/router.js"></script>
     <script src="js/ui.js"></script>

@@ -177,9 +177,26 @@
             Tocca l'icona <strong>Condividi</strong> (il quadratino con la freccia) e poi scorri fino a <strong>"Aggiungi a Schermata Home"</strong> per installare l'app.
         </div>
 
+        
+    </div>
+
+
+    <div id="garden-selection-screen" class="hidden fade-in">
+        <h1 class="startup-title" style="text-align: center;">
+            <span class="startup-icon">🏡</span>I Tuoi Giardini
+        </h1>
+        
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px;">
+            <button class="btn btn-add-main" onclick="createNewGarden()" aria-label="Nuovo giardino">🌱 Nuovo giardino</button>
+        </div>
+
         <div style="margin-top: 30px; text-align: center; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-            <p style="margin-top: 0; color: var(--grey); font-weight: bold;">Oppure ripristina un vecchio salvataggio ZIP:</p>
+            <p style="margin-top: 0; color: var(--grey); font-weight: bold;">Carica un salvataggio ZIP:</p>
             <input type="file" accept=".zip" onchange="loadProfile(event)" aria-label="Ripristina backup">
+        </div>
+
+        <div id="garden-list-container" style="margin-top: 30px; display: flex; flex-direction: column; gap: 10px; align-items: center;">
+            <!-- Gardens will be listed here -->
         </div>
     </div>
 
@@ -273,6 +290,8 @@
 
         <div style="margin-top: 35px; text-align: center; border-top: 1px solid #eee; padding-top: 20px;">
             <p style="font-size: 12px; color: #999; margin-bottom: 15px;">Se devi azzerare il dispositivo o cambiare account, usa il tasto qui sotto.</p>
+            
+            <button class="btn" style="background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; width: 100%; margin-bottom: 15px;" onclick="window.showGardenSelection()">🔄 Cambia Giardino</button>
             <button class="btn-text btn-text-danger" style="font-size: 16px;" onclick="logout()">🚪 Cancella Dati ed Esci</button>
         </div>
     </div>

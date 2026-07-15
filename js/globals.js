@@ -493,17 +493,30 @@ window.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('online', updateConnectionStatusIndicator);
     window.addEventListener('offline', updateConnectionStatusIndicator);
     
+
     // Auth Check
     if (window.fbAuth) {
         window.fbOnAuthStateChanged(window.fbAuth, (user) => {
             window.currentUser = user;
+
             if (user) {
-                // Remove local backup alert if they just logged in
-                document.getElementById('startup-screen').classList.add('hidden');
-                document.getElementById('bottom-nav').classList.remove('hidden-nav');
-                loadFromLocal();
+                const lastGardenId = localStorage.getItem('lastGardenId');
+                if (lastGardenId) {
+                    window.currentGardenId = lastGardenId;
+                }
+                
+                if (window.currentGardenId) {
+                    document.getElementById('startup-screen').classList.add('hidden');
+                    document.getElementById('garden-selection-screen').classList.add('hidden');
+                    document.getElementById('bottom-nav').classList.remove('hidden-nav');
+                    loadFromLocal();
+                } else {
+                    window.showGardenSelection();
+                }
             } else {
-                // Show login UI in startup screen
+                window.currentGardenId = null;
+                const selScreen = document.getElementById('garden-selection-screen');
+                if (selScreen) selScreen.classList.add('hidden');
                 const startScreen = document.getElementById('startup-screen');
                 if (startScreen) startScreen.classList.remove('hidden');
                 const navBar = document.getElementById('bottom-nav');
@@ -514,6 +527,7 @@ window.addEventListener('DOMContentLoaded', () => {
     } else {
         loadFromLocal();
     }
+
 
     
     const notesArea = document.getElementById('global-garden-notes');
@@ -586,6 +600,81 @@ function logout() {
         }
     });
 }
+
+
+window.currentGardenId = null;
+
+
+window.showGardenSelection = async () => {
+    localStorage.removeItem('lastGardenId');
+    document.getElementById('startup-screen').classList.add('hidden');
+
+    document.getElementById('home-view').classList.add('hidden');
+    document.getElementById('bottom-nav').classList.add('hidden-nav');
+    
+    const selScreen = document.getElementById('garden-selection-screen');
+    if (selScreen) selScreen.classList.remove('hidden');
+
+    const container = document.getElementById('garden-list-container');
+    if (container) {
+        container.innerHTML = '<p>Caricamento giardini...</p>';
+        try {
+            const uid = window.currentUser.uid;
+            const snap = await window.db.collection('users').doc(uid).collection('gardens').get();
+            container.innerHTML = '';
+            
+            if (snap.empty) {
+                container.innerHTML = '<p style="color:var(--grey);">Nessun giardino trovato. Creane uno nuovo!</p>';
+            } else {
+                snap.forEach(doc => {
+                    const gData = doc.data();
+                    const btn = document.createElement('button');
+                    btn.className = 'btn';
+                    btn.style.width = '100%';
+                    btn.style.maxWidth = '300px';
+                    btn.style.margin = '0';
+                    btn.innerHTML = '🪴 ' + (gData.title || 'Giardino senza nome');
+                    btn.onclick = () => window.selectGarden(doc.id);
+                    container.appendChild(btn);
+                });
+            }
+        } catch(e) {
+            console.error(e);
+            container.innerHTML = '<p style="color:var(--danger);">Errore nel caricamento.</p>';
+        }
+    }
+};
+
+
+window.selectGarden = (gardenId) => {
+    window.currentGardenId = gardenId;
+    localStorage.setItem('lastGardenId', gardenId);
+    document.getElementById('garden-selection-screen').classList.add('hidden');
+    document.getElementById('bottom-nav').classList.remove('hidden-nav');
+    if (typeof loadFromLocal === 'function') loadFromLocal();
+};
+
+
+const originalCreateNewGarden = createNewGarden;
+window.createNewGarden = async () => {
+    if (window.currentUser && window.db) {
+        const { value: name } = await Swal.fire({
+            title: 'Nuovo giardino',
+            input: 'text',
+            inputLabel: 'Nome del giardino',
+            inputPlaceholder: 'es. Giardino in terrazza',
+            showCancelButton: true
+        });
+        if (name) {
+            const newId = String(Date.now() + Math.random());
+            const uid = window.currentUser.uid;
+            await window.db.collection('users').doc(uid).collection('gardens').doc(newId).set({ title: name, updatedAt: Date.now() });
+            window.selectGarden(newId);
+        }
+    } else {
+        originalCreateNewGarden();
+    }
+};
 
 function createNewGarden() {
     gardenTitle = "🌿 Il mio giardino";

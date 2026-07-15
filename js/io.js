@@ -198,10 +198,19 @@ async function loadZipProfile(file) {
             dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} };
         }
 
+        
         if (typeof Swal !== 'undefined') Swal.update({ text: `Salvataggio nel database in corso...` });
         await yieldThread();
+        
+
+        if (!window.currentGardenId && window.currentUser && window.db) {
+            window.currentGardenId = String(Date.now() + Math.random());
+            localStorage.setItem('lastGardenId', window.currentGardenId);
+        }
+
 
         if (typeof saveToLocal === 'function') await saveToLocal();
+
 
         unsavedChanges = false;
         isFormDirty = false;

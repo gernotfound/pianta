@@ -1,15 +1,20 @@
+
 window.saveToFirebase = async function() {
-  if (!window.currentUser || !window.db) return;
+  if (!window.currentUser || !window.db || !window.currentGardenId) return;
   const uid = window.currentUser.uid;
   const db = window.db;
+  const gId = window.currentGardenId;
 
   try {
-    const sysRef = db.collection('users').doc(uid).collection('settings').doc('metadata');
-    await sysRef.set({ title: gardenTitle || '', notes: gardenNotes || '' }, { merge: true });
+    const gardenRef = db.collection('users').doc(uid).collection('gardens').doc(gId);
+    
+    // settings
+    await gardenRef.collection('settings').doc('metadata').set({ title: gardenTitle || '', notes: gardenNotes || '' }, { merge: true });
+    await gardenRef.set({ title: gardenTitle || '', updatedAt: Date.now() }, { merge: true });
 
     for (let p of plantsDatabase) {
       if (!p.id) p.id = String(Date.now() + Math.random());
-      const pRef = db.collection('users').doc(uid).collection('plants').doc(String(p.id));
+      const pRef = gardenRef.collection('plants').doc(String(p.id));
       const pCopy = { ...p, ownerId: uid, updatedAt: Date.now() };
       delete pCopy.logs;
 
@@ -37,13 +42,13 @@ window.saveToFirebase = async function() {
 
     for (let e of generalExpenses) {
       if (!e.id) e.id = String(Date.now() + Math.random());
-      const eRef = db.collection('users').doc(uid).collection('expenses').doc(String(e.id));
+      const eRef = gardenRef.collection('expenses').doc(String(e.id));
       await eRef.set({ ...e, ownerId: uid }, { merge: true });
     }
 
     for (let w of wishlist) {
       if (!w.id) w.id = String(Date.now() + Math.random());
-      const wRef = db.collection('users').doc(uid).collection('wishlist').doc(String(w.id));
+      const wRef = gardenRef.collection('wishlist').doc(String(w.id));
       const wCopy = { ...w, ownerId: uid };
       if (wCopy.photo) wCopy.photo = await window.blobToBase64(wCopy.photo);
       await wRef.set(wCopy, { merge: true });
@@ -56,16 +61,19 @@ window.saveToFirebase = async function() {
 };
 
 window.loadFromFirebase = async function(isSilent = false) {
-  if (!window.currentUser || !window.db) return;
+  if (!window.currentUser || !window.db || !window.currentGardenId) return;
   const uid = window.currentUser.uid;
   const db = window.db;
+  const gId = window.currentGardenId;
 
   try {
-    const sysRef = db.collection('users').doc(uid).collection('settings').doc('metadata');
+    const gardenRef = db.collection('users').doc(uid).collection('gardens').doc(gId);
+    
+    const sysRef = gardenRef.collection('settings').doc('metadata');
     const sysDoc = await sysRef.get();
     const sysData = sysDoc.exists ? sysDoc.data() : null;
 
-    const plRef = db.collection('users').doc(uid).collection('plants');
+    const plRef = gardenRef.collection('plants');
     const plSnap = await plRef.get();
     let loadedPlants = [];
     for (let docSnap of plSnap.docs) {
@@ -76,56 +84,19 @@ window.loadFromFirebase = async function(isSilent = false) {
         loadedPlants.push(pData);
     }
 
-    const expRef = db.collection('users').doc(uid).collection('expenses');
+    const expRef = gardenRef.collection('expenses');
     const expSnap = await expRef.get();
     let loadedExpenses = expSnap.docs.map(e => e.data());
 
-    const wishRef = db.collection('users').doc(uid).collection('wishlist');
+    const wishRef = gardenRef.collection('wishlist');
     const wishSnap = await wishRef.get();
     let loadedWishlist = wishSnap.docs.map(w => w.data());
 
-    
-    if (loadedPlants.length === 0 && loadedExpenses.length === 0 && loadedWishlist.length === 0) {
-        // Migration from local IndexedDB
-        try {
-            let localDb = await typeof initDB === 'function' ? initDB() : null;
-            if (localDb) {
-                let tx = localDb.transaction(['System', 'Plants', 'Expenses', 'Wishlist'], 'readonly');
-                let reqSys = tx.objectStore('System').get('metadata');
-                let reqPl = tx.objectStore('Plants').getAll();
-                let reqExp = tx.objectStore('Expenses').getAll();
-                let reqWish = tx.objectStore('Wishlist').getAll();
-                
-                await new Promise(res => {
-                    tx.oncomplete = () => {
-                        let sysData = reqSys.result;
-                        if (sysData || (reqPl.result && reqPl.result.length > 0)) {
-                            gardenTitle = sysData && sysData.title ? sysData.title : "🌿 Gestione Piante Tropicali - Pro";
-                            gardenNotes = sysData && sysData.notes ? sysData.notes : "";
-                            plantsDatabase = Array.isArray(reqPl.result) ? reqPl.result : [];
-                            generalExpenses = Array.isArray(reqExp.result) ? reqExp.result : [];
-                            wishlist = Array.isArray(reqWish.result) ? reqWish.result : [];
-                            
-                            // save to firebase
-                            console.log('Migrating local data to Firebase...');
-                            window.saveToFirebase();
-                        }
-                        res();
-                    };
-                    tx.onerror = () => res();
-                });
-            }
-        } catch(err) {
-            console.error('Migration failed:', err);
-        }
-    } else {
-        gardenTitle = sysData && sysData.title ? sysData.title : "🌿 Gestione Piante Tropicali - Pro";
-        gardenNotes = sysData && sysData.notes ? sysData.notes : "";
-        plantsDatabase = loadedPlants;
-        generalExpenses = loadedExpenses;
-        wishlist = loadedWishlist;
-    }
-
+    gardenTitle = sysData && sysData.title ? sysData.title : "🌿 Il mio giardino";
+    gardenNotes = sysData && sysData.notes ? sysData.notes : "";
+    plantsDatabase = loadedPlants;
+    generalExpenses = loadedExpenses;
+    wishlist = loadedWishlist;
 
     if (typeof standardizeDatabaseIds === 'function') standardizeDatabaseIds();
 

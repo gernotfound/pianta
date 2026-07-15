@@ -12,7 +12,10 @@ if (typeof firebase !== 'undefined') {
   firebase.initializeApp(firebaseConfig);
   window.db = firebase.firestore();
   window.db.enablePersistence({synchronizeTabs:true}).catch(err => console.error('Persistence err:', err));
+  
   window.auth = firebase.auth();
+  window.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(err => console.error(err));
+
 }
 
 window.blobToBase64 = function(blob) {

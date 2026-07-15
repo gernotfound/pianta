@@ -102,39 +102,44 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      match /settings/{settingId} {
-        allow read: if isOwner(userId);
-        allow create: if isOwner(userId) && isValidId(settingId) && isValidSettings(incoming());
-        allow update: if isOwner(userId) && isValidId(settingId) && isValidSettings(incoming());
-      }
-
-      match /plants/{plantId} {
-        allow read: if isOwner(userId);
-        allow create: if isOwner(userId) && isValidId(plantId) && isValidPlant(incoming());
-        allow update: if isOwner(userId) && isValidId(plantId) && isValidPlant(incoming()) && incoming().ownerId == existing().ownerId;
-        allow delete: if isOwner(userId) && isValidId(plantId);
-
-        match /logs/{logId} {
+      match /gardens/{gardenId} {
+        allow read, write: if isOwner(userId);
+        
+        match /settings/{settingId} {
           allow read: if isOwner(userId);
-          allow create: if isOwner(userId) && isValidId(logId) && isValidLog(incoming());
-          allow update: if isOwner(userId) && isValidId(logId) && isValidLog(incoming());
-          allow delete: if isOwner(userId) && isValidId(logId);
+          allow create: if isOwner(userId) && isValidId(settingId) && isValidSettings(incoming());
+          allow update: if isOwner(userId) && isValidId(settingId) && isValidSettings(incoming());
+        }
+
+        match /plants/{plantId} {
+          allow read: if isOwner(userId);
+          allow create: if isOwner(userId) && isValidId(plantId) && isValidPlant(incoming());
+          allow update: if isOwner(userId) && isValidId(plantId) && isValidPlant(incoming()) && incoming().ownerId == existing().ownerId;
+          allow delete: if isOwner(userId) && isValidId(plantId);
+
+          match /logs/{logId} {
+            allow read: if isOwner(userId);
+            allow create: if isOwner(userId) && isValidId(logId) && isValidLog(incoming());
+            allow update: if isOwner(userId) && isValidId(logId) && isValidLog(incoming());
+            allow delete: if isOwner(userId) && isValidId(logId);
+          }
+        }
+
+        match /expenses/{expenseId} {
+          allow read: if isOwner(userId);
+          allow create: if isOwner(userId) && isValidId(expenseId) && isValidExpense(incoming());
+          allow update: if isOwner(userId) && isValidId(expenseId) && isValidExpense(incoming()) && incoming().ownerId == existing().ownerId;
+          allow delete: if isOwner(userId) && isValidId(expenseId);
+        }
+
+        match /wishlist/{wishlistId} {
+          allow read: if isOwner(userId);
+          allow create: if isOwner(userId) && isValidId(wishlistId) && isValidWishlistItem(incoming());
+          allow update: if isOwner(userId) && isValidId(wishlistId) && isValidWishlistItem(incoming()) && incoming().ownerId == existing().ownerId;
+          allow delete: if isOwner(userId) && isValidId(wishlistId);
         }
       }
-
-      match /expenses/{expenseId} {
-        allow read: if isOwner(userId);
-        allow create: if isOwner(userId) && isValidId(expenseId) && isValidExpense(incoming());
-        allow update: if isOwner(userId) && isValidId(expenseId) && isValidExpense(incoming()) && incoming().ownerId == existing().ownerId;
-        allow delete: if isOwner(userId) && isValidId(expenseId);
-      }
-
-      match /wishlist/{wishlistId} {
-        allow read: if isOwner(userId);
-        allow create: if isOwner(userId) && isValidId(wishlistId) && isValidWishlistItem(incoming());
-        allow update: if isOwner(userId) && isValidId(wishlistId) && isValidWishlistItem(incoming()) && incoming().ownerId == existing().ownerId;
-        allow delete: if isOwner(userId) && isValidId(wishlistId);
-      }
     }
+
   }
 }

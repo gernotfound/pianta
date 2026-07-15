@@ -44,7 +44,9 @@ function _internalOpenPlantDetail(id) {
     let vol = plant.potSize;
     if (basePlacement === 'Vaso' && vol) sistemazioneLabel += ` (${formatLocalFloat(vol)} L)`;
 
-    let soilFull = escapeHTML(plant.soil || 'N/D');
+    // FIX: Separazione netta tra Substrato reale e pH ottimale
+    let soilFull = plant.soil ? escapeHTML(plant.soil) : null;
+    
     let phClean = '';
     if (plant.phMin !== null || plant.phMax !== null) {
         if (plant.phMin === plant.phMax) phClean = formatLocalFloat(plant.phMin);
@@ -52,7 +54,6 @@ function _internalOpenPlantDetail(id) {
         else if (plant.phMin !== null) phClean = `> ${formatLocalFloat(plant.phMin)}`;
         else if (plant.phMax !== null) phClean = `< ${formatLocalFloat(plant.phMax)}`;
     }
-    if (phClean) soilFull += ` <span style="font-weight:normal; font-size:12px; color:#2e7d32;">(pH ${phClean})</span>`;
 
     let modernFertility = getModernFertility(plant.autofertile);
 
@@ -76,7 +77,11 @@ function _internalOpenPlantDetail(id) {
         detailsHtml += makeGridItem('📅', 'Inizio / Semina', plant.sowingDate ? formatDateIt(plant.sowingDate) : null);
         detailsHtml += makeGridItem('🌱', 'Origine', origFull !== 'N/D' ? origFull : null);
         detailsHtml += makeGridItem('🪴', 'Sistemazione', sistemazioneLabel);
-        detailsHtml += makeGridItem('🪨', 'Substrato', plant.soil || phClean ? soilFull : null);
+        
+        // Nuova struttura separata
+        detailsHtml += makeGridItem('🪨', 'Substrato', soilFull);
+        detailsHtml += makeGridItem('🧪', 'pH Ottimale', phClean ? phClean : null);
+        
         detailsHtml += makeGridItem('🌸', 'Fertilità', modernFertility !== 'Sconosciuta' ? escapeHTML(modernFertility) : null);
         detailsHtml += makeGridItem('🌡️', 'Tolleranza', tempFull !== 'N/D' ? tempFull : null);
         detailsHtml += makeGridItem('📍', 'Luogo', plant.location ? escapeHTML(plant.location) : null);
@@ -417,7 +422,6 @@ async function confirmDuplicate() {
         if (typeof AppState !== 'undefined') AppState.emit('plantsUpdated');
         if (typeof goBack === 'function') goBack();
         
-        // FIX: Cambiato il popup di successo in una notifica Toast discreta
         if (typeof Swal !== 'undefined') {
             Swal.fire({
                 icon: 'success', 

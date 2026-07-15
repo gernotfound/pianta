@@ -417,8 +417,17 @@ async function confirmDuplicate() {
         if (typeof AppState !== 'undefined') AppState.emit('plantsUpdated');
         if (typeof goBack === 'function') goBack();
         
+        // FIX: Cambiato il popup di successo in una notifica Toast discreta
         if (typeof Swal !== 'undefined') {
-            Swal.fire({icon: 'success', title: 'Piante clonate', text: `Hai clonato con successo ${qty} piante.`, timer: 2000, showConfirmButton: false});
+            Swal.fire({
+                icon: 'success', 
+                title: 'Piante clonate', 
+                text: `Create ${qty} copie.`,
+                toast: true,
+                position: 'top-end',
+                timer: 2000, 
+                showConfirmButton: false
+            });
         }
     } catch (err) {
         console.error(err);
@@ -445,7 +454,6 @@ async function autoSavePlantNote() {
         plant.notes = newPlantNotes;
         unsavedChanges = true;
         if (typeof saveToLocal === 'function') await saveToLocal();
-        if (typeof showAutoSaveToast === 'function') showAutoSaveToast('Nota salvata');
     }
 }
 
@@ -472,6 +480,5 @@ async function autoSaveSpeciesNote() {
 
         unsavedChanges = true;
         if (typeof saveToLocal === 'function') await saveToLocal();
-        if (typeof showAutoSaveToast === 'function') showAutoSaveToast('Nota specie salvata');
     }
 }

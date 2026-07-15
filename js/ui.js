@@ -9,12 +9,12 @@ function toggleAccordion(headerEl) {
         if (item.classList.contains('open')) {
             content.style.display = 'block';
             headerEl.setAttribute('aria-expanded', 'true');
-            // FIX: Diciamo al browser che il contenuto ora è visibile e cliccabile
-            content.setAttribute('aria-hidden', 'false');
+            // FIX DEFINITIVO: Invece di settare "false", rimuoviamo del tutto l'attributo
+            // per evitare qualsiasi blocco di accessibilità da parte di Chromium
+            content.removeAttribute('aria-hidden');
         } else {
             content.style.display = 'none';
             headerEl.setAttribute('aria-expanded', 'false');
-            // FIX: Diciamo al browser che il contenuto è nascosto
             content.setAttribute('aria-hidden', 'true');
         }
     }

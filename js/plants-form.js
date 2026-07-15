@@ -360,7 +360,7 @@ function clearForm() {
         if (hiddenInput) hiddenInput.value = '';
     });
 
-    // FIX ACCESSIBILITÀ: Ripristina tutte le fisarmoniche allo stato base senza "aria-hidden" orfani
+    // FIX ACCESSIBILITÀ: Rimuoviamo l'attributo aria-hidden dai pannelli aperti
     const accordions = document.querySelectorAll('#form-container .accordion-item');
     accordions.forEach((item, index) => {
         const content = item.querySelector('.accordion-content');
@@ -369,7 +369,7 @@ function clearForm() {
             item.classList.add('open');
             if (content) {
                 content.style.display = 'block';
-                content.setAttribute('aria-hidden', 'false');
+                content.removeAttribute('aria-hidden'); // RIMOSSO
             }
             if (header) header.setAttribute('aria-expanded', 'true');
         } else {
@@ -737,13 +737,14 @@ function _internalEditPlant(id) {
         }
     }
 
+    // FIX ACCESSIBILITÀ: Rimuoviamo aria-hidden anche quando apriamo il form in modifica
     const firstAccItem = document.querySelector('.accordion-item');
     if (firstAccItem && !firstAccItem.classList.contains('open')) {
         firstAccItem.classList.add('open');
         const content = firstAccItem.querySelector('.accordion-content');
         if (content) {
             content.style.display = 'block';
-            content.setAttribute('aria-hidden', 'false');
+            content.removeAttribute('aria-hidden'); // RIMOSSO
         }
         const header = firstAccItem.querySelector('.accordion-header');
         if (header) header.setAttribute('aria-expanded', 'true');

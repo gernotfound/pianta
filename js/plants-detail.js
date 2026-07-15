@@ -341,7 +341,7 @@ async function confirmDuplicate() {
     const diaryCheckEl = document.getElementById('dup-copy-diary');
     const copyDiary = diaryCheckEl ? diaryCheckEl.checked : false;
 
-    const btnContainer = document.querySelector('#duplicate-modal-overlay .');
+    const btnContainer = document.querySelector('#duplicate-modal-overlay .btn-container');
     if (btnContainer) {
         btnContainer.disabled = true;
         btnContainer.innerText = "⏳ Clonazione...";

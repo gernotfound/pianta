@@ -42,8 +42,9 @@ window.saveToFirebase = async function() {
     const gardenRef = db.collection('users').doc(uid).collection('gardens').doc(gId);
     
     // settings
-    gardenRef.collection('settings').doc('metadata').set(cleanForFirestore({ title: gardenTitle || '', notes: gardenNotes || '' }), { merge: true }).catch(handleFirestoreSaveError);
-    gardenRef.set(cleanForFirestore({ title: gardenTitle || '', updatedAt: Date.now() }), { merge: true }).catch(handleFirestoreSaveError);
+    const promises = [];
+    promises.push(gardenRef.collection('settings').doc('metadata').set(cleanForFirestore({ title: gardenTitle || '', notes: gardenNotes || '' }), { merge: true }).catch(handleFirestoreSaveError));
+    promises.push(gardenRef.set(cleanForFirestore({ title: gardenTitle || '', updatedAt: Date.now() }), { merge: true }).catch(handleFirestoreSaveError));
 
     for (let p of plantsDatabase) {
       if (!p.id) p.id = String(Date.now() + Math.random());
@@ -54,7 +55,7 @@ window.saveToFirebase = async function() {
       if (pCopy.photo) pCopy.photo = await window.blobToBase64(pCopy.photo);
       if (pCopy.fruitPhoto) pCopy.fruitPhoto = await window.blobToBase64(pCopy.fruitPhoto);
 
-      pRef.set(cleanForFirestore(pCopy), { merge: true }).catch(handleFirestoreSaveError);
+      promises.push(pRef.set(cleanForFirestore(pCopy), { merge: true }).catch(handleFirestoreSaveError));
       
       if (p.logs && p.logs.length > 0) {
         for (let l of p.logs) {
@@ -68,7 +69,7 @@ window.saveToFirebase = async function() {
             }
             lCopy.photos = encodedPhotos;
           }
-          lRef.set(cleanForFirestore(lCopy), { merge: true }).catch(handleFirestoreSaveError);
+          promises.push(lRef.set(cleanForFirestore(lCopy), { merge: true }).catch(handleFirestoreSaveError));
         }
       }
     }
@@ -76,7 +77,8 @@ window.saveToFirebase = async function() {
     for (let e of generalExpenses) {
       if (!e.id) e.id = String(Date.now() + Math.random());
       const eRef = gardenRef.collection('expenses').doc(String(e.id));
-      eRef.set(cleanForFirestore({ ...e, ownerId: uid }), { merge: true }).catch(handleFirestoreSaveError);
+      const eCopy = { ...e, ownerId: uid };
+      promises.push(eRef.set(cleanForFirestore(eCopy), { merge: true }).catch(handleFirestoreSaveError));
     }
 
     for (let w of wishlist) {
@@ -84,9 +86,10 @@ window.saveToFirebase = async function() {
       const wRef = gardenRef.collection('wishlist').doc(String(w.id));
       const wCopy = { ...w, ownerId: uid };
       if (wCopy.photo) wCopy.photo = await window.blobToBase64(wCopy.photo);
-      wRef.set(cleanForFirestore(wCopy), { merge: true }).catch(handleFirestoreSaveError);
+      promises.push(wRef.set(cleanForFirestore(wCopy), { merge: true }).catch(handleFirestoreSaveError));
     }
-    
+
+    await Promise.all(promises);
     if (typeof showAutoSaveToast === 'function') showAutoSaveToast();
   } catch (e) {
     console.error('Firebase save error:', e);

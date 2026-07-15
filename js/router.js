@@ -303,12 +303,13 @@ function executeTabSwitch(view, param = null) {
             setTimeout(() => { window.scrollTo({ top: plantsScrollPosition || 0, behavior: 'instant' }); }, 10);
             break;
 
-        case 'settings':
+        case 'settings': {
             const globalNotes = document.getElementById('global-garden-notes');
             if (globalNotes && typeof gardenNotes !== 'undefined') globalNotes.value = gardenNotes || "";
             if (typeof renderMyData === 'function') renderMyData();
             window.scrollTo({ top: 0, behavior: 'instant' });
             break;
+        }
 
         case 'events':
             if (typeof renderGlobalChart === 'function') renderGlobalChart();

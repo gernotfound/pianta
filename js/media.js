@@ -499,7 +499,8 @@ window.addEventListener('popstate', () => {
 });
 
 function compressImageAsync(file) {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        (async () => {
         if (!file || !file.type.startsWith('image/')) {
             return reject(new Error('File non valido per la compressione'));
         }
@@ -609,5 +610,6 @@ function compressImageAsync(file) {
             console.error("Errore imprevisto durante la compressione:", error);
             reject(error);
         }
+        })();
     });
 }

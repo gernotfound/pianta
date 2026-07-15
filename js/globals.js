@@ -343,16 +343,14 @@ function standardizeDatabaseIds() {
 }
 
 async function saveToLocal() {
-    return new Promise(async (resolve) => {
-        if (!Array.isArray(plantsDatabase)) plantsDatabase = [];
-        if (!Array.isArray(generalExpenses)) generalExpenses = [];
-        if (!Array.isArray(wishlist)) wishlist = [];
-
-        standardizeDatabaseIds();
-
-        try {
-            let db = await initDB();
-            let tx = db.transaction(['System', 'Plants', 'Expenses', 'Wishlist'], 'readwrite');
+    if (!Array.isArray(plantsDatabase)) plantsDatabase = [];
+    if (!Array.isArray(generalExpenses)) generalExpenses = [];
+    if (!Array.isArray(wishlist)) wishlist = [];
+    standardizeDatabaseIds();
+    try {
+        let db = await initDB();
+        return new Promise((resolve) => {
+        let tx = db.transaction(['System', 'Plants', 'Expenses', 'Wishlist'], 'readwrite');
             
             tx.objectStore('System').put({ title: gardenTitle, notes: gardenNotes }, 'metadata');
             
@@ -372,11 +370,11 @@ async function saveToLocal() {
                 }
                 resolve(false);
             };
-        } catch(e) {
-            console.error("[DB] Errore critico in saveToLocal:", e);
-            resolve(false);
-        }
-    });
+        });
+    } catch(e) {
+        console.error("[DB] Errore critico in saveToLocal:", e);
+        return false;
+    }
 }
 
 async function loadFromLocal(isSilent = false) {

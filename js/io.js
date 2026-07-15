@@ -109,7 +109,7 @@ async function loadZipProfile(file) {
             throw new Error('Il backup non contiene una lista di piante valida.');
         }
 
-        async function restoreImage(imgPath) {
+        const restoreImage = async (imgPath) => {
             if (imgPath && typeof imgPath === 'string' && imgPath.startsWith('images/')) {
                 const imgFile = zip.file(imgPath);
                 if (imgFile) {
@@ -257,7 +257,7 @@ async function exportData() {
         const zip = new JSZip();
         const imgFolder = zip.folder("images");
 
-        function processImage(imgData, filenameBase) {
+        const processImage = (imgData, filenameBase) => {
             if (!imgData) return imgData;
             let ext = "webp";
 

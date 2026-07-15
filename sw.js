@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pianta-v5.7.0';
+const CACHE_NAME = 'pianta-app-cache-v5.8.1';
 
 const offlineFallbackHtml = `<!DOCTYPE html>
 <html lang="it">

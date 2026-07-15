@@ -1,4 +1,37 @@
 
+function cleanForFirestore(obj) {
+  if (obj === undefined) return null;
+  if (obj === null) return null;
+  if (Array.isArray(obj)) {
+    return obj.map(item => cleanForFirestore(item)).filter(item => item !== undefined);
+  }
+  if (typeof obj === 'object') {
+    const cleaned = {};
+    for (const key in obj) {
+      if (obj[key] !== undefined) {
+        cleaned[key] = cleanForFirestore(obj[key]);
+      }
+    }
+    return cleaned;
+  }
+  return obj;
+}
+
+function handleFirestoreSaveError(e) {
+  console.error('Firestore save operation failed:', e);
+  if (typeof Swal !== 'undefined') {
+    Swal.fire({
+      icon: 'error',
+      title: 'Errore Sincronizzazione',
+      text: e.message && e.message.includes('permission') ? 'Permessi Firebase insufficienti. Controlla le regole del database.' : 'Impossibile salvare sul cloud.',
+      toast: true,
+      position: 'bottom-end',
+      showConfirmButton: false,
+      timer: 5000
+    });
+  }
+}
+
 window.saveToFirebase = async function() {
   if (!window.currentUser || !window.db || !window.currentGardenId) return;
   const uid = window.currentUser.uid;
@@ -9,8 +42,8 @@ window.saveToFirebase = async function() {
     const gardenRef = db.collection('users').doc(uid).collection('gardens').doc(gId);
     
     // settings
-    gardenRef.collection('settings').doc('metadata').set({ title: gardenTitle || '', notes: gardenNotes || '' }, { merge: true });
-    gardenRef.set({ title: gardenTitle || '', updatedAt: Date.now() }, { merge: true });
+    gardenRef.collection('settings').doc('metadata').set(cleanForFirestore({ title: gardenTitle || '', notes: gardenNotes || '' }), { merge: true }).catch(handleFirestoreSaveError);
+    gardenRef.set(cleanForFirestore({ title: gardenTitle || '', updatedAt: Date.now() }), { merge: true }).catch(handleFirestoreSaveError);
 
     for (let p of plantsDatabase) {
       if (!p.id) p.id = String(Date.now() + Math.random());
@@ -21,7 +54,7 @@ window.saveToFirebase = async function() {
       if (pCopy.photo) pCopy.photo = await window.blobToBase64(pCopy.photo);
       if (pCopy.fruitPhoto) pCopy.fruitPhoto = await window.blobToBase64(pCopy.fruitPhoto);
 
-      pRef.set(pCopy, { merge: true });
+      pRef.set(cleanForFirestore(pCopy), { merge: true }).catch(handleFirestoreSaveError);
       
       if (p.logs && p.logs.length > 0) {
         for (let l of p.logs) {
@@ -35,7 +68,7 @@ window.saveToFirebase = async function() {
             }
             lCopy.photos = encodedPhotos;
           }
-          lRef.set(lCopy, { merge: true });
+          lRef.set(cleanForFirestore(lCopy), { merge: true }).catch(handleFirestoreSaveError);
         }
       }
     }
@@ -43,7 +76,7 @@ window.saveToFirebase = async function() {
     for (let e of generalExpenses) {
       if (!e.id) e.id = String(Date.now() + Math.random());
       const eRef = gardenRef.collection('expenses').doc(String(e.id));
-      eRef.set({ ...e, ownerId: uid }, { merge: true });
+      eRef.set(cleanForFirestore({ ...e, ownerId: uid }), { merge: true }).catch(handleFirestoreSaveError);
     }
 
     for (let w of wishlist) {
@@ -51,7 +84,7 @@ window.saveToFirebase = async function() {
       const wRef = gardenRef.collection('wishlist').doc(String(w.id));
       const wCopy = { ...w, ownerId: uid };
       if (wCopy.photo) wCopy.photo = await window.blobToBase64(wCopy.photo);
-      wRef.set(wCopy, { merge: true });
+      wRef.set(cleanForFirestore(wCopy), { merge: true }).catch(handleFirestoreSaveError);
     }
     
     if (typeof showAutoSaveToast === 'function') showAutoSaveToast();

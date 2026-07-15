@@ -408,8 +408,8 @@ async function confirmDuplicate() {
                 logs: clonedLogs,
                 mother: plantToCopy.mother !== undefined && plantToCopy.mother !== null ? String(plantToCopy.mother) : '',
                 father: plantToCopy.father !== undefined && plantToCopy.father !== null ? String(plantToCopy.father) : '',
-                minTemp: plantToCopy.minTemp,
-                maxTemp: plantToCopy.maxTemp
+                minTemp: plantToCopy.minTemp !== undefined ? plantToCopy.minTemp : null,
+                maxTemp: plantToCopy.maxTemp !== undefined ? plantToCopy.maxTemp : null
             };
             plantsDatabase.push(newPlant);
         }

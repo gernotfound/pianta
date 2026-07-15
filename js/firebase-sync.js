@@ -162,6 +162,14 @@ window.loadFromFirebase = async function(isSilent = false) {
 
   } catch (e) {
     console.error('Firebase load error:', e);
+    if (!isSilent && typeof Swal !== 'undefined') {
+        Swal.fire({
+            icon: 'error',
+            title: 'Errore Caricamento',
+            text: 'Si è verificato un errore durante il caricamento dei dati dal cloud. Potrebbe esserci un problema di rete o permessi.',
+            confirmButtonColor: '#d32f2f'
+        });
+    }
     if (!isSilent && typeof finalizeLoad === 'function') {
         // If an offline error occurs, we are still logged in, so we just finish load
         // with empty data instead of kicking the user to the startup screen.

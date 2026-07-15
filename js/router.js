@@ -76,8 +76,8 @@ function initRouter(hasData) {
     }
 
     if (!window.location.hash || window.location.hash === '#/' || window.location.hash === '' || window.location.hash === '#/startup') {
-        history.replaceState({ view: 'home' }, '', '#/home');
-        executeTabSwitch('home');
+        history.replaceState({ view: 'plants' }, '', '#/plants');
+        executeTabSwitch('plants');
     } else {
         parseHashAndNavigate(hasData);
     }
@@ -102,8 +102,8 @@ function parseHashAndNavigate(hasData) {
         history.replaceState({ view, param }, '', window.location.hash);
         executeTabSwitch(view, param);
     } else {
-        history.replaceState({ view: 'home' }, '', '#/home');
-        executeTabSwitch('home');
+        history.replaceState({ view: 'plants' }, '', '#/plants');
+        executeTabSwitch('plants');
     }
 }
 

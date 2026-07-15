@@ -108,6 +108,10 @@ window.loadFromFirebase = async function(isSilent = false) {
 
   } catch (e) {
     console.error('Firebase load error:', e);
-    if (!isSilent && typeof finalizeLoad === 'function') finalizeLoad(false);
+    if (!isSilent && typeof finalizeLoad === 'function') {
+        // If an offline error occurs, we are still logged in, so we just finish load
+        // with empty data instead of kicking the user to the startup screen.
+        finalizeLoad(true);
+    }
   }
 };

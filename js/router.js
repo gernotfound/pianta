@@ -76,6 +76,8 @@ function initRouter(hasData) {
     }
 
     if (!window.location.hash || window.location.hash === '#/' || window.location.hash === '' || window.location.hash === '#/startup') {
+        currentTab = 'plants';
+        plantsTabState = { view: 'plants', param: null };
         history.replaceState({ view: 'plants' }, '', '#/plants');
         executeTabSwitch('plants');
     } else {
@@ -102,6 +104,8 @@ function parseHashAndNavigate(hasData) {
         history.replaceState({ view, param }, '', window.location.hash);
         executeTabSwitch(view, param);
     } else {
+        currentTab = 'plants';
+        plantsTabState = { view: 'plants', param: null };
         history.replaceState({ view: 'plants' }, '', '#/plants');
         executeTabSwitch('plants');
     }

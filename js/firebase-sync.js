@@ -122,26 +122,28 @@ window.loadFromFirebase = async function(isSilent = false) {
     const gardenRef = db.collection('users').doc(uid).collection('gardens').doc(gId);
     
     const sysRef = gardenRef.collection('settings').doc('metadata');
-    const sysDoc = await sysRef.get();
+    const plRef = gardenRef.collection('plants');
+    const expRef = gardenRef.collection('expenses');
+    const wishRef = gardenRef.collection('wishlist');
+
+    const [sysDoc, plSnap, expSnap, wishSnap] = await Promise.all([
+        sysRef.get(),
+        plRef.get(),
+        expRef.get(),
+        wishRef.get()
+    ]);
+
     const sysData = sysDoc.exists ? sysDoc.data() : null;
 
-    const plRef = gardenRef.collection('plants');
-    const plSnap = await plRef.get();
-    let loadedPlants = [];
-    for (let docSnap of plSnap.docs) {
+    const plantPromises = plSnap.docs.map(async (docSnap) => {
         let pData = docSnap.data();
-        let logsRef = plRef.doc(docSnap.id).collection('logs');
-        let logsSnap = await logsRef.get();
+        let logsSnap = await plRef.doc(docSnap.id).collection('logs').get();
         pData.logs = logsSnap.docs.map(l => l.data());
-        loadedPlants.push(pData);
-    }
+        return pData;
+    });
 
-    const expRef = gardenRef.collection('expenses');
-    const expSnap = await expRef.get();
+    let loadedPlants = await Promise.all(plantPromises);
     let loadedExpenses = expSnap.docs.map(e => e.data());
-
-    const wishRef = gardenRef.collection('wishlist');
-    const wishSnap = await wishRef.get();
     let loadedWishlist = wishSnap.docs.map(w => w.data());
 
     gardenTitle = sysData && sysData.title ? sysData.title : "🌿 Il mio giardino";

@@ -562,7 +562,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
             if (user) {
                 window.currentGardenId = user.uid || 'main';
-                document.getElementById('startup-screen').classList.add('hidden');
+                
+                const authBtns = document.getElementById('auth-buttons');
+                const startLoad = document.getElementById('startup-loading');
+                if (authBtns) authBtns.style.display = 'none';
+                if (startLoad) startLoad.style.display = 'flex';
+                
                 document.getElementById('bottom-nav').classList.remove('hidden-nav');
                 loadFromLocal();
             } else {

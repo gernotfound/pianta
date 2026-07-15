@@ -93,7 +93,13 @@ window.saveToFirebase = async function() {
       promises.push(wRef.set(cleanForFirestore(wCopy), { merge: true }).catch(handleFirestoreSaveError));
     }
 
-    await Promise.all(promises);
+    await Promise.race([
+        Promise.all(promises),
+        new Promise(resolve => setTimeout(() => {
+            console.warn('Firebase sync timeout - continuing in background');
+            resolve();
+        }, 5000))
+    ]);
     if (typeof showAutoSaveToast === 'function') showAutoSaveToast();
   } catch (e) {
     console.error('Firebase save error:', e);

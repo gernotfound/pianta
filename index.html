@@ -976,25 +976,6 @@
                 </div>
             </div>
         </div>
-
-        <div id="archive-section" style="margin-top: 30px; padding: 20px; background: #ffebee; border: 1px solid #ffcdd2; border-radius: 8px; text-align: center;">
-            <h4 style="margin-top: 0; margin-bottom: 5px; color: var(--danger);">🥀 Archivio storico</h4>
-            <p style="font-size: 14px; color: #555; margin-top: 0;">Sposta la pianta nell'archivio per conservarne la storia.</p>
-            <button id="btn-archive-toggle" class="btn btn-danger" onclick="toggleArchiveStatus()">Archivia pianta</button>
-        </div>
-
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid var(--secondary); text-align: center;">
-            <h3 style="color: var(--primary);">🏷️ Etichetta stampabile</h3>
-            <button class="btn btn-blue" onclick="window.print()">🖨️ Stampa questa etichetta</button>
-            <div style="margin-top: 20px;">
-                <div id="print-area" class="print-label">
-                    <h3 id="label-name">Nome Pianta</h3>
-                    <p><em id="label-scientific">Specie</em></p>
-                    <p><strong>Origine:</strong> <span id="label-origin">Seme</span></p>
-                    <div class="qrcode-container" id="detail-qr-code"></div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- MODALE DUPLICAZIONE PIANTA -->
@@ -1076,12 +1057,14 @@
         }
     </script>
 
-    <!-- Script inclusi -->
+    <!-- Script inclusi aggiornati -->
     <script src="js/globals.js"></script>
     <script src="js/router.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/media.js"></script>
-    <script src="js/plants.js"></script>
+    <script src="js/plants-form.js"></script>
+    <script src="js/plants-grid.js"></script>
+    <script src="js/plants-detail.js"></script>
     <script src="js/diary.js"></script>
     <script src="js/stats.js"></script>
     <script src="js/tools.js"></script>

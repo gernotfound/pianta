@@ -213,8 +213,29 @@ function applyFiltersAndClose() {
     if (typeof renderPlants === 'function') renderPlants();
 }
 
+function resetFiltersAndSearch() {
+    ['search-plant', 'filter-vuln-cold', 'filter-vuln-hot'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    
+    const defaults = {
+        'sort-name': true,
+        'status-active': true,
+        'photo-all': true,
+        'place-all': true,
+        'orig-all': true,
+        'fert-all': true
+    };
+    
+    for (const [id, checked] of Object.entries(defaults)) {
+        const el = document.getElementById(id);
+        if (el) el.checked = checked;
+    }
+}
+
 function resetAllFilters() {
-    if (typeof resetFiltersAndSearch === 'function') resetFiltersAndSearch();
+    resetFiltersAndSearch();
     if (typeof renderPlants === 'function') renderPlants();
     closeFilterSidebar();
 }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'piante-pro-v4.3.1';
+const CACHE_NAME = 'piante-pro-v4.4.0';
 
 const offlineFallbackHtml = `<!DOCTYPE html>
 <html lang="it">
@@ -21,7 +21,7 @@ const offlineFallbackResponse = new Response(offlineFallbackHtml, {
   status: 200
 });
 
-// Asset essenziali pre-caricati al momento dell'installazione
+// Asset essenziali pre-caricati al momento dell'installazione (AGGIORNATI CON I FILE DIVISI)
 const urlsToCache = [
     './',
     './index.html',
@@ -31,7 +31,9 @@ const urlsToCache = [
     './js/router.js',
     './js/ui.js',
     './js/media.js',
-    './js/plants.js',
+    './js/plants-form.js',
+    './js/plants-grid.js',
+    './js/plants-detail.js',
     './js/diary.js',
     './js/stats.js',
     './js/tools.js',
@@ -45,7 +47,6 @@ self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME).then(async cache => {
             console.log('[SW] Inizio pre-caching asset locali essenziali (Strategia Resiliente)');
-            // Ciclo iterativo: se un file fallisce (es. 404), gli altri vengono salvati comunque
             for (const url of urlsToCache) {
                 try {
                     await cache.add(url);

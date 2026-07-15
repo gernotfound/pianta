@@ -9,9 +9,13 @@ function toggleAccordion(headerEl) {
         if (item.classList.contains('open')) {
             content.style.display = 'block';
             headerEl.setAttribute('aria-expanded', 'true');
+            // FIX: Diciamo al browser che il contenuto ora è visibile e cliccabile
+            content.setAttribute('aria-hidden', 'false');
         } else {
             content.style.display = 'none';
             headerEl.setAttribute('aria-expanded', 'false');
+            // FIX: Diciamo al browser che il contenuto è nascosto
+            content.setAttribute('aria-hidden', 'true');
         }
     }
 }

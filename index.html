@@ -168,8 +168,8 @@
         <h2>Benvenuto nel tuo giardino virtuale</h2>
         
         <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px;">
-            <button class="btn btn-add-main" onclick="createNewGarden()" aria-label="Crea nuovo giardino">🌱 Crea nuovo giardino</button>
-            <button id="btn-install-pwa" class="btn btn-purple" style="display: none;" onclick="installPWA()" aria-label="Installa applicazione">📥 Installa l'Applicazione</button>
+            <button class="btn btn-add-main" onclick="if(window.fbSignIn) window.fbSignIn()" aria-label="Accedi con Google">🔑 Accedi con Google</button>
+            <button id="btn-install-pwa" class="btn" style="display: none;" onclick="installPWA()" aria-label="Installa applicazione">📥 Installa l'Applicazione</button>
         </div>
 
         <div id="ios-install-prompt" style="display: none; margin-top: 15px; background: #e3f2fd; border: 1px solid #90caf9; padding: 12px; border-radius: 8px; color: #0d47a1; font-size: 13px; text-align: center; max-width: 300px;">
@@ -191,27 +191,27 @@
             </h1>
         </div>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px;">
-            <button class="btn btn-purple" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('expenses')">
-                <span style="font-size:22px;">💰</span> Spese
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px;">
+            <button class="btn" style="margin:0; padding:8px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('expenses')">
+                <span style="font-size:18px;">💰</span> Spese
             </button>
-            <button class="btn btn-warning" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('wishlist')">
-                <span style="font-size:22px;">🛒</span> Wishlist
+            <button class="btn" style="margin:0; padding:8px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('wishlist')">
+                <span style="font-size:18px;">🛒</span> Wishlist
             </button>
-            <button class="btn btn-blue" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('gallery')">
-                <span style="font-size:22px;">🖼️</span> Archivio Foto
+            <button class="btn" style="margin:0; padding:8px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('gallery')">
+                <span style="font-size:18px;">🖼️</span> Archivio Foto
             </button>
-            <button class="btn" style="background:#1565c0; margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('scanner')">
-                <span style="font-size:22px;">🏷️</span> Scanner QR
+            <button class="btn" style="margin:0; padding:8px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('scanner')">
+                <span style="font-size:18px;">🏷️</span> Scanner QR
             </button>
-            <button class="btn" style="background:var(--accent); margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('macro')">
-                <span style="font-size:22px;">☑️</span> Azioni Macro
+            <button class="btn" style="margin:0; padding:8px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('macro')">
+                <span style="font-size:18px;">☑️</span> Azioni Macro
             </button>
-            <button class="btn btn-danger" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('archive')">
-                <span style="font-size:22px;">🥀</span> Piante Perse
+            <button class="btn" style="margin:0; padding:8px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('archive')">
+                <span style="font-size:18px;">🥀</span> Piante Perse
             </button>
-            <button class="btn" style="background:#00897b; color: white; margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px; grid-column: span 2;" onclick="navigateTo('map')">
-                <span style="font-size:22px;">🗺️</span> Mappa Globale
+            <button class="btn" style="margin:0; padding:8px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px; grid-column: span 2;" onclick="navigateTo('map')">
+                <span style="font-size:18px;">🗺️</span> Mappa Globale
             </button>
         </div>
 
@@ -226,7 +226,7 @@
                 <input type="text" id="search-plant" placeholder="Cerca pianta o specie..." oninput="handleSearchInput()" aria-label="Cerca pianta">
                 <span id="clear-search-btn" role="button" tabindex="0" aria-label="Cancella ricerca" onclick="clearSearch()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); clearSearch();}" style="display:none; position:absolute; right:15px; top:50%; transform:translateY(-50%); background:#ddd; color:#555; border-radius:50%; width:22px; height:22px; text-align:center; line-height:22px; font-size:12px; cursor:pointer; font-weight:bold;">✖</span>
             </div>
-            <button class="btn btn-blue" style="margin: 0; white-space: nowrap;" onclick="openFilterSidebar()" aria-label="Apri filtri">Filtri 🛠️</button>
+            <button class="btn" style="margin: 0; white-space: nowrap;" onclick="openFilterSidebar()" aria-label="Apri filtri">Filtri 🛠️</button>
         </div>
 
         <div id="dashboard-stats" aria-live="polite">
@@ -249,10 +249,10 @@
         </div>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
-            <button class="btn" style="background-color: #1976d2; margin:0;" onclick="exportData()" id="btn-export">💾 Backup ZIP</button>
-            <button class="btn" style="background-color: #217346; margin:0;" onclick="exportToCSV()">📊 Esporta Excel</button>
+            <button class="btn" style="margin:0;" onclick="exportData()" id="btn-export">💾 Backup ZIP</button>
+            <button class="btn" style="margin:0;" onclick="exportToCSV()">📊 Esporta Excel</button>
             
-            <button class="btn btn-blue" onclick="toggleGeneralList()" style="grid-column: span 2; margin:0;" id="btn-toggle-list">📋 Elenco Piante (Testo)</button>
+            <button class="btn" onclick="toggleGeneralList()" style="grid-column: span 2; margin:0;" id="btn-toggle-list">📋 Elenco Piante (Testo)</button>
             <div id="general-list-container" class="hidden" style="grid-column: span 2;">
                 <textarea id="general-list-textarea" readonly style="width: 100%; height: 150px; font-family: monospace; font-size: 14px; padding: 10px; resize: vertical; border: 1px solid var(--secondary); border-radius: 5px;"></textarea>
             </div>
@@ -260,7 +260,7 @@
 
         <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 25px;">
             <h3 style="margin-top:0; color: var(--primary);">📡 Stato Sistema e Rete</h3>
-            <button class="btn btn-grey" style="width: 100%; margin: 0 0 15px 0;" onclick="openSystemStatusModal()">🔍 Controlla Stato App</button>
+            <button class="btn" style="width: 100%; margin: 0 0 15px 0;" onclick="openSystemStatusModal()">🔍 Controlla Stato App</button>
         </div>
 
         <div style="background: #fff8e1; padding: 20px; border-radius: 8px; border: 1px solid #ffe082; display: flex; flex-direction: column;">
@@ -294,7 +294,7 @@
                 <p id="modal-weather-desc" style="margin: 8px 0 0 0; font-size: 12px; color: #444;">Controllo l'ultimo aggiornamento disponibile per le allerte Vento e Gelo.</p>
             </div>
 
-            <button class="btn btn-primary" style="width: 100%; margin: 0; font-weight: bold;" onclick="document.getElementById('system-status-modal').style.display='none'">Chiudi</button>
+            <button class="btn" style="width: 100%; margin: 0; font-weight: bold;" onclick="document.getElementById('system-status-modal').style.display='none'">Chiudi</button>
         </div>
     </div>
 
@@ -374,13 +374,13 @@
                         <label for="fert-all">Tutti</label>
                         
                         <input type="radio" name="filter-fertility" id="fert-auto" class="chip-radio" value="Autofertile">
-                        <label for="fert-auto">Autofertili</label>
+                        <label for="fert-auto">Autofertile</label>
                         
                         <input type="radio" name="filter-fertility" id="fert-parz" class="chip-radio" value="Parzialmente autofertile">
                         <label for="fert-parz">Parz. Autofertili</label>
                         
                         <input type="radio" name="filter-fertility" id="fert-ster" class="chip-radio" value="Autosterile">
-                        <label for="fert-ster">Autosterili</label>
+                        <label for="fert-ster">Autosterile</label>
                     </div>
                 </div>
 
@@ -431,9 +431,9 @@
             </div>
 
             <div style="display: flex; gap: 8px; position: sticky; bottom: 0; background: white; padding: 15px 20px; border-top: 1px solid #eee; z-index: 10; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);">
-                <button class="btn btn-grey" style="flex:1; margin:0; font-size: 13px;" onclick="closeFilterSidebar()">✖ Chiudi</button>
-                <button class="btn btn-danger" style="flex:1; margin:0; font-size: 13px;" onclick="resetAllFilters()">🔄 Azzera</button>
-                <button class="btn btn-primary" style="flex:2; margin:0; font-size: 14px; font-weight: bold;" onclick="applyFiltersAndClose()">✅ Applica</button>
+                <button class="btn" style="flex:1; margin:0; font-size: 13px;" onclick="closeFilterSidebar()">✖ Chiudi</button>
+                <button class="btn" style="flex:1; margin:0; font-size: 13px;" onclick="resetAllFilters()">🔄 Azzera</button>
+                <button class="btn" style="flex:2; margin:0; font-size: 14px; font-weight: bold;" onclick="applyFiltersAndClose()">✅ Applica</button>
             </div>
         </div>
     </div>
@@ -454,7 +454,7 @@
                             <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
                                 <label for="p-photo-hidden" style="align-self: flex-start; margin-bottom: 5px;">Foto della pianta:</label>
                                 <div class="smart-upload-container" id="smart-upload-main" role="button" tabindex="0" aria-label="Aggiungi foto pianta" onclick="triggerSmartUpload('main')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); triggerSmartUpload('main');}">
-                                    <div class="upload-placeholder" id="placeholder-main">📸 Tocca per foto</div>
+                                    <div class="upload-placeholder" id="placeholder-main"><span style="font-size: 28px; opacity: 0.8;">📸</span><span>Tocca per foto</span></div>
                                     <img id="preview-main" class="smart-preview" style="display: none;" alt="Anteprima pianta">
                                     <button type="button" class="remove-photo-btn" id="remove-btn-main" onclick="removeSmartPhoto(event, 'main')" style="display: none;">✖ Rimuovi</button>
                                 </div>
@@ -464,7 +464,7 @@
                             <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
                                 <label for="p-fruit-photo-hidden" style="align-self: flex-start; margin-bottom: 5px;">Foto frutto:</label>
                                 <div class="smart-upload-container" id="smart-upload-fruit" role="button" tabindex="0" aria-label="Aggiungi foto frutto" onclick="triggerSmartUpload('fruit')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); triggerSmartUpload('fruit');}">
-                                    <div class="upload-placeholder" id="placeholder-fruit">🍋 Tocca per dettaglio</div>
+                                    <div class="upload-placeholder" id="placeholder-fruit"><span style="font-size: 28px; opacity: 0.8;">🍋</span><span>Tocca per foto</span></div>
                                     <img id="preview-fruit" class="smart-preview" style="display: none;" alt="Anteprima frutto">
                                     <button type="button" class="remove-photo-btn" id="remove-btn-fruit" onclick="removeSmartPhoto(event, 'fruit')" style="display: none;">✖ Rimuovi</button>
                                 </div>
@@ -482,7 +482,7 @@
                             <div style="display: flex; gap: 5px;">
                                 <select id="p-scientific-select" style="flex: 1;" onchange="syncSpeciesNotes()" aria-label="Seleziona nome scientifico"></select>
                                 <input type="text" id="p-scientific-input" placeholder="es. Monstera deliciosa" style="flex: 1; display: none;" aria-label="Inserisci nome scientifico" onblur="syncSpeciesNotes()">
-                                <button class="btn btn-warning" type="button" id="btn-toggle-scientific" onclick="toggleScientificMode()" style="margin: 0; padding: 5px 10px;">➕ Nuovo</button>
+                                <button class="btn" type="button" id="btn-toggle-scientific" onclick="toggleScientificMode()" style="margin: 0; padding: 5px 10px;">➕ Nuovo</button>
                             </div>
                         </div>
                         
@@ -523,11 +523,11 @@
                         <div style="grid-column: span 2;">
                             <div style="margin-bottom: 5px; font-weight: bold;">🧬 Albero genealogico:</div>
                             <div style="display:flex; gap:15px; flex-wrap: wrap; margin-top: 5px;">
-                                <div style="flex:1; min-width: 200px;">
+                                <div style="flex:1; min-width: 0; flex-basis: 140px;">
                                     <label for="p-mother">Pianta madre:</label>
                                     <select id="p-mother"></select>
                                 </div>
-                                <div style="flex:1; min-width: 200px;">
+                                <div style="flex:1; min-width: 0; flex-basis: 140px;">
                                     <label for="p-father">Pianta padre:</label>
                                     <select id="p-father"></select>
                                 </div>
@@ -537,9 +537,9 @@
                             <label for="p-autofertile">🌸 Fertilità:</label>
                             <select id="p-autofertile">
                                 <option value="Sconosciuta">Sconosciuta</option>
-                                <option value="Autofertile">Autofertili</option>
+                                <option value="Autofertile">Autofertile</option>
                                 <option value="Parzialmente autofertile">Parzialmente autofertile</option>
-                                <option value="Autosterile">Autosterili</option>
+                                <option value="Autosterile">Autosterile</option>
                             </select>
                         </div>
                     </div>
@@ -573,7 +573,7 @@
                             <div style="display: flex; gap: 5px;">
                                 <select id="p-soil-select" style="flex: 1;" aria-label="Seleziona substrato"></select>
                                 <input type="text" id="p-soil-input" placeholder="es. Torba e perlite" style="flex: 1; display: none;" aria-label="Inserisci substrato">
-                                <button class="btn btn-warning" type="button" id="btn-toggle-soil" onclick="toggleSoilMode()" style="margin: 0; padding: 5px 10px;">➕ Nuovo</button>
+                                <button class="btn" type="button" id="btn-toggle-soil" onclick="toggleSoilMode()" style="margin: 0; padding: 5px 10px;">➕ Nuovo</button>
                             </div>
                         </div>
 
@@ -604,7 +604,7 @@
                             <div style="display: flex; gap: 5px; margin-bottom: 10px;">
                                 <select id="p-location-select" style="flex: 1;" onchange="fillSavedLocation()" aria-label="Seleziona posizione"></select>
                                 <input type="text" id="p-location-input" placeholder="Luogo (es. serra, balcone)" style="flex: 1; display: none;" aria-label="Inserisci luogo">
-                                <button class="btn btn-warning" type="button" id="btn-toggle-location" onclick="toggleLocationMode()" style="margin: 0; padding: 5px 10px;">➕ Nuovo</button>
+                                <button class="btn" type="button" id="btn-toggle-location" onclick="toggleLocationMode()" style="margin: 0; padding: 5px 10px;">➕ Nuovo</button>
                             </div>
                             <div id="coords-inputs-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
                                 <input type="text" inputmode="decimal" id="p-lat" placeholder="Latitudine" aria-label="Latitudine" onchange="updateFormMapFromInputs()">
@@ -633,7 +633,7 @@
                             <div style="display: flex; gap: 5px;">
                                 <select id="p-vendor-select" style="flex: 1;" aria-label="Seleziona fornitore"></select>
                                 <input type="text" id="p-vendor-input" placeholder="es. www.sito.it" style="flex: 1; display: none;" aria-label="Inserisci fornitore">
-                                <button class="btn btn-warning" type="button" id="btn-toggle-vendor" onclick="toggleVendorMode()" style="margin: 0; padding: 5px 10px;">➕ Nuovo</button>
+                                <button class="btn" type="button" id="btn-toggle-vendor" onclick="toggleVendorMode()" style="margin: 0; padding: 5px 10px;">➕ Nuovo</button>
                             </div>
                         </div>
                     </div>
@@ -642,9 +642,9 @@
             
         </div> 
         
-        <div style="margin-top: 25px; display: flex; gap: 10px; position: sticky; bottom: 80px; z-index: 10; background: white; padding: 10px 0; border-top: 1px solid #eee;">
-            <button class="btn" style="flex:1; padding: 15px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 10px rgba(46,125,50,0.3);" onclick="savePlant()">💾 Salva pianta</button>
-            <button class="btn btn-warning" style="flex:1; padding: 15px; font-size: 16px; font-weight: bold;" onclick="cancelAddPlant()">❌ Annulla</button>
+        <div class="form-sticky-footer">
+            <button class="btn" style="flex: 1; padding: 14px; font-size: 16px; font-weight: 600; border-radius: 12px;" onclick="cancelAddPlant()">Annulla</button>
+            <button class="btn" style="flex: 2; padding: 14px; font-size: 16px; font-weight: 600; border-radius: 12px; box-shadow: 0 4px 12px rgba(46,125,50,0.2);" onclick="savePlant()">💾 Salva pianta</button>
         </div>
     </div>
 
@@ -676,7 +676,7 @@
     <div id="global-map-page" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
         <div class="detail-header">
             <h2 style="margin:0; color: var(--blue);">🗺️ Mappa globale</h2>
-            <button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button>
+            <button class="btn" onclick="goBack()">⬅️ Indietro</button>
         </div>
         <div id="global-map-fullscreen" style="height: 60vh; width: 100%; border-radius: 8px; border: 2px solid var(--blue); z-index: 1;"></div>
         <div style="margin-top: 25px; border-top: 2px solid #eee; padding-top: 20px;">
@@ -690,7 +690,7 @@
     <div id="macro-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #e0e0e0;">
         <div class="detail-header">
             <h2 style="margin:0; color: var(--accent);">☑️ Azioni di Massa (Macro)</h2>
-            <button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button>
+            <button class="btn" onclick="goBack()">⬅️ Indietro</button>
         </div>
         
         <div id="macro-step-1">
@@ -708,7 +708,7 @@
                 <option value="Irrigazione">💧 Irrigazione speciale</option>
                 <option value="Trattamento">🛡️ Trattamento fitosanitario</option>
             </select>
-            <button class="btn btn-accent" style="width: 100%; font-size: 16px; padding: 12px;" onclick="goToMacroStep2()">Continua ➡️</button>
+            <button class="btn" style="width: 100%; font-size: 16px; padding: 12px;" onclick="goToMacroStep2()">Continua ➡️</button>
         </div>
 
         <div id="macro-step-2" class="hidden">
@@ -723,8 +723,8 @@
             <div id="macro-selection-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; max-height: 40vh; overflow-y: auto; padding: 5px;" role="listbox" aria-multiselectable="true"></div>
             
             <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn btn-grey" style="flex:1;" onclick="backToMacroStep1()">⬅️ Indietro</button>
-                <button class="btn btn-accent" style="flex:2;" onclick="goToMacroStep3()">Compila Dati (<span id="macro-selected-count">0</span>) ➡️</button>
+                <button class="btn" style="flex:1;" onclick="backToMacroStep1()">⬅️ Indietro</button>
+                <button class="btn" style="flex:2;" onclick="goToMacroStep3()">Compila Dati (<span id="macro-selected-count">0</span>) ➡️</button>
             </div>
         </div>
 
@@ -738,7 +738,7 @@
             <div id="macro-inputs-container" style="display: flex; flex-direction: column; gap: 15px; max-height: 40vh; overflow-y: auto; padding-right: 5px;"></div>
 
             <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn btn-grey" style="flex:1;" onclick="backToMacroStep2()">⬅️ Indietro</button>
+                <button class="btn" style="flex:1;" onclick="backToMacroStep2()">⬅️ Indietro</button>
                 <button class="btn" style="flex:2; font-weight: bold;" onclick="saveMacroV2()">💾 Salva Eventi</button>
             </div>
         </div>
@@ -747,7 +747,7 @@
     <div id="labels-scanner-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; text-align: center;">
         <div class="detail-header">
             <h2 style="margin:0; color: var(--blue);">🏷️ Scanner QR</h2>
-            <button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button>
+            <button class="btn" onclick="goBack()">⬅️ Indietro</button>
         </div>
         <p style="font-size: 14px; color: #555;">Inquadra il QR Code o carica un'immagine dalla tua galleria per aprire subito la scheda della pianta.</p>
         <div id="reader-container" style="margin-top: 20px;">
@@ -758,7 +758,7 @@
     <div id="expenses-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; margin-bottom: 20px;">
         <div class="detail-header">
             <h2 style="margin:0; color: var(--purple);">💰 Tracciamento Spese</h2>
-            <button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button>
+            <button class="btn" onclick="goBack()">⬅️ Indietro</button>
         </div>
         <div class="form-grid" style="background: #f3e5f5; padding: 15px; border-radius: 8px; border: 1px solid #e1bee7; margin-bottom: 20px;">
             <div>
@@ -784,7 +784,7 @@
                 <input type="text" inputmode="decimal" id="exp-cost" placeholder="es. 10,00">
             </div>
             <div style="grid-column: span 2;">
-                <button class="btn btn-purple" style="width:100%" onclick="addExpense()">➕ Aggiungi spesa</button>
+                <button class="btn" style="width:100%" onclick="addExpense()">➕ Aggiungi spesa</button>
             </div>
         </div>
         <div id="expenses-summary" style="background: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px; text-align: center;">
@@ -797,7 +797,7 @@
     <div id="wishlist-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e0e0e0;">
         <div class="detail-header">
             <h2 style="margin:0; color: var(--accent);">🛒 Wishlist Piante</h2>
-            <button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button>
+            <button class="btn" onclick="goBack()">⬅️ Indietro</button>
         </div>
         <div class="form-grid" style="background: #fff8e1; padding: 15px; border-radius: 8px; border: 1px solid #ffecb3; margin-bottom: 20px;">
             <div>
@@ -817,7 +817,7 @@
                 <input type="file" id="wl-photo" accept="image/*">
             </div>
             <div style="grid-column: span 2;">
-                <button class="btn btn-warning" style="width:100%" onclick="addWishlistItem()">➕ Aggiungi</button>
+                <button class="btn" style="width:100%" onclick="addWishlistItem()">➕ Aggiungi</button>
             </div>
         </div>
         <div id="wishlist-grid" class="my-data-grid"></div>
@@ -826,7 +826,7 @@
     <div id="gallery-view" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e0e0e0;">
         <div class="detail-header">
             <h2 style="margin:0; color: var(--blue);">🖼️ Archivio Foto</h2>
-            <button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button>
+            <button class="btn" onclick="goBack()">⬅️ Indietro</button>
         </div>
         <div id="gallery-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:10px;"></div>
     </div>
@@ -834,7 +834,7 @@
     <div id="archive-page" class="hidden fade-in" style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e0e0e0;">
         <div class="detail-header">
             <h2 style="margin:0; color: var(--danger);">🥀 Archivio piante perse</h2>
-            <button class="btn btn-grey" onclick="goBack()">⬅️ Indietro</button>
+            <button class="btn" onclick="goBack()">⬅️ Indietro</button>
         </div>
         <div id="archive-grid"></div>
     </div>
@@ -843,11 +843,11 @@
         
         <div class="detail-header">
             <h2 id="detail-title" style="margin:0;">Nome pianta</h2>
-            <div>
-                <button class="btn btn-blue" onclick="openDuplicateModal()">📑 Duplica</button>
-                <button class="btn btn-warning" onclick="editCurrentPlant()">✏️ Modifica</button>
-                <button class="btn btn-danger" onclick="deleteCurrentPlant()">🗑️ Elimina</button>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
                 <button class="btn" onclick="goBack()">⬅️ Indietro</button>
+                <button class="btn" onclick="openDuplicateModal()">📑 Duplica</button>
+                <button class="btn" onclick="editCurrentPlant()">✏️ Modifica</button>
+                <button class="btn" onclick="deleteCurrentPlant()">🗑️ Elimina</button>
             </div>
         </div>
 
@@ -863,12 +863,12 @@
             </div>
 
             <div style="flex: 1; display: flex; flex-direction: column; gap: 15px;">
-                <div style="background:#f9f9f9; padding:10px; border-radius:5px; border: 1px solid #e0e0e0; display: flex; flex-direction: column;">
+                <div style="background:#f9f9f9; padding:8px; border-radius:5px; border: 1px solid #e0e0e0; display: flex; flex-direction: column;">
                     <h4 style="margin: 0 0 8px 0; font-size: 13px; color: var(--primary);">📍 Mappa</h4>
                     <div id="map-container" style="flex: 1; min-height: 150px; border-radius: 5px; border: 1px solid #ccc; z-index: 1;"></div>
                 </div>
                 
-                <div style="background:#f9f9f9; padding:10px; border-radius:5px; border: 1px solid #e0e0e0;">
+                <div style="background:#f9f9f9; padding:8px; border-radius:5px; border: 1px solid #e0e0e0;">
                     <label for="detail-plant-notes" style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 13px; color: var(--primary);">📝 Note pianta:</label>
                     <textarea id="detail-plant-notes" rows="4" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; resize: vertical;" placeholder="Appunti su questa singola pianta (si salvano in automatico)..." onblur="autoSavePlantNote()"></textarea>
                 </div>
@@ -981,12 +981,12 @@
         <div id="archive-section" style="margin-top: 30px; padding: 20px; background: #ffebee; border: 1px solid #ffcdd2; border-radius: 8px; text-align: center;">
             <h4 style="margin-top: 0; margin-bottom: 5px; color: var(--danger);">🥀 Archivio storico</h4>
             <p style="font-size: 14px; color: #555; margin-top: 0;">Sposta la pianta nell'archivio per conservarne la storia.</p>
-            <button id="btn-archive-toggle" class="btn btn-danger" onclick="toggleArchiveStatus()">Archivia pianta</button>
+            <button id="btn-archive-toggle" class="btn" onclick="toggleArchiveStatus()">Archivia pianta</button>
         </div>
 
         <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid var(--secondary); text-align: center;">
             <h3 style="color: var(--primary);">🏷️ Etichetta stampabile</h3>
-            <button class="btn btn-blue" onclick="window.print()">🖨️ Stampa questa etichetta</button>
+            <button class="btn" onclick="window.print()">🖨️ Stampa questa etichetta</button>
             <div style="margin-top: 20px;">
                 <div id="print-area" class="print-label">
                     <h3 id="label-name">Nome Pianta</h3>
@@ -1016,8 +1016,8 @@
             </div>
 
             <div style="display:flex; gap:10px;">
-                <button class="btn btn-blue" style="flex:1;" onclick="confirmDuplicate()">Clona piante</button>
-                <button class="btn btn-warning" style="flex:1;" onclick="closeDuplicateModal()">Annulla</button>
+                <button class="btn" style="flex:1;" onclick="confirmDuplicate()">Clona piante</button>
+                <button class="btn" style="flex:1;" onclick="closeDuplicateModal()">Annulla</button>
             </div>
         </div>
     </div>
@@ -1029,7 +1029,7 @@
             <img id="cropper-img" style="display: block; max-width: 100%;" alt="Immagine da ritagliare">
         </div>
         <div style="display:flex; gap:15px; margin-top:30px; width: 90%; max-width: 400px;">
-            <button class="btn btn-grey" style="flex:1; padding: 12px; font-weight: bold;" onclick="closeCropper()">Annulla</button>
+            <button class="btn" style="flex:1; padding: 12px; font-weight: bold;" onclick="closeCropper()">Annulla</button>
             <button class="btn" style="flex:1; padding: 12px; font-weight: bold;" onclick="confirmCropper()">✂️ Ritaglia</button>
         </div>
     </div>
@@ -1076,6 +1076,12 @@
         }
     </script>
 
+</div>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-init.js"></script>
+    <script src="js/firebase-sync.js"></script>
     <script src="js/globals.js"></script>
     <script src="js/router.js"></script>
     <script src="js/ui.js"></script>

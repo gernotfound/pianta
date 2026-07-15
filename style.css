@@ -162,69 +162,33 @@ header {
 }
 
 .btn {
-    background-color: var(--primary);
+    background-color: #66bb6a; /* Verdino */
     color: white;
     border: none;
-    padding: 12px 18px;
-    font-size: 15px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    margin: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: background-color 0.2s ease;
+    margin: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 }
 
 .btn:hover:not(:disabled) {
-    background-color: #1b5e20;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    background-color: #4caf50;
+}
+
+.btn:active:not(:disabled) {
+    background-color: #43a047;
 }
 
 .btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-.btn-danger {
-    background-color: var(--danger);
-}
-
-.btn-danger:hover:not(:disabled) {
-    background-color: #9a0007;
-}
-
-.btn-warning {
-    background-color: var(--accent);
-}
-
-.btn-warning:hover:not(:disabled) {
-    background-color: #e65100;
-}
-
-.btn-blue {
-    background-color: var(--blue);
-}
-
-.btn-blue:hover:not(:disabled) {
-    background-color: #115293;
-}
-
-.btn-purple {
-    background-color: var(--purple);
-}
-
-.btn-purple:hover:not(:disabled) {
-    background-color: #6a1b9a;
-}
-
-.btn-grey {
-    background-color: var(--grey);
-}
-
-.btn-grey:hover:not(:disabled) {
-    background-color: #455a64;
 }
 
 .search-sort-bar {
@@ -632,18 +596,34 @@ header {
 
 input, select, textarea {
     width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
+    padding: 12px 14px;
+    border: 1px solid #e5e7eb;
+    background-color: #f9fafb;
     border-radius: 8px;
     font-family: inherit;
     font-size: 14px;
-    transition: border-color 0.3s;
+    color: #111827;
+    transition: all 0.2s ease;
+}
+
+input:hover, select:hover, textarea:hover {
+    border-color: #d1d5db;
+    background-color: #f3f4f6;
 }
 
 input:focus, select:focus, textarea:focus {
     border-color: var(--primary);
+    background-color: #ffffff;
     outline: none;
-    box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+}
+
+.form-grid label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4b5563;
 }
 
 #form-container, #plant-detail-view, #my-data-page, #archive-page, #global-map-page, #macro-view, #events-view, #settings-view {
@@ -665,64 +645,86 @@ input:focus, select:focus, textarea:focus {
 }
 
 .accordion-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     margin-top: 15px;
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid #e0e0e0;
-    background: #fafafa;
 }
 
 .accordion-item {
-    border-bottom: 1px solid #e0e0e0;
     background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    overflow: hidden;
+    transition: all 0.2s ease;
 }
 
-.accordion-item:last-child {
-    border-bottom: none;
+.accordion-item:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.04);
 }
 
 .accordion-header {
-    padding: 18px 20px;
+    padding: 16px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
-    background: #f9f9f9;
-    transition: background 0.3s;
+    background: #ffffff;
+    transition: background 0.2s;
     outline: none;
 }
 
 .accordion-header:hover, .accordion-header:focus-visible {
-    background: #f1f8e9;
+    background: #f9fafb;
 }
 
 .accordion-header h3 {
     margin: 0;
     font-size: 16px;
-    color: var(--primary);
+    font-weight: 600;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     pointer-events: none;
 }
 
 .acc-icon {
-    font-size: 14px;
-    color: var(--grey);
-    transition: transform 0.3s ease;
+    font-size: 12px;
+    color: #9ca3af;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none;
+    background: #f3f4f6;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.accordion-item.open {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(46,125,50,0.08);
 }
 
 .accordion-item.open .acc-icon {
     transform: rotate(-180deg);
+    background: #e8f5e9;
+    color: var(--primary);
 }
 
 .accordion-item.open .accordion-header {
-    background: #e8f5e9;
-    border-bottom: 1px solid #c8e6c9;
+    background: #ffffff;
+    border-bottom: 1px solid #f3f4f6;
 }
 
 .accordion-content {
     padding: 20px;
     display: none;
-    background: white;
+    background: #fafafa;
 }
 
 .accordion-item.open .accordion-content {
@@ -744,9 +746,9 @@ input:focus, select:focus, textarea:focus {
 .smart-upload-container {
     width: 100%;
     aspect-ratio: 1 / 1;
-    border: 2px dashed var(--secondary);
+    border: 2px dashed #d1d5db;
     border-radius: 12px;
-    background: #f9f9f9;
+    background: #f9fafb;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -760,16 +762,20 @@ input:focus, select:focus, textarea:focus {
 
 .smart-upload-container:hover, .smart-upload-container:focus-visible {
     border-color: var(--primary);
-    background: #f1f8e9;
+    background: #f0fdf4;
 }
 
 .upload-placeholder {
     font-size: 14px;
     font-weight: 500;
-    color: var(--grey);
+    color: #6b7280;
     text-align: center;
     padding: 10px;
     pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
 }
 
 .smart-preview {
@@ -787,7 +793,7 @@ input:focus, select:focus, textarea:focus {
     bottom: 8px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(211, 47, 47, 0.95);
+    background: rgba(46, 125, 50, 0.95);
     color: white;
     border: none;
     padding: 8px 16px;
@@ -801,7 +807,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .remove-photo-btn:hover {
-    background: rgba(183, 28, 28, 1);
+    background: rgba(27, 94, 32, 1);
 }
 
 .detail-header {
@@ -1085,6 +1091,56 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
+.nav-card {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    font-weight: 600;
+    font-size: 15px;
+    color: #374151;
+    outline: none;
+    margin: 0;
+}
+
+.nav-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary);
+    box-shadow: 0 6px 16px rgba(46, 125, 50, 0.08);
+    background-color: #f7faf7;
+}
+
+.nav-card:focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.nav-card .nav-card-icon {
+    font-size: 26px;
+    display: inline-block;
+    transition: transform 0.25s ease;
+}
+
+.nav-card:hover .nav-card-icon {
+    transform: scale(1.15);
+}
+
+.nav-card-expenses { border-left: 4px solid var(--purple); }
+.nav-card-wishlist { border-left: 4px solid var(--accent); }
+.nav-card-gallery { border-left: 4px solid var(--blue); }
+.nav-card-scanner { border-left: 4px solid #1565c0; }
+.nav-card-macro { border-left: 4px solid #00897b; }
+.nav-card-archive { border-left: 4px solid var(--danger); }
+.nav-card-map { border-left: 4px solid #0288d1; }
+
 .bottom-nav {
     display: flex;
     position: fixed;
@@ -1319,4 +1375,56 @@ input:focus, select:focus, textarea:focus {
         font-size: 26px;
         margin-bottom: 0;
     }
+}
+/* Fix for iOS date input overflow */
+input, select, textarea {
+    min-width: 0;
+    max-width: 100%;
+}
+.form-grid > div {
+    min-width: 0;
+}
+
+.form-sticky-footer {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+    position: sticky;
+    bottom: 60px; /* Above bottom nav */
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 15px 20px;
+    margin-left: -20px;
+    margin-right: -20px;
+    margin-bottom: -20px;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.03);
+}
+
+@media (max-width: 768px) {
+    .form-sticky-footer {
+        bottom: 80px;
+        margin-left: -15px;
+        margin-right: -15px;
+        padding: 15px;
+    }
+}
+
+/* Fix per input date su iPhone che sfora a destra */
+input[type="date"], input[type="text"], select, textarea {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    display: block;
+}
+
+.form-grid {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }

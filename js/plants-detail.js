@@ -154,7 +154,7 @@ function _internalOpenPlantDetail(id) {
                 archiveSec.style.borderColor = '#ffcdd2';
                 archiveSec.querySelector('h4').innerText = '🥀 Archivio storico';
                 archiveSec.querySelector('h4').style.color = 'var(--danger)';
-                archiveBtn.className = 'btn btn-danger';
+                archiveBtn.className = 'btn ';
                 archiveBtn.innerText = 'Archivia pianta';
             }
         }
@@ -341,7 +341,7 @@ async function confirmDuplicate() {
     const diaryCheckEl = document.getElementById('dup-copy-diary');
     const copyDiary = diaryCheckEl ? diaryCheckEl.checked : false;
 
-    const btnContainer = document.querySelector('#duplicate-modal-overlay .btn-blue');
+    const btnContainer = document.querySelector('#duplicate-modal-overlay .');
     if (btnContainer) {
         btnContainer.disabled = true;
         btnContainer.innerText = "⏳ Clonazione...";

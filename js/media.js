@@ -301,12 +301,12 @@ function openImageModal(src, label, plantId = null) {
         const goToPlantBtn = document.createElement('button');
         goToPlantBtn.id = 'fullscreen-goto-btn';
         goToPlantBtn.innerText = '🌿 Vai alla pianta';
-        goToPlantBtn.className = 'btn btn-primary';
+        goToPlantBtn.className = 'btn ';
         goToPlantBtn.style.margin = '0';
 
         const closeBtn = document.createElement('button'); 
         closeBtn.innerText = '✖ Chiudi'; 
-        closeBtn.className = 'btn btn-grey'; 
+        closeBtn.className = 'btn '; 
         closeBtn.style.margin = '0';
         closeBtn.onclick = function() { 
             modal.style.display = 'none'; 

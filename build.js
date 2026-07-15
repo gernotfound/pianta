@@ -9,6 +9,8 @@ const CleanCSS = require('clean-css');
   }
 
   const jsFiles = [
+    'js/firebase-init.js',
+    'js/firebase-sync.js',
     'js/globals.js',
     'js/router.js',
     'js/ui.js',

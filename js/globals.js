@@ -347,40 +347,38 @@ async function saveToLocal() {
     if (!Array.isArray(generalExpenses)) generalExpenses = [];
     if (!Array.isArray(wishlist)) wishlist = [];
     standardizeDatabaseIds();
+
     try {
-        let db = await initDB();
-        return new Promise((resolve) => {
-        let tx = db.transaction(['System', 'Plants', 'Expenses', 'Wishlist'], 'readwrite');
-            
+        if (window.currentUser && window.db) {
+            await window.saveToFirebase();
+        } else {
+            let db = await initDB();
+            let tx = db.transaction(['System', 'Plants', 'Expenses', 'Wishlist'], 'readwrite');
             tx.objectStore('System').put({ title: gardenTitle, notes: gardenNotes }, 'metadata');
-            
             syncStore(tx.objectStore('Plants'), plantsDatabase, 'Plants').catch(e => {});
             syncStore(tx.objectStore('Expenses'), generalExpenses, 'Expenses').catch(e => {});
             syncStore(tx.objectStore('Wishlist'), wishlist, 'Wishlist').catch(e => {});
-            
-            tx.oncomplete = function() {
-                showAutoSaveToast();
-                if (gardenSyncChannel) gardenSyncChannel.postMessage('RELOAD_DB');
-                resolve(true);
-            };
-            tx.onerror = function(e) {
-                console.error("[DB] Transazione fallita:", e.target.error);
-                if (e.target.error && e.target.error.name === 'QuotaExceededError') {
-                    if (typeof Swal !== 'undefined') Swal.fire({icon: 'error', title: 'Memoria Piena!', text: 'Spazio esaurito nel browser. Elimina foto vecchie o archivia piante.', confirmButtonColor: '#d32f2f'});
-                }
-                resolve(false);
-            };
-        });
+            return new Promise((resolve) => {
+                tx.oncomplete = function() {
+                    showAutoSaveToast();
+                    if (gardenSyncChannel) gardenSyncChannel.postMessage('RELOAD_DB');
+                    resolve(true);
+                };
+                tx.onerror = function(e) { resolve(false); };
+            });
+        }
     } catch(e) {
-        console.error("[DB] Errore critico in saveToLocal:", e);
         return false;
     }
 }
 
 async function loadFromLocal(isSilent = false) {
+    if (window.currentUser && window.db) {
+        await window.loadFromFirebase(isSilent);
+        return;
+    }
     try {
         let db = await initDB();
-        
         let tx = db.transaction(['System', 'Plants', 'Expenses', 'Wishlist'], 'readonly');
         let reqSys = tx.objectStore('System').get('metadata');
         let reqPl = tx.objectStore('Plants').getAll();
@@ -389,46 +387,20 @@ async function loadFromLocal(isSilent = false) {
         
         tx.oncomplete = function() {
             let sysData = reqSys.result;
-            
-            if (!sysData && (!reqPl.result || reqPl.result.length === 0)) {
-                const fallback = localStorage.getItem('garden_full_backup_v1');
-                if (fallback) {
-                    try {
-                        let fd = JSON.parse(fallback);
-                        sysData = { title: fd.title, notes: fd.notes };
-                        if (fd.plants) reqPl.result = Array.isArray(fd.plants) ? fd.plants : [];
-                        if (fd.expenses) reqExp.result = Array.isArray(fd.expenses) ? fd.expenses : [];
-                        if (fd.wishlist) reqWish.result = Array.isArray(fd.wishlist) ? fd.wishlist : [];
-                    } catch(e) {}
-                }
-            }
-            
             if (sysData || (reqPl.result && reqPl.result.length > 0)) {
                 gardenTitle = sysData && sysData.title ? sysData.title : "🌿 Gestione Piante Tropicali - Pro";
                 gardenNotes = sysData && sysData.notes ? sysData.notes : "";
                 plantsDatabase = Array.isArray(reqPl.result) ? reqPl.result : [];
                 generalExpenses = Array.isArray(reqExp.result) ? reqExp.result : [];
                 wishlist = Array.isArray(reqWish.result) ? reqWish.result : [];
-                
                 standardizeDatabaseIds();
-
-                plantsDatabase.forEach(p => dbSyncHashes.Plants[p.id] = generateFastHash(p));
-                generalExpenses.forEach(e => dbSyncHashes.Expenses[e.id] = generateFastHash(e));
-                wishlist.forEach(w => dbSyncHashes.Wishlist[w.id] = generateFastHash(w));
-
-                if (isSilent) {
-                    finalizeSilentLoad();
-                } else {
-                    finalizeLoad(true);
-                }
+                if (isSilent) finalizeSilentLoad();
+                else finalizeLoad(true);
             } else {
                 if (!isSilent) finalizeLoad(false);
             }
         };
-        tx.onerror = function() {
-            if (!isSilent) fallbackLoad();
-        };
-
+        tx.onerror = function() { if (!isSilent) fallbackLoad(); };
     } catch(e) {
         if (!isSilent) fallbackLoad();
     }
@@ -514,13 +486,35 @@ async function saveGardenNotes() {
     }
 }
 
+
 window.addEventListener('DOMContentLoaded', () => {
     if (window.appInitialized) return;
     updateConnectionStatusIndicator();
     window.addEventListener('online', updateConnectionStatusIndicator);
     window.addEventListener('offline', updateConnectionStatusIndicator);
+    
+    // Auth Check
+    if (window.fbAuth) {
+        window.fbOnAuthStateChanged(window.fbAuth, (user) => {
+            window.currentUser = user;
+            if (user) {
+                // Remove local backup alert if they just logged in
+                document.getElementById('startup-screen').classList.add('hidden');
+                document.getElementById('bottom-nav').classList.remove('hidden-nav');
+                loadFromLocal();
+            } else {
+                // Show login UI in startup screen
+                const startScreen = document.getElementById('startup-screen');
+                if (startScreen) startScreen.classList.remove('hidden');
+                const navBar = document.getElementById('bottom-nav');
+                if (navBar) navBar.classList.add('hidden-nav');
+                finalizeLoad(false);
+            }
+        });
+    } else {
+        loadFromLocal();
+    }
 
-    loadFromLocal();
     
     const notesArea = document.getElementById('global-garden-notes');
     if (notesArea) {

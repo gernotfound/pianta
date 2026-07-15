@@ -206,17 +206,8 @@ async function loadZipProfile(file) {
         unsavedChanges = false;
         isFormDirty = false;
 
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                icon: 'success',
-                title: 'Backup caricato',
-                text: 'I dati sono stati ripristinati correttamente.',
-                timer: 1500,
-                showConfirmButton: false
-            });
-        }
-
-        setTimeout(() => window.location.reload(), 1500);
+        // Mantieni l'alert di caricamento attivo mentre la pagina si ricarica
+        window.location.reload();
 
     } catch (e) {
         const errorMessage = e && e.message ? e.message : String(e);

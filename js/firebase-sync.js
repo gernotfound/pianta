@@ -51,7 +51,7 @@ window.saveToFirebase = async function() {
     promises.push(gardenRef.set(cleanForFirestore({ title: gardenTitle || '', updatedAt: Date.now() }), { merge: true }).catch(handleFirestoreSaveError));
 
     for (let p of plantsDatabase) {
-      if (!p.id) p.id = String(Date.now() + Math.random());
+      if (!p.id) p.id = (typeof generateId === 'function' ? generateId() : crypto.randomUUID());
       const pRef = gardenRef.collection('plants').doc(String(p.id));
       const pCopy = { ...p, ownerId: uid, updatedAt: Date.now() };
       delete pCopy.logs;
@@ -63,7 +63,7 @@ window.saveToFirebase = async function() {
       
       if (p.logs && p.logs.length > 0) {
         for (let l of p.logs) {
-          if (!l.id) l.id = String(Date.now() + Math.random());
+          if (!l.id) l.id = (typeof generateId === 'function' ? generateId() : crypto.randomUUID());
           const lRef = pRef.collection('logs').doc(String(l.id));
           const lCopy = { ...l };
           if (lCopy.photos && Array.isArray(lCopy.photos)) {
@@ -79,14 +79,14 @@ window.saveToFirebase = async function() {
     }
 
     for (let e of generalExpenses) {
-      if (!e.id) e.id = String(Date.now() + Math.random());
+      if (!e.id) e.id = (typeof generateId === 'function' ? generateId() : crypto.randomUUID());
       const eRef = gardenRef.collection('expenses').doc(String(e.id));
       const eCopy = { ...e, ownerId: uid };
       promises.push(eRef.set(cleanForFirestore(eCopy), { merge: true }).catch(handleFirestoreSaveError));
     }
 
     for (let w of wishlist) {
-      if (!w.id) w.id = String(Date.now() + Math.random());
+      if (!w.id) w.id = (typeof generateId === 'function' ? generateId() : crypto.randomUUID());
       const wRef = gardenRef.collection('wishlist').doc(String(w.id));
       const wCopy = { ...w, ownerId: uid };
       if (wCopy.photo) wCopy.photo = await window.blobToBase64(wCopy.photo);

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pianta-app-cache-v5.8.8';
+const CACHE_NAME = 'pianta-app-cache-v5.9.0';
 
 const offlineFallbackHtml = `<!DOCTYPE html>
 <html lang="it">
@@ -130,7 +130,10 @@ self.addEventListener('fetch', event => {
                 return networkResponse;
             }).catch(() => {
                 console.log('[SW] Rete non disponibile per aggiornare la cache di:', req.url);
-                return offlineFallbackResponse;
+                if (req.mode === 'navigate') {
+                    return offlineFallbackResponse;
+                }
+                return new Response('', { status: 503, statusText: 'Service Unavailable' });
             });
 
             return fetchPromise;

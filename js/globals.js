@@ -501,31 +501,19 @@ window.addEventListener('DOMContentLoaded', () => {
             window.currentUser = user;
 
             if (user) {
-                const lastGardenId = localStorage.getItem('lastGardenId');
-                if (lastGardenId) {
-                    window.currentGardenId = lastGardenId;
-                }
-                
-                if (window.currentGardenId) {
-                    document.getElementById('startup-screen').classList.add('hidden');
-                    document.getElementById('garden-selection-screen').classList.add('hidden');
-                    document.getElementById('bottom-nav').classList.remove('hidden-nav');
-                    loadFromLocal();
-                } else {
-                    window.showGardenSelection();
-                }
+                window.currentGardenId = user.uid || 'main';
+                document.getElementById('startup-screen').classList.add('hidden');
+                document.getElementById('bottom-nav').classList.remove('hidden-nav');
+                loadFromLocal();
             } else {
                 if (window.currentGardenId) {
                     console.warn("Auth state null but already in app. Ignoring to prevent inactive logout.");
                     return;
                 }
                 window.currentGardenId = null;
-                const selScreen = document.getElementById('garden-selection-screen');
-                if (selScreen) selScreen.classList.add('hidden');
                 const startScreen = document.getElementById('startup-screen');
                 if (startScreen) startScreen.classList.remove('hidden');
-                const navBar = document.getElementById('bottom-nav');
-                if (navBar) navBar.classList.add('hidden-nav');
+                document.getElementById('bottom-nav').classList.add('hidden-nav');
                 finalizeLoad(false);
             }
         });
@@ -563,22 +551,19 @@ window.addEventListener('beforeunload', function (e) {
     if (isFormDirty) {
         e.preventDefault();
         e.returnValue = 'Hai dati non salvati nel modulo! Sei sicuro di voler uscire?';
-    } else if (unsavedChanges) {
-        e.preventDefault();
-        e.returnValue = 'Hai delle modifiche non salvate in ZIP!';
     }
 });
 
 function logout() {
     if (typeof Swal === 'undefined') return;
     Swal.fire({
-        title: 'Sei sicuro di voler ripartire da zero?',
-        text: "Tutti i dati verranno eliminati. Se non hai fatto un Backup (ZIP), li perderai per sempre.",
+        title: 'Sei sicuro?',
+        text: "Vuoi disconnetterti dall'applicazione?",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d32f2f',
         cancelButtonColor: '#607d8b',
-        confirmButtonText: 'Sì, cancella ed esci',
+        confirmButtonText: 'Sì, Esci',
         cancelButtonText: 'Annulla'
     }).then(async (result) => {
         if (result.isConfirmed) {
@@ -607,106 +592,3 @@ function logout() {
     });
 }
 
-
-window.currentGardenId = null;
-
-
-window.showGardenSelection = async () => {
-    localStorage.removeItem('lastGardenId');
-    const views = [
-        'startup-screen', 'home-view', 'dashboard', 'settings-view',
-        'expenses-view', 'wishlist-view', 'gallery-view', 'archive-page',
-        'plant-detail-view', 'form-container', 'global-map-page',
-        'labels-scanner-view', 'events-view', 'macro-view'
-    ];
-    views.forEach(v => {
-        const el = document.getElementById(v);
-        if (el) el.classList.add('hidden');
-    });
-
-    document.getElementById('bottom-nav').classList.add('hidden-nav');
-    
-    const selScreen = document.getElementById('garden-selection-screen');
-    if (selScreen) selScreen.classList.remove('hidden');
-
-    const container = document.getElementById('garden-list-container');
-    if (container) {
-        container.innerHTML = '<p>Caricamento giardini...</p>';
-        try {
-            const uid = window.currentUser.uid;
-            const snap = await window.db.collection('users').doc(uid).collection('gardens').get();
-            container.innerHTML = '';
-            
-            if (snap.empty) {
-                container.innerHTML = '<p style="color:var(--grey);">Nessun giardino trovato. Creane uno nuovo!</p>';
-            } else {
-                snap.forEach(doc => {
-                    const gData = doc.data();
-                    const btn = document.createElement('button');
-                    btn.className = 'btn';
-                    btn.style.width = '100%';
-                    btn.style.maxWidth = '300px';
-                    btn.style.margin = '0';
-                    btn.innerHTML = '🪴 ' + (gData.title || 'Giardino senza nome');
-                    btn.onclick = () => window.selectGarden(doc.id);
-                    container.appendChild(btn);
-                });
-            }
-        } catch(e) {
-            console.error(e);
-            container.innerHTML = '<p style="color:var(--danger);">Errore nel caricamento.</p>';
-        }
-    }
-};
-
-
-window.selectGarden = (gardenId) => {
-    window.currentGardenId = gardenId;
-    localStorage.setItem('lastGardenId', gardenId);
-    window.location.hash = '#/home';
-    window.location.reload();
-};
-
-
-const originalCreateNewGarden = createNewGarden;
-window.createNewGarden = async () => {
-    if (window.currentUser && window.db) {
-        const { value: name } = await Swal.fire({
-            title: 'Nuovo giardino',
-            input: 'text',
-            inputLabel: 'Nome del giardino',
-            inputPlaceholder: 'es. Giardino in terrazza',
-            showCancelButton: true
-        });
-        if (name) {
-            const newId = String(Date.now() + Math.random());
-            const uid = window.currentUser.uid;
-            await window.db.collection('users').doc(uid).collection('gardens').doc(newId).set({ title: name, updatedAt: Date.now() });
-            window.selectGarden(newId);
-        }
-    } else {
-        originalCreateNewGarden();
-    }
-};
-
-function createNewGarden() {
-    gardenTitle = "🌿 Il mio giardino";
-    plantsDatabase = [];
-    generalExpenses = [];
-    wishlist = [];
-    gardenNotes = "";
-    dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} };
-    
-    saveToLocal().then(() => {
-        const titleEl = document.getElementById('main-title');
-        if(titleEl) titleEl.innerText = gardenTitle;
-        
-        const startScreen = document.getElementById('startup-screen');
-        const navBar = document.getElementById('bottom-nav');
-        
-        if(startScreen) startScreen.classList.add('hidden');
-        if(navBar) navBar.classList.remove('hidden-nav');
-        
-        if(typeof navigateTo === 'function') navigateTo('home');
-    });
-}

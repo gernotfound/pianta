@@ -46,7 +46,6 @@ window.fbSignIn = () => {
             const provider = new firebase.auth.GoogleAuthProvider();
             return window.auth.signInWithPopup(provider);
         }).then(() => {
-            localStorage.removeItem('lastGardenId');
             window.location.hash = '#/startup';
             window.location.reload();
         }).catch(err => {

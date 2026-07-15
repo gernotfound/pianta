@@ -76,10 +76,10 @@ function initRouter(hasData) {
     }
 
     if (!window.location.hash || window.location.hash === '#/' || window.location.hash === '' || window.location.hash === '#/startup') {
-        currentTab = 'plants';
-        plantsTabState = { view: 'plants', param: null };
-        history.replaceState({ view: 'plants' }, '', '#/plants');
-        executeTabSwitch('plants');
+        currentTab = 'home';
+        homeTabState = { view: 'home', param: null };
+        history.replaceState({ view: 'home' }, '', '#/home');
+        executeTabSwitch('home');
     } else {
         parseHashAndNavigate(hasData);
     }

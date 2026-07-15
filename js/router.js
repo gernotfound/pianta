@@ -5,9 +5,11 @@ let currentAppRoute = window.location.hash || '#/home';
 let plantsScrollPosition = 0;
 let homeScrollPosition = 0;
 
+let routerInitialized = false;
+
 function initRouter(hasData) {
-    window.addEventListener('popstate', async (e) => {
-        let intendedState = e.state;
+    if (!routerInitialized) {
+        window.addEventListener('popstate', async (e) => {
         let intendedHash = window.location.hash;
 
         if (typeof closeCropper === 'function') closeCropper();
@@ -68,6 +70,8 @@ function initRouter(hasData) {
             parseHashAndNavigate(hasData);
         }
     });
+        routerInitialized = true;
+    }
 
     if (!hasData) {
         history.replaceState({ view: 'startup' }, '', '#/startup');
@@ -294,6 +298,7 @@ function executeTabSwitch(view, param = null) {
     const targetViewEl = document.getElementById(targetId);
     if (targetViewEl) {
         targetViewEl.classList.remove('hidden');
+        void targetViewEl.offsetWidth; // Fix CSS animation glitch (forces reflow)
     }
 
     switch (view) {

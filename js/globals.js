@@ -351,6 +351,7 @@ async function saveToLocal() {
     try {
         if (window.currentUser && window.db) {
             await window.saveToFirebase();
+            return true;
         } else {
             let db = await initDB();
             let tx = db.transaction(['System', 'Plants', 'Expenses', 'Wishlist'], 'readwrite');
@@ -649,9 +650,8 @@ window.showGardenSelection = async () => {
 window.selectGarden = (gardenId) => {
     window.currentGardenId = gardenId;
     localStorage.setItem('lastGardenId', gardenId);
-    document.getElementById('garden-selection-screen').classList.add('hidden');
-    document.getElementById('bottom-nav').classList.remove('hidden-nav');
-    if (typeof loadFromLocal === 'function') loadFromLocal();
+    window.location.hash = '#/home';
+    window.location.reload();
 };
 
 

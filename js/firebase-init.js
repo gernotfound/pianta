@@ -21,6 +21,7 @@ if (typeof firebase !== 'undefined') {
 window.blobToBase64 = function(blob) {
   return new Promise((resolve, reject) => {
     if (!blob) return resolve("");
+    if (typeof blob === 'string') return resolve(blob);
     const reader = new FileReader();
     reader.onloadend = () => resolve(reader.result);
     reader.onerror = reject;
@@ -41,8 +42,13 @@ window.base64ToBlob = async function(base64) {
 
 window.fbSignIn = () => {
     if (window.auth) {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        window.auth.signInWithPopup(provider).catch(err => {
+        window.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            return window.auth.signInWithPopup(provider);
+        }).then(() => {
+            window.location.hash = '#/home';
+            window.location.reload();
+        }).catch(err => {
             console.error(err);
             if(typeof Swal !== 'undefined') Swal.fire('Errore di accesso', err.message, 'error');
         });

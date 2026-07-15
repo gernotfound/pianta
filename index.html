@@ -163,7 +163,7 @@
     
     <div id="startup-screen" class="hidden fade-in">
         <h1 class="startup-title">
-            <span class="startup-icon">🌿</span>Gestione piante
+            <span class="startup-icon">🌿</span>Pianta
         </h1>
         <h2>Benvenuto nel tuo giardino virtuale</h2>
         
@@ -264,6 +264,12 @@
         <div class="detail-header">
             <h2 style="margin:0; color: var(--grey);">⚙️ Impostazioni</h2>
         </div>
+
+        <div style="margin-bottom: 25px; display: flex; gap: 10px; flex-direction: column;">
+            <button class="btn" style="background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; width: 100%; margin: 0;" onclick="window.showGardenSelection()">🔄 Cambia Giardino</button>
+            <button class="btn" style="background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; width: 100%; margin: 0;" onclick="logout()">🚪 Esci</button>
+        </div>
+
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
             <button class="btn" style="margin:0;" onclick="exportData()" id="btn-export">💾 Backup ZIP</button>
@@ -288,12 +294,7 @@
             <textarea id="global-garden-notes" style="flex-grow: 1; min-height: 200px; border: 1px solid #ccc; border-radius: 5px; padding: 10px; resize: vertical;"></textarea>
         </div>
 
-        <div style="margin-top: 35px; text-align: center; border-top: 1px solid #eee; padding-top: 20px;">
-            <p style="font-size: 12px; color: #999; margin-bottom: 15px;">Se devi azzerare il dispositivo o cambiare account, usa il tasto qui sotto.</p>
-            
-            <button class="btn" style="background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; width: 100%; margin-bottom: 15px;" onclick="window.showGardenSelection()">🔄 Cambia Giardino</button>
-            <button class="btn-text btn-text-danger" style="font-size: 16px;" onclick="logout()">🚪 Cancella Dati ed Esci</button>
-        </div>
+        
     </div>
 
     <div id="system-status-modal" class="fade-in" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100000; justify-content:center; align-items:center;">

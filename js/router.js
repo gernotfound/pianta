@@ -254,7 +254,7 @@ function executeTabSwitch(view, param = null) {
     }
 
     const views = [
-        'startup-screen', 'home-view', 'dashboard', 'settings-view',
+        'startup-screen', 'garden-selection-screen', 'home-view', 'dashboard', 'settings-view',
         'expenses-view', 'wishlist-view', 'gallery-view', 'archive-page',
         'plant-detail-view', 'form-container', 'global-map-page',
         'labels-scanner-view', 'events-view', 'macro-view'

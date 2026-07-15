@@ -515,6 +515,10 @@ window.addEventListener('DOMContentLoaded', () => {
                     window.showGardenSelection();
                 }
             } else {
+                if (window.currentGardenId) {
+                    console.warn("Auth state null but already in app. Ignoring to prevent inactive logout.");
+                    return;
+                }
                 window.currentGardenId = null;
                 const selScreen = document.getElementById('garden-selection-screen');
                 if (selScreen) selScreen.classList.add('hidden');
@@ -578,6 +582,7 @@ function logout() {
         cancelButtonText: 'Annulla'
     }).then(async (result) => {
         if (result.isConfirmed) {
+            if (window.fbSignOut) window.fbSignOut();
             try {
                 let db = await initDB();
                 let tx = db.transaction(['System', 'Plants', 'Expenses', 'Wishlist'], 'readwrite');
@@ -608,9 +613,17 @@ window.currentGardenId = null;
 
 window.showGardenSelection = async () => {
     localStorage.removeItem('lastGardenId');
-    document.getElementById('startup-screen').classList.add('hidden');
+    const views = [
+        'startup-screen', 'home-view', 'dashboard', 'settings-view',
+        'expenses-view', 'wishlist-view', 'gallery-view', 'archive-page',
+        'plant-detail-view', 'form-container', 'global-map-page',
+        'labels-scanner-view', 'events-view', 'macro-view'
+    ];
+    views.forEach(v => {
+        const el = document.getElementById(v);
+        if (el) el.classList.add('hidden');
+    });
 
-    document.getElementById('home-view').classList.add('hidden');
     document.getElementById('bottom-nav').classList.add('hidden-nav');
     
     const selScreen = document.getElementById('garden-selection-screen');

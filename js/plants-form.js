@@ -359,6 +359,28 @@ function clearForm() {
         let hiddenInput = document.getElementById(type === 'main' ? 'p-photo-hidden' : 'p-fruit-photo-hidden');
         if (hiddenInput) hiddenInput.value = '';
     });
+
+    // FIX ACCESSIBILITÀ: Ripristina tutte le fisarmoniche allo stato base senza "aria-hidden" orfani
+    const accordions = document.querySelectorAll('#form-container .accordion-item');
+    accordions.forEach((item, index) => {
+        const content = item.querySelector('.accordion-content');
+        const header = item.querySelector('.accordion-header');
+        if (index === 0) {
+            item.classList.add('open');
+            if (content) {
+                content.style.display = 'block';
+                content.setAttribute('aria-hidden', 'false');
+            }
+            if (header) header.setAttribute('aria-expanded', 'true');
+        } else {
+            item.classList.remove('open');
+            if (content) {
+                content.style.display = 'none';
+                content.setAttribute('aria-hidden', 'true');
+            }
+            if (header) header.setAttribute('aria-expanded', 'false');
+        }
+    });
 }
 
 async function savePlant() {
@@ -714,12 +736,17 @@ function _internalEditPlant(id) {
             if (document.getElementById('remove-btn-fruit')) document.getElementById('remove-btn-fruit').style.display = 'block';
         }
     }
-    
+
     const firstAccItem = document.querySelector('.accordion-item');
     if (firstAccItem && !firstAccItem.classList.contains('open')) {
         firstAccItem.classList.add('open');
         const content = firstAccItem.querySelector('.accordion-content');
-        if (content) content.style.display = 'block';
+        if (content) {
+            content.style.display = 'block';
+            content.setAttribute('aria-hidden', 'false');
+        }
+        const header = firstAccItem.querySelector('.accordion-header');
+        if (header) header.setAttribute('aria-expanded', 'true');
     }
 
     setTimeout(() => {

@@ -179,7 +179,7 @@ async function saveMacroV2() {
         return;
     }
 
-    const saveBtn = document.querySelector('#macro-step-3 button.btn:not(.)');
+    const saveBtn = document.querySelector('#macro-step-3 button.btn:not(.btn-grey)');
     if (saveBtn) {
         saveBtn.disabled = true;
         saveBtn.innerText = "⏳ Salvataggio...";
@@ -380,7 +380,7 @@ async function addExpense() {
         return;
     }
 
-    const addBtn = document.querySelector('#expenses-view .');
+    const addBtn = document.querySelector('#expenses-view .btn-purple');
     if (addBtn) { addBtn.disabled = true; addBtn.innerText = "⏳ Attendere..."; }
 
     try {
@@ -425,7 +425,7 @@ function initWishlistPreview() {
         previewContainer.style.marginTop = '15px';
         previewContainer.innerHTML = `
             <img id="wl-preview-img" style="max-width:100%; height:180px; object-fit:cover; border-radius:8px; border:1px solid #ccc; display:block; margin: 0 auto;">
-            <button type="button" class="btn" style="display:block; margin: 10px auto 0 auto; width:100%;" onclick="clearWishlistPhoto()">✖ Rimuovi foto</button>
+            <button type="button" class="btn btn-danger" style="display:block; margin: 10px auto 0 auto; width:100%;" onclick="clearWishlistPhoto()">✖ Rimuovi foto</button>
         `;
         wlPhoto.parentNode.appendChild(previewContainer);
 
@@ -484,7 +484,7 @@ function renderWishlist() {
             <p style="margin:0; font-size:14px; color:#555;">💰 Prezzo stimato: <strong>${priceStr}</strong></p>
             <p style="margin:5px 0 10px 0; font-size:13px; color:#666;">📝 ${escapeHTML(item.notes) || 'Nessuna nota aggiuntiva'}</p>
             <div style="margin-top:auto;">
-                <button class="btn" style="width:100%; padding:8px;" onclick="deleteWishlistItem('${item.id}')">🗑️ Rimuovi</button>
+                <button class="btn btn-danger" style="width:100%; padding:8px;" onclick="deleteWishlistItem('${item.id}')">🗑️ Rimuovi</button>
             </div>
         `;
         fragment.appendChild(card);
@@ -507,7 +507,7 @@ async function addWishlistItem() {
         return;
     }
 
-    const addBtn = document.querySelector('#wishlist-view .');
+    const addBtn = document.querySelector('#wishlist-view .btn-warning');
     if (addBtn) { addBtn.disabled = true; addBtn.innerText = "⏳ Attendere..."; }
 
     try {

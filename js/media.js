@@ -301,12 +301,12 @@ function openImageModal(src, label, plantId = null) {
         const goToPlantBtn = document.createElement('button');
         goToPlantBtn.id = 'fullscreen-goto-btn';
         goToPlantBtn.innerText = '🌿 Vai alla pianta';
-        goToPlantBtn.className = 'btn ';
+        goToPlantBtn.className = 'btn btn-primary';
         goToPlantBtn.style.margin = '0';
 
         const closeBtn = document.createElement('button'); 
         closeBtn.innerText = '✖ Chiudi'; 
-        closeBtn.className = 'btn '; 
+        closeBtn.className = 'btn btn-grey'; 
         closeBtn.style.margin = '0';
         closeBtn.onclick = function() { 
             modal.style.display = 'none'; 
@@ -499,8 +499,7 @@ window.addEventListener('popstate', () => {
 });
 
 function compressImageAsync(file) {
-    return new Promise((resolve, reject) => {
-        (async () => {
+    return new Promise(async (resolve, reject) => {
         if (!file || !file.type.startsWith('image/')) {
             return reject(new Error('File non valido per la compressione'));
         }
@@ -610,6 +609,5 @@ function compressImageAsync(file) {
             console.error("Errore imprevisto durante la compressione:", error);
             reject(error);
         }
-        })();
     });
 }

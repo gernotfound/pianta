@@ -54,15 +54,6 @@ let searchDebounceTimer = null;
 
 window.smartCropBlobs = { main: null, fruit: null };
 window.appInitialized = false;
-window.isSyncing = false;
-
-window.addEventListener('beforeunload', (e) => {
-    if (window.isSyncing) {
-        const msg = "Salvataggio in corso, potresti perdere i dati!";
-        e.returnValue = msg;
-        return msg;
-    }
-});
 
 let dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} };
 
@@ -299,10 +290,6 @@ function initDB() {
         request.onerror = function(e) {
             reject(e.target.error);
         };
-        request.onblocked = function(e) {
-            console.warn("IndexedDB blocked");
-            reject("Blocked");
-        };
     });
 }
 
@@ -356,114 +343,96 @@ function standardizeDatabaseIds() {
 }
 
 async function saveToLocal() {
-    if (!Array.isArray(plantsDatabase)) plantsDatabase = [];
-    if (!Array.isArray(generalExpenses)) generalExpenses = [];
-    if (!Array.isArray(wishlist)) wishlist = [];
-    standardizeDatabaseIds();
+    return new Promise(async (resolve) => {
+        if (!Array.isArray(plantsDatabase)) plantsDatabase = [];
+        if (!Array.isArray(generalExpenses)) generalExpenses = [];
+        if (!Array.isArray(wishlist)) wishlist = [];
 
-    try {
-        let db = await initDB();
-        let tx = db.transaction(['System', 'Plants', 'Expenses', 'Wishlist'], 'readwrite');
-        tx.objectStore('System').put({ title: gardenTitle, notes: gardenNotes }, 'metadata');
-        syncStore(tx.objectStore('Plants'), plantsDatabase, 'Plants').catch(e => {});
-        syncStore(tx.objectStore('Expenses'), generalExpenses, 'Expenses').catch(e => {});
-        syncStore(tx.objectStore('Wishlist'), wishlist, 'Wishlist').catch(e => {});
-        return new Promise((resolve) => {
-            let finished = false;
-            let fallbackTimer = setTimeout(() => {
-                if (!finished) {
-                    console.warn("saveToLocal timeout - resolving false");
-                    finished = true;
-                    resolve(false);
-                }
-            }, 5000);
+        standardizeDatabaseIds();
 
+        try {
+            let db = await initDB();
+            let tx = db.transaction(['System', 'Plants', 'Expenses', 'Wishlist'], 'readwrite');
+            
+            tx.objectStore('System').put({ title: gardenTitle, notes: gardenNotes }, 'metadata');
+            
+            syncStore(tx.objectStore('Plants'), plantsDatabase, 'Plants').catch(e => {});
+            syncStore(tx.objectStore('Expenses'), generalExpenses, 'Expenses').catch(e => {});
+            syncStore(tx.objectStore('Wishlist'), wishlist, 'Wishlist').catch(e => {});
+            
             tx.oncomplete = function() {
-                if (finished) return;
-                finished = true;
-                clearTimeout(fallbackTimer);
-                if (window.currentUser && window.db) {
-                    window.saveToFirebase(); // Avvia in background
-                } else {
-                    showAutoSaveToast();
-                }
+                showAutoSaveToast();
                 if (gardenSyncChannel) gardenSyncChannel.postMessage('RELOAD_DB');
                 resolve(true);
             };
-            tx.onerror = function(e) { 
-                if (finished) return;
-                finished = true;
-                clearTimeout(fallbackTimer);
-                resolve(false); 
-            };
-            tx.onabort = function(e) {
-                if (finished) return;
-                finished = true;
-                clearTimeout(fallbackTimer);
-                console.warn("saveToLocal transaction aborted");
+            tx.onerror = function(e) {
+                console.error("[DB] Transazione fallita:", e.target.error);
+                if (e.target.error && e.target.error.name === 'QuotaExceededError') {
+                    if (typeof Swal !== 'undefined') Swal.fire({icon: 'error', title: 'Memoria Piena!', text: 'Spazio esaurito nel browser. Elimina foto vecchie o archivia piante.', confirmButtonColor: '#d32f2f'});
+                }
                 resolve(false);
             };
-        });
-    } catch(e) {
-        if (window.currentUser && window.db) {
-            window.saveToFirebase(); // Fallback se IndexedDB fallisce
+        } catch(e) {
+            console.error("[DB] Errore critico in saveToLocal:", e);
+            resolve(false);
         }
-        return false;
-    }
+    });
 }
 
 async function loadFromLocal(isSilent = false) {
     try {
         let db = await initDB();
+        
         let tx = db.transaction(['System', 'Plants', 'Expenses', 'Wishlist'], 'readonly');
         let reqSys = tx.objectStore('System').get('metadata');
         let reqPl = tx.objectStore('Plants').getAll();
         let reqExp = tx.objectStore('Expenses').getAll();
         let reqWish = tx.objectStore('Wishlist').getAll();
         
-        tx.oncomplete = async function() {
+        tx.oncomplete = function() {
             let sysData = reqSys.result;
-            if (sysData || (reqPl.result && reqPl.result.length > 0)) {
-                gardenTitle = sysData && sysData.title ? sysData.title : "🌿 Il mio giardino";
-                gardenNotes = sysData && sysData.notes ? sysData.notes : "";
-                plantsDatabase = reqPl.result || [];
-                generalExpenses = reqExp.result || [];
-                wishlist = reqWish.result || [];
-                standardizeDatabaseIds();
-            }
-
-            if (window.currentUser && window.db) {
-                await window.loadFromFirebase(isSilent);
-            } else {
-                if (isSilent) {
-                    if (typeof finalizeSilentLoad === 'function') finalizeSilentLoad();
-                } else {
-                    if (typeof finalizeLoad === 'function') finalizeLoad(false);
+            
+            if (!sysData && (!reqPl.result || reqPl.result.length === 0)) {
+                const fallback = localStorage.getItem('garden_full_backup_v1');
+                if (fallback) {
+                    try {
+                        let fd = JSON.parse(fallback);
+                        sysData = { title: fd.title, notes: fd.notes };
+                        if (fd.plants) reqPl.result = Array.isArray(fd.plants) ? fd.plants : [];
+                        if (fd.expenses) reqExp.result = Array.isArray(fd.expenses) ? fd.expenses : [];
+                        if (fd.wishlist) reqWish.result = Array.isArray(fd.wishlist) ? fd.wishlist : [];
+                    } catch(e) {}
                 }
             }
-        };
-        tx.onerror = async function(e) {
-            if (window.currentUser && window.db) {
-                await window.loadFromFirebase(isSilent);
+            
+            if (sysData || (reqPl.result && reqPl.result.length > 0)) {
+                gardenTitle = sysData && sysData.title ? sysData.title : "🌿 Gestione Piante Tropicali - Pro";
+                gardenNotes = sysData && sysData.notes ? sysData.notes : "";
+                plantsDatabase = Array.isArray(reqPl.result) ? reqPl.result : [];
+                generalExpenses = Array.isArray(reqExp.result) ? reqExp.result : [];
+                wishlist = Array.isArray(reqWish.result) ? reqWish.result : [];
+                
+                standardizeDatabaseIds();
+
+                plantsDatabase.forEach(p => dbSyncHashes.Plants[p.id] = generateFastHash(p));
+                generalExpenses.forEach(e => dbSyncHashes.Expenses[e.id] = generateFastHash(e));
+                wishlist.forEach(w => dbSyncHashes.Wishlist[w.id] = generateFastHash(w));
+
+                if (isSilent) {
+                    finalizeSilentLoad();
+                } else {
+                    finalizeLoad(true);
+                }
             } else {
-                if (!isSilent && typeof finalizeLoad === 'function') finalizeLoad(false);
+                if (!isSilent) finalizeLoad(false);
             }
         };
-        tx.onabort = async function(e) {
-            console.warn("loadFromLocal transaction aborted");
-            if (window.currentUser && window.db) {
-                await window.loadFromFirebase(isSilent);
-            } else {
-                if (!isSilent && typeof finalizeLoad === 'function') finalizeLoad(false);
-            }
+        tx.onerror = function() {
+            if (!isSilent) fallbackLoad();
         };
 
     } catch(e) {
-        if (window.currentUser && window.db) {
-            await window.loadFromFirebase(isSilent);
-        } else {
-            if (!isSilent && typeof finalizeLoad === 'function') finalizeLoad(false);
-        }
+        if (!isSilent) fallbackLoad();
     }
 }
 
@@ -547,46 +516,13 @@ async function saveGardenNotes() {
     }
 }
 
-
 window.addEventListener('DOMContentLoaded', () => {
     if (window.appInitialized) return;
     updateConnectionStatusIndicator();
     window.addEventListener('online', updateConnectionStatusIndicator);
     window.addEventListener('offline', updateConnectionStatusIndicator);
-    
 
-    // Auth Check
-    if (window.fbAuth) {
-        window.fbOnAuthStateChanged(window.fbAuth, (user) => {
-            window.currentUser = user;
-
-            if (user) {
-                window.currentGardenId = user.uid || 'main';
-                
-                const authBtns = document.getElementById('auth-buttons');
-                const startLoad = document.getElementById('startup-loading');
-                if (authBtns) authBtns.style.display = 'none';
-                if (startLoad) startLoad.style.display = 'flex';
-                
-                document.getElementById('bottom-nav').classList.remove('hidden-nav');
-                loadFromLocal();
-            } else {
-                if (window.currentGardenId) {
-                    console.warn("Auth state null but already in app. Ignoring to prevent inactive logout.");
-                    return;
-                }
-                window.currentGardenId = null;
-                const startScreen = document.getElementById('startup-screen');
-                if (startScreen) startScreen.classList.remove('hidden');
-                document.getElementById('bottom-nav').classList.add('hidden-nav');
-                finalizeLoad(false);
-            }
-        });
-    } else {
-        loadFromLocal();
-    }
-
-
+    loadFromLocal();
     
     const notesArea = document.getElementById('global-garden-notes');
     if (notesArea) {
@@ -616,36 +552,25 @@ window.addEventListener('beforeunload', function (e) {
     if (isFormDirty) {
         e.preventDefault();
         e.returnValue = 'Hai dati non salvati nel modulo! Sei sicuro di voler uscire?';
+    } else if (unsavedChanges) {
+        e.preventDefault();
+        e.returnValue = 'Hai delle modifiche non salvate in ZIP!';
     }
 });
 
 function logout() {
-    if (window.isSyncing) {
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: 'Sincronizzazione in corso',
-                text: 'Per favore attendi il completamento del salvataggio prima di uscire per non perdere dati.',
-                icon: 'warning',
-                confirmButtonColor: '#ff9800'
-            });
-        } else {
-            alert('Salvataggio in corso, attendi prima di uscire.');
-        }
-        return;
-    }
     if (typeof Swal === 'undefined') return;
     Swal.fire({
-        title: 'Sei sicuro?',
-        text: "Vuoi disconnetterti dall'applicazione?",
+        title: 'Sei sicuro di voler ripartire da zero?',
+        text: "Tutti i dati verranno eliminati. Se non hai fatto un Backup (ZIP), li perderai per sempre.",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d32f2f',
         cancelButtonColor: '#607d8b',
-        confirmButtonText: 'Sì, Esci',
+        confirmButtonText: 'Sì, cancella ed esci',
         cancelButtonText: 'Annulla'
     }).then(async (result) => {
         if (result.isConfirmed) {
-            if (window.fbSignOut) window.fbSignOut();
             try {
                 let db = await initDB();
                 let tx = db.transaction(['System', 'Plants', 'Expenses', 'Wishlist'], 'readwrite');
@@ -670,3 +595,24 @@ function logout() {
     });
 }
 
+function createNewGarden() {
+    gardenTitle = "🌿 Il mio giardino";
+    plantsDatabase = [];
+    generalExpenses = [];
+    wishlist = [];
+    gardenNotes = "";
+    dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} };
+    
+    saveToLocal().then(() => {
+        const titleEl = document.getElementById('main-title');
+        if(titleEl) titleEl.innerText = gardenTitle;
+        
+        const startScreen = document.getElementById('startup-screen');
+        const navBar = document.getElementById('bottom-nav');
+        
+        if(startScreen) startScreen.classList.add('hidden');
+        if(navBar) navBar.classList.remove('hidden-nav');
+        
+        if(typeof navigateTo === 'function') navigateTo('home');
+    });
+}

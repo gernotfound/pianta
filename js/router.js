@@ -5,11 +5,9 @@ let currentAppRoute = window.location.hash || '#/home';
 let plantsScrollPosition = 0;
 let homeScrollPosition = 0;
 
-let routerInitialized = false;
-
 function initRouter(hasData) {
-    if (!routerInitialized) {
-        window.addEventListener('popstate', async (e) => {
+    window.addEventListener('popstate', async (e) => {
+        let intendedState = e.state;
         let intendedHash = window.location.hash;
 
         if (typeof closeCropper === 'function') closeCropper();
@@ -70,8 +68,6 @@ function initRouter(hasData) {
             parseHashAndNavigate(hasData);
         }
     });
-        routerInitialized = true;
-    }
 
     if (!hasData) {
         history.replaceState({ view: 'startup' }, '', '#/startup');
@@ -80,8 +76,6 @@ function initRouter(hasData) {
     }
 
     if (!window.location.hash || window.location.hash === '#/' || window.location.hash === '' || window.location.hash === '#/startup') {
-        currentTab = 'home';
-        homeTabState = { view: 'home', param: null };
         history.replaceState({ view: 'home' }, '', '#/home');
         executeTabSwitch('home');
     } else {
@@ -108,10 +102,8 @@ function parseHashAndNavigate(hasData) {
         history.replaceState({ view, param }, '', window.location.hash);
         executeTabSwitch(view, param);
     } else {
-        currentTab = 'plants';
-        plantsTabState = { view: 'plants', param: null };
-        history.replaceState({ view: 'plants' }, '', '#/plants');
-        executeTabSwitch('plants');
+        history.replaceState({ view: 'home' }, '', '#/home');
+        executeTabSwitch('home');
     }
 }
 
@@ -262,7 +254,7 @@ function executeTabSwitch(view, param = null) {
     }
 
     const views = [
-        'startup-screen', 'garden-selection-screen', 'home-view', 'dashboard', 'settings-view',
+        'startup-screen', 'home-view', 'dashboard', 'settings-view',
         'expenses-view', 'wishlist-view', 'gallery-view', 'archive-page',
         'plant-detail-view', 'form-container', 'global-map-page',
         'labels-scanner-view', 'events-view', 'macro-view'
@@ -298,7 +290,6 @@ function executeTabSwitch(view, param = null) {
     const targetViewEl = document.getElementById(targetId);
     if (targetViewEl) {
         targetViewEl.classList.remove('hidden');
-        void targetViewEl.offsetWidth; // Fix CSS animation glitch (forces reflow)
     }
 
     switch (view) {
@@ -312,13 +303,12 @@ function executeTabSwitch(view, param = null) {
             setTimeout(() => { window.scrollTo({ top: plantsScrollPosition || 0, behavior: 'instant' }); }, 10);
             break;
 
-        case 'settings': {
+        case 'settings':
             const globalNotes = document.getElementById('global-garden-notes');
             if (globalNotes && typeof gardenNotes !== 'undefined') globalNotes.value = gardenNotes || "";
             if (typeof renderMyData === 'function') renderMyData();
             window.scrollTo({ top: 0, behavior: 'instant' });
             break;
-        }
 
         case 'events':
             if (typeof renderGlobalChart === 'function') renderGlobalChart();

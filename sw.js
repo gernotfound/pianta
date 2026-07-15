@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pianta-app-cache-v5.10.0';
+const CACHE_NAME = 'piante-pro-v4.8.0';
 
 const offlineFallbackHtml = `<!DOCTYPE html>
 <html lang="it">
@@ -17,8 +17,8 @@ const offlineFallbackHtml = `<!DOCTYPE html>
 </html>`;
 
 const offlineFallbackResponse = new Response(offlineFallbackHtml, {
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
-    status: 200
+  headers: { 'Content-Type': 'text/html; charset=utf-8' },
+  status: 200
 });
 
 // Asset essenziali pre-caricati al momento dell'installazione (AGGIORNATI CON I FILE DIVISI)
@@ -42,8 +42,8 @@ const urlsToCache = [
 
 self.addEventListener('install', event => {
     // Forza l'attivazione immediata del nuovo SW scavalcando quello vecchio
-    self.skipWaiting();
-
+    self.skipWaiting(); 
+    
     event.waitUntil(
         caches.open(CACHE_NAME).then(async cache => {
             console.log('[SW] Inizio pre-caching asset locali essenziali (Strategia Resiliente)');
@@ -61,7 +61,7 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
     // Il nuovo Service Worker prende subito il controllo delle pagine
     self.clients.claim();
-
+    
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
@@ -130,10 +130,7 @@ self.addEventListener('fetch', event => {
                 return networkResponse;
             }).catch(() => {
                 console.log('[SW] Rete non disponibile per aggiornare la cache di:', req.url);
-                if (req.mode === 'navigate') {
-                    return offlineFallbackResponse;
-                }
-                return new Response('', { status: 503, statusText: 'Service Unavailable' });
+                return offlineFallbackResponse;
             });
 
             return fetchPromise;

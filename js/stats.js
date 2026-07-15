@@ -571,9 +571,11 @@ async function renderWeatherDashboard() {
 
     if (!plantsDatabase) plantsDatabase = [];
     const activePlants = plantsDatabase.filter(p => p.status !== 'archived');
-
+    if (activePlants.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
     
-
     const savedWindThreshold = localStorage.getItem('windAlertThreshold');
     const activeWindThreshold = savedWindThreshold !== null ? parseFloat(savedWindThreshold) : (typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.WIND_ALERT_KMH : 40);
 
@@ -590,7 +592,72 @@ async function renderWeatherDashboard() {
         }
     });
 
+    if (locations.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+
     container.style.display = 'block';
+    
+    if (!navigator.onLine) {
+        container.innerHTML = `<div style="text-align:center; padding:15px; background:#fff3e0; border-radius:8px; border:1px solid #ffcc80; color:#e65100; font-size:14px;"><strong>Attenzione:</strong> Sei offline. Le allerte meteo non sono aggiornate.</div>`;
+        return;
+    }
+
+    container.innerHTML = `<div style="text-align:center; padding:20px;"><div class="spinner"></div> Caricamento dati meteo...</div>`;
+
+    let windAlerts = [];
+    let frostAlerts = []; 
+    let hailAlerts = [];
+
+    for (const loc of locations) {
+        const weather = await fetchWeatherData(loc.lat, loc.lng);
+        if (!weather) continue;
+
+        if (weather.time) {
+            for (let i = 0; i < weather.time.length; i++) {
+                const dateStr = weather.time[i];
+                const windSpeed = weather.wind_speed_10m_max ? weather.wind_speed_10m_max[i] : 0;
+                const minTemp = weather.temperature_2m_min ? weather.temperature_2m_min[i] : 99;
+                const wCode = weather.weathercode ? weather.weathercode[i] : 0;
+
+                if (windSpeed > activeWindThreshold) {
+                    const alreadyHasWindAlert = windAlerts.some(wa => wa.locationName === loc.name && wa.date === dateStr);
+                    if (!alreadyHasWindAlert) {
+                        windAlerts.push({ locationName: loc.name, date: dateStr, speed: windSpeed });
+                    }
+                }
+
+                if (wCode === 96 || wCode === 99) {
+                    const alreadyHasHailAlert = hailAlerts.some(ha => ha.locationName === loc.name && ha.date === dateStr);
+                    if (!alreadyHasHailAlert) {
+                        hailAlerts.push({ locationName: loc.name, date: dateStr });
+                    }
+                }
+
+                activePlants.forEach(p => {
+                    if (p.lat !== null && p.lng !== null && p.lat !== undefined && p.lng !== undefined) {
+                        const pLat = parseFloat(p.lat.toString().replace(',', '.'));
+                        const pLng = parseFloat(p.lng.toString().replace(',', '.'));
+                        if (!isNaN(pLat) && !isNaN(pLng) && Math.abs(pLat - loc.lat) < 0.05 && Math.abs(pLng - loc.lng) < 0.05) {
+                            if (p.minTemp !== null && p.minTemp !== undefined) {
+                                const plantMin = parseFloat(p.minTemp.toString().replace(',', '.'));
+                                if (!isNaN(plantMin) && minTemp < plantMin) {
+                                    const existingAlert = frostAlerts.find(a => String(a.plant.id) === String(p.id));
+                                    if (!existingAlert) {
+                                        frostAlerts.push({ plant: p, forecast: minTemp, date: dateStr });
+                                    } else if (minTemp < existingAlert.forecast) {
+                                        existingAlert.forecast = minTemp;
+                                        existingAlert.date = dateStr;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    }
 
     let html = `
     <div style="background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
@@ -602,13 +669,6 @@ async function renderWeatherDashboard() {
                 <span id="wind-save-confirm" style="color: #2e7d32; display: none; font-weight: bold;">✔️</span>
             </div>
         </div>`;
-
-    if (activePlants.length === 0 || locations.length === 0) {
-        html += `<div style="padding: 15px; background: #f5f5f5; border-radius: 8px; color: #666; text-align: center; font-size: 14px;">Aggiungi la posizione GPS (Mappa) alle tue piante per attivare le allerte vento e gelo automatiche.</div></div>`;
-        container.innerHTML = html;
-        return;
-    }
-
 
     if (windAlerts.length > 0) {
         html += `<div style="background:#fff3e0; padding:15px; border-radius:8px; border-left: 5px solid #ff9800; margin-bottom:15px; color:#e65100;">

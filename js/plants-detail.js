@@ -154,7 +154,7 @@ function _internalOpenPlantDetail(id) {
                 archiveSec.style.borderColor = '#ffcdd2';
                 archiveSec.querySelector('h4').innerText = '🥀 Archivio storico';
                 archiveSec.querySelector('h4').style.color = 'var(--danger)';
-                archiveBtn.className = 'btn ';
+                archiveBtn.className = 'btn btn-danger';
                 archiveBtn.innerText = 'Archivia pianta';
             }
         }
@@ -341,7 +341,7 @@ async function confirmDuplicate() {
     const diaryCheckEl = document.getElementById('dup-copy-diary');
     const copyDiary = diaryCheckEl ? diaryCheckEl.checked : false;
 
-    const btnContainer = document.querySelector('#duplicate-modal-overlay .btn-container');
+    const btnContainer = document.querySelector('#duplicate-modal-overlay .btn-blue');
     if (btnContainer) {
         btnContainer.disabled = true;
         btnContainer.innerText = "⏳ Clonazione...";
@@ -408,8 +408,8 @@ async function confirmDuplicate() {
                 logs: clonedLogs,
                 mother: plantToCopy.mother !== undefined && plantToCopy.mother !== null ? String(plantToCopy.mother) : '',
                 father: plantToCopy.father !== undefined && plantToCopy.father !== null ? String(plantToCopy.father) : '',
-                minTemp: plantToCopy.minTemp !== undefined ? plantToCopy.minTemp : null,
-                maxTemp: plantToCopy.maxTemp !== undefined ? plantToCopy.maxTemp : null
+                minTemp: plantToCopy.minTemp,
+                maxTemp: plantToCopy.maxTemp
             };
             plantsDatabase.push(newPlant);
         }

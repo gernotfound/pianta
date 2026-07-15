@@ -9,8 +9,8 @@ window.saveToFirebase = async function() {
     const gardenRef = db.collection('users').doc(uid).collection('gardens').doc(gId);
     
     // settings
-    await gardenRef.collection('settings').doc('metadata').set({ title: gardenTitle || '', notes: gardenNotes || '' }, { merge: true });
-    await gardenRef.set({ title: gardenTitle || '', updatedAt: Date.now() }, { merge: true });
+    gardenRef.collection('settings').doc('metadata').set({ title: gardenTitle || '', notes: gardenNotes || '' }, { merge: true });
+    gardenRef.set({ title: gardenTitle || '', updatedAt: Date.now() }, { merge: true });
 
     for (let p of plantsDatabase) {
       if (!p.id) p.id = String(Date.now() + Math.random());
@@ -21,7 +21,7 @@ window.saveToFirebase = async function() {
       if (pCopy.photo) pCopy.photo = await window.blobToBase64(pCopy.photo);
       if (pCopy.fruitPhoto) pCopy.fruitPhoto = await window.blobToBase64(pCopy.fruitPhoto);
 
-      await pRef.set(pCopy, { merge: true });
+      pRef.set(pCopy, { merge: true });
       
       if (p.logs && p.logs.length > 0) {
         for (let l of p.logs) {
@@ -35,7 +35,7 @@ window.saveToFirebase = async function() {
             }
             lCopy.photos = encodedPhotos;
           }
-          await lRef.set(lCopy, { merge: true });
+          lRef.set(lCopy, { merge: true });
         }
       }
     }
@@ -43,7 +43,7 @@ window.saveToFirebase = async function() {
     for (let e of generalExpenses) {
       if (!e.id) e.id = String(Date.now() + Math.random());
       const eRef = gardenRef.collection('expenses').doc(String(e.id));
-      await eRef.set({ ...e, ownerId: uid }, { merge: true });
+      eRef.set({ ...e, ownerId: uid }, { merge: true });
     }
 
     for (let w of wishlist) {
@@ -51,7 +51,7 @@ window.saveToFirebase = async function() {
       const wRef = gardenRef.collection('wishlist').doc(String(w.id));
       const wCopy = { ...w, ownerId: uid };
       if (wCopy.photo) wCopy.photo = await window.blobToBase64(wCopy.photo);
-      await wRef.set(wCopy, { merge: true });
+      wRef.set(wCopy, { merge: true });
     }
     
     if (typeof showAutoSaveToast === 'function') showAutoSaveToast();

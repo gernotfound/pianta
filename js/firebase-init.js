@@ -12,7 +12,8 @@ if (typeof firebase !== 'undefined') {
   firebase.initializeApp(firebaseConfig);
   window.db = firebase.firestore();
   
-  window.db.enablePersistence({synchronizeTabs:true}).catch(err => console.error('Persistence err:', err));
+  // Rimosso enablePersistence per evitare deadlock con IndexedDB in incognito
+  // window.db.enablePersistence({synchronizeTabs:true}).catch(...);
   
   window.auth = firebase.auth();
   window.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(err => console.error(err));
@@ -40,9 +41,11 @@ window.base64ToBlob = async function(base64) {
   }
 };
 
-
+let isLoggingIn = false;
 window.fbSignIn = () => {
     if (window.auth) {
+        if (isLoggingIn) return;
+        isLoggingIn = true;
         window.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
             const provider = new firebase.auth.GoogleAuthProvider();
             return window.auth.signInWithPopup(provider);
@@ -51,6 +54,8 @@ window.fbSignIn = () => {
             window.location.reload();
         }).catch(err => {
             console.error(err);
+            isLoggingIn = false;
+            if (err.code === 'auth/cancelled-popup-request') return; // ignore double click
             if(typeof Swal !== 'undefined') Swal.fire('Errore di accesso', err.message, 'error');
         });
     }

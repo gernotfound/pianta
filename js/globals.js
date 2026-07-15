@@ -299,6 +299,10 @@ function initDB() {
         request.onerror = function(e) {
             reject(e.target.error);
         };
+        request.onblocked = function(e) {
+            console.warn("IndexedDB blocked");
+            reject("Blocked");
+        };
     });
 }
 
@@ -365,7 +369,19 @@ async function saveToLocal() {
         syncStore(tx.objectStore('Expenses'), generalExpenses, 'Expenses').catch(e => {});
         syncStore(tx.objectStore('Wishlist'), wishlist, 'Wishlist').catch(e => {});
         return new Promise((resolve) => {
+            let finished = false;
+            let fallbackTimer = setTimeout(() => {
+                if (!finished) {
+                    console.warn("saveToLocal timeout - resolving false");
+                    finished = true;
+                    resolve(false);
+                }
+            }, 5000);
+
             tx.oncomplete = function() {
+                if (finished) return;
+                finished = true;
+                clearTimeout(fallbackTimer);
                 if (window.currentUser && window.db) {
                     window.saveToFirebase(); // Avvia in background
                 } else {
@@ -374,7 +390,19 @@ async function saveToLocal() {
                 if (gardenSyncChannel) gardenSyncChannel.postMessage('RELOAD_DB');
                 resolve(true);
             };
-            tx.onerror = function(e) { resolve(false); };
+            tx.onerror = function(e) { 
+                if (finished) return;
+                finished = true;
+                clearTimeout(fallbackTimer);
+                resolve(false); 
+            };
+            tx.onabort = function(e) {
+                if (finished) return;
+                finished = true;
+                clearTimeout(fallbackTimer);
+                console.warn("saveToLocal transaction aborted");
+                resolve(false);
+            };
         });
     } catch(e) {
         if (window.currentUser && window.db) {
@@ -421,6 +449,15 @@ async function loadFromLocal(isSilent = false) {
                 if (!isSilent && typeof finalizeLoad === 'function') finalizeLoad(false);
             }
         };
+        tx.onabort = async function(e) {
+            console.warn("loadFromLocal transaction aborted");
+            if (window.currentUser && window.db) {
+                await window.loadFromFirebase(isSilent);
+            } else {
+                if (!isSilent && typeof finalizeLoad === 'function') finalizeLoad(false);
+            }
+        };
+
     } catch(e) {
         if (window.currentUser && window.db) {
             await window.loadFromFirebase(isSilent);

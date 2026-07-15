@@ -104,7 +104,10 @@ window.saveToFirebase = async function() {
 };
 
 window.loadFromFirebase = async function(isSilent = false) {
-  if (!window.currentUser || !window.db || !window.currentGardenId) return;
+  if (!window.currentUser || !window.db || !window.currentGardenId) {
+      if (!isSilent && typeof finalizeLoad === 'function') finalizeLoad(false);
+      return;
+  }
   const uid = window.currentUser.uid;
   const db = window.db;
   const gId = window.currentGardenId;

@@ -38,6 +38,10 @@ window.saveToFirebase = async function() {
   const db = window.db;
   const gId = window.currentGardenId;
 
+  window.isSyncing = true;
+  const syncToast = document.getElementById('sync-toast');
+  if (syncToast) syncToast.classList.remove('hidden');
+
   try {
     const gardenRef = db.collection('users').doc(uid).collection('gardens').doc(gId);
     
@@ -93,6 +97,9 @@ window.saveToFirebase = async function() {
     if (typeof showAutoSaveToast === 'function') showAutoSaveToast();
   } catch (e) {
     console.error('Firebase save error:', e);
+  } finally {
+    window.isSyncing = false;
+    if (syncToast) syncToast.classList.add('hidden');
   }
 };
 

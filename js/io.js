@@ -64,14 +64,17 @@ function processFile(file, event) {
 async function loadZipProfile(file) {
     if (!file) return;
 
-    let loadingText = 'Sto estraendo le piante e le foto dal Backup. Attendi...';
+    // Funzione per far "respirare" la CPU ed evitare crash di memoria
+    const yieldThread = () => new Promise(r => setTimeout(r, 15));
+
+    let loadingText = 'Sto analizzando il Backup. Attendi...';
 
     const maxWarningSize = typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.MAX_BACKUP_WARNING_SIZE : 262144000;
     const maxMb = Math.round(maxWarningSize / (1024 * 1024));
 
     if (file.size > maxWarningSize) {
-        loadingText = `File molto grande (>${maxMb}MB). Il ripristino potrebbe richiedere molta memoria e tempo. Non chiudere la pagina...`;
-        console.warn(`Backup > ${maxMb}MB. Elaborazione consentita, ma potrebbero esserci rallentamenti.`);
+        loadingText = `File grande (>${maxMb}MB). Il ripristino procede a scaglioni. Non chiudere l'app...`;
+        console.warn(`Backup > ${maxMb}MB. Thread Yielding forzato abilitato.`);
     }
 
     if (typeof Swal !== 'undefined') {
@@ -87,6 +90,8 @@ async function loadZipProfile(file) {
 
     try {
         if (file.size === 0) throw new Error('Il file ZIP è vuoto.');
+
+        await yieldThread();
 
         const zip = await JSZip.loadAsync(file);
         const jsonFile = zip.file("data.json");
@@ -120,7 +125,14 @@ async function loadZipProfile(file) {
             return typeof sanitizeImageSource === 'function' ? sanitizeImageSource(imgPath) : imgPath;
         }
 
+        let count = 0;
         for (let p of loadedPlants) {
+            // Facciamo respirare il browser ogni 5 piante elaborate
+            if (++count % 5 === 0) {
+                await yieldThread();
+                if (typeof Swal !== 'undefined') Swal.update({ text: `Estrazione foto: pianta ${count} di ${loadedPlants.length}...` });
+            }
+
             if (p.photo) p.photo = await restoreImage(p.photo);
             if (p.fruitPhoto) p.fruitPhoto = await restoreImage(p.fruitPhoto);
 
@@ -186,6 +198,9 @@ async function loadZipProfile(file) {
             dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} };
         }
 
+        if (typeof Swal !== 'undefined') Swal.update({ text: `Salvataggio nel database in corso...` });
+        await yieldThread();
+
         if (typeof saveToLocal === 'function') await saveToLocal();
 
         unsavedChanges = false;
@@ -196,12 +211,12 @@ async function loadZipProfile(file) {
                 icon: 'success',
                 title: 'Backup caricato',
                 text: 'I dati sono stati ripristinati correttamente.',
-                timer: 1200,
+                timer: 1500,
                 showConfirmButton: false
             });
         }
 
-        setTimeout(() => window.location.reload(), 600);
+        setTimeout(() => window.location.reload(), 1500);
 
     } catch (e) {
         const errorMessage = e && e.message ? e.message : String(e);
@@ -229,7 +244,7 @@ async function exportData() {
     if (typeof Swal !== 'undefined') {
         Swal.fire({
             title: 'Creazione Backup in corso...',
-            text: 'Sto raggruppando i dati in un archivio sicuro. Potrebbe volerci qualche secondo, non chiudere la pagina.',
+            text: 'Sto raggruppando i dati. Potrebbe volerci qualche istante, non chiudere la pagina.',
             allowOutsideClick: false,
             didOpen: () => {
                 Swal.showLoading();
@@ -238,6 +253,7 @@ async function exportData() {
     }
 
     try {
+        const yieldThread = () => new Promise(r => setTimeout(r, 15));
         const zip = new JSZip();
         const imgFolder = zip.folder("images");
 
@@ -269,7 +285,17 @@ async function exportData() {
         if (!wishlist) wishlist = [];
         if (!generalExpenses) generalExpenses = [];
 
-        let clonedPlants = plantsDatabase.map(p => {
+        await yieldThread();
+
+        let clonedPlants = [];
+        let count = 0;
+        
+        for (let p of plantsDatabase) {
+            if (++count % 5 === 0) {
+                await yieldThread();
+                if (typeof Swal !== 'undefined') Swal.update({ text: `Elaborazione foto: pianta ${count} di ${plantsDatabase.length}...` });
+            }
+
             let cp = { ...p };
             if (cp.photo) cp.photo = processImage(cp.photo, `plant_${cp.id}_main`);
             if (cp.fruitPhoto) cp.fruitPhoto = processImage(cp.fruitPhoto, `plant_${cp.id}_fruit`);
@@ -287,14 +313,15 @@ async function exportData() {
             } else {
                 cp.logs = [];
             }
-            return cp;
-        });
+            clonedPlants.push(cp);
+        }
 
-        let clonedWishlist = wishlist.map(w => {
+        let clonedWishlist = [];
+        for (let w of wishlist) {
             let cw = { ...w };
             if (cw.photo) cw.photo = processImage(cw.photo, `wishlist_${cw.id}`);
-            return cw;
-        });
+            clonedWishlist.push(cw);
+        }
 
         const exportObj = {
             schemaVersion: 1,
@@ -312,9 +339,22 @@ async function exportData() {
 
         zip.file("data.json", jsonString);
 
+        if (typeof Swal !== 'undefined') Swal.update({ text: `Compressione archivio in corso. Attendere...` });
+        await yieldThread();
+
+        let lastUpdatePercent = 0;
         const content = await zip.generateAsync({
             type: "blob",
-            compression: "STORE"
+            compression: "STORE" // Evitiamo compressione DEFLATE per risparmiare moltissima RAM su smartphone
+        }, function updateCallback(metadata) {
+            if (metadata.percent && typeof Swal !== 'undefined') {
+                let currentPercent = Math.round(metadata.percent);
+                // Aggiorniamo l'interfaccia solo ogni 10% per non causare lag
+                if (currentPercent >= lastUpdatePercent + 10) {
+                    lastUpdatePercent = currentPercent;
+                    Swal.update({ text: `Assemblaggio file ZIP: ${currentPercent}%` });
+                }
+            }
         });
 
         const a = document.createElement('a');
@@ -341,7 +381,7 @@ async function exportData() {
             Swal.fire({
                 icon: 'error',
                 title: 'Errore Esportazione',
-                text: "Si è verificato un errore, forse la memoria del dispositivo è piena. Riavvia l'app e riprova.",
+                text: "Si è verificato un errore, probabilmente la memoria RAM del dispositivo è piena. Chiudi altre app e riprova.",
                 confirmButtonColor: '#d32f2f'
             });
         } else {

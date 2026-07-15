@@ -223,17 +223,12 @@ function executeTabSwitch(view, param = null) {
     window.appInitialized = true;
     currentAppRoute = window.location.hash;
 
+    // Spegnimento forzato Scanner
     if (view !== 'scanner') {
         if (typeof html5QrcodeScanner !== 'undefined' && html5QrcodeScanner) {
             try {
-                html5QrcodeScanner.clear().then(() => {
-                    html5QrcodeScanner = null;
-                }).catch(() => {
-                    html5QrcodeScanner = null;
-                });
-            } catch (e) {
-                html5QrcodeScanner = null;
-            }
+                html5QrcodeScanner.clear().then(() => { html5QrcodeScanner = null; }).catch(() => { html5QrcodeScanner = null; });
+            } catch (e) { html5QrcodeScanner = null; }
         }
         document.querySelectorAll('video').forEach(video => {
             if (video.srcObject) {
@@ -244,14 +239,18 @@ function executeTabSwitch(view, param = null) {
         });
     }
 
-    if (view !== 'plant-detail' && typeof cleanupDetailMap === 'function') {
-        cleanupDetailMap();
+    // FIX MEMORY LEAK MAPPE
+    if (view !== 'plant-detail' && typeof cleanupDetailMap === 'function') cleanupDetailMap();
+    if (view !== 'add-plant' && view !== 'edit-plant' && typeof cleanupFormMap === 'function') cleanupFormMap();
+    if (view !== 'map' && typeof cleanupGlobalMap === 'function') cleanupGlobalMap();
+
+    // FIX MEMORY LEAK GRAFICI CHART.JS
+    if (view !== 'plant-detail') {
+        if (typeof growthChart !== 'undefined' && growthChart) { growthChart.destroy(); growthChart = null; }
+        if (typeof eventsChart !== 'undefined' && eventsChart) { eventsChart.destroy(); eventsChart = null; }
     }
-    if (view !== 'add-plant' && view !== 'edit-plant' && typeof cleanupFormMap === 'function') {
-        cleanupFormMap();
-    }
-    if (view !== 'map' && typeof cleanupGlobalMap === 'function') {
-        cleanupGlobalMap();
+    if (view !== 'events') {
+        if (typeof globalEvChart !== 'undefined' && globalEvChart) { globalEvChart.destroy(); globalEvChart = null; }
     }
 
     const views = [
@@ -285,9 +284,7 @@ function executeTabSwitch(view, param = null) {
         case 'edit-plant': targetId = 'form-container'; break;
         case 'map': targetId = 'global-map-page'; break;
         case 'scanner': targetId = 'labels-scanner-view'; break;
-        default:
-            targetId = view + '-view';
-            break;
+        default: targetId = view + '-view'; break;
     }
 
     const targetViewEl = document.getElementById(targetId);

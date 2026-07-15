@@ -58,6 +58,20 @@ window.appInitialized = false;
 let dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} };
 
 // ==========================================
+// CANALE DI SINCRONIZZAZIONE (MULTI-TAB)
+// ==========================================
+let gardenSyncChannel = null;
+if ('BroadcastChannel' in window) {
+    gardenSyncChannel = new BroadcastChannel('garden_sync');
+    gardenSyncChannel.onmessage = (event) => {
+        if (event.data === 'RELOAD_DB') {
+            console.log("[Sync] Rilevato salvataggio in un'altra scheda. Sincronizzazione in background...");
+            loadFromLocal(true); // Aggiornamento silenzioso
+        }
+    };
+}
+
+// ==========================================
 // EVENT EMITTER PER REATTIVITÀ
 // ==========================================
 const AppState = {
@@ -310,33 +324,7 @@ function syncStore(store, ramArray, storeName) {
     });
 }
 
-function getSerializableFallbackData() {
-    const stripPhotos = (obj) => {
-        if (!obj) return obj;
-        let copy = { ...obj };
-        copy.photo = null;
-        copy.fruitPhoto = null;
-        if (copy.logs && Array.isArray(copy.logs)) {
-            copy.logs = copy.logs.map(l => ({ ...l, photos: [] }));
-        }
-        return copy;
-    };
-    const wStrip = (w) => {
-        if (!w) return w;
-        let copy = { ...w };
-        copy.photo = null;
-        return copy;
-    };
-    return {
-        title: gardenTitle,
-        notes: gardenNotes,
-        plants: plantsDatabase.map(stripPhotos),
-        expenses: generalExpenses,
-        wishlist: wishlist.map(wStrip)
-    };
-}
-
-// FIX: Standardizzazione rigorosa ID a Stringa al momento del caricamento
+// FIX SICUREZZA: Standardizzazione rigorosa ID a Stringa
 function standardizeDatabaseIds() {
     if (Array.isArray(plantsDatabase)) {
         plantsDatabase.forEach(p => {
@@ -365,13 +353,6 @@ async function saveToLocal() {
         standardizeDatabaseIds();
 
         try {
-            const liteData = getSerializableFallbackData();
-            localStorage.setItem('garden_full_backup_v1', JSON.stringify(liteData));
-        } catch(e) {
-            console.warn("[Backup] Salvataggio fallback su localStorage fallito.");
-        }
-
-        try {
             let db = await initDB();
             let tx = db.transaction(['System', 'Plants', 'Expenses', 'Wishlist'], 'readwrite');
             
@@ -383,6 +364,8 @@ async function saveToLocal() {
             
             tx.oncomplete = function() {
                 showAutoSaveToast();
+                // Notifica le altre schede aperte che il DB è cambiato
+                if (gardenSyncChannel) gardenSyncChannel.postMessage('RELOAD_DB');
                 resolve(true);
             };
             tx.onerror = function(e) {
@@ -393,13 +376,13 @@ async function saveToLocal() {
                 resolve(false);
             };
         } catch(e) {
-            showAutoSaveToast();
+            console.error("[DB] Errore critico in saveToLocal:", e);
             resolve(false);
         }
     });
 }
 
-async function loadFromLocal() {
+async function loadFromLocal(isSilent = false) {
     try {
         let db = await initDB();
         
@@ -411,6 +394,8 @@ async function loadFromLocal() {
         
         tx.oncomplete = function() {
             let sysData = reqSys.result;
+            
+            // Fallback (solo in lettura) per mantenere la compatibilità con i vecchi salvataggi pre-v4
             if (!sysData && (!reqPl.result || reqPl.result.length === 0)) {
                 const fallback = localStorage.getItem('garden_full_backup_v1');
                 if (fallback) {
@@ -437,17 +422,45 @@ async function loadFromLocal() {
                 generalExpenses.forEach(e => dbSyncHashes.Expenses[e.id] = generateFastHash(e));
                 wishlist.forEach(w => dbSyncHashes.Wishlist[w.id] = generateFastHash(w));
 
-                finalizeLoad(true);
+                if (isSilent) {
+                    finalizeSilentLoad();
+                } else {
+                    finalizeLoad(true);
+                }
             } else {
-                finalizeLoad(false);
+                if (!isSilent) finalizeLoad(false);
             }
         };
         tx.onerror = function() {
-            fallbackLoad();
+            if (!isSilent) fallbackLoad();
         };
 
     } catch(e) {
-        fallbackLoad();
+        if (!isSilent) fallbackLoad();
+    }
+}
+
+// Funzione dedicata per l'aggiornamento in background (Multi-tab)
+function finalizeSilentLoad() {
+    const titleEl = document.getElementById('main-title');
+    if (titleEl) titleEl.innerText = gardenTitle;
+    
+    if (typeof AppState !== 'undefined') AppState.emit('plantsUpdated');
+
+    // Aggiorniamo dinamicamente la vista corrente
+    if (typeof currentTab !== 'undefined') {
+        if (currentTab === 'home' && typeof renderMyData === 'function') renderMyData();
+        if (currentTab === 'plants' && typeof renderPlants === 'function') renderPlants();
+        if (currentTab === 'events' && typeof renderGlobalChart === 'function') renderGlobalChart();
+        if (currentTab === 'expenses' && typeof renderExpenses === 'function') renderExpenses();
+        if (currentTab === 'wishlist' && typeof renderWishlist === 'function') renderWishlist();
+        if (currentTab === 'settings') {
+            const globalNotes = document.getElementById('global-garden-notes');
+            if (globalNotes) globalNotes.value = gardenNotes || "";
+        }
+        if (typeof currentPlantId !== 'undefined' && currentPlantId && typeof _internalOpenPlantDetail === 'function') {
+            _internalOpenPlantDetail(currentPlantId);
+        }
     }
 }
 
@@ -588,6 +601,10 @@ function logout() {
             gardenTitle = "🌿 Gestione Piante Tropicali - Pro";
             gardenNotes = "";
             dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} };
+            
+            // Avviso le altre schede della cancellazione
+            if (gardenSyncChannel) gardenSyncChannel.postMessage('RELOAD_DB');
+            
             window.location.hash = '#/startup';
             window.location.reload();
         }

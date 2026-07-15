@@ -488,6 +488,14 @@ window.addEventListener('popstate', () => {
         } catch(e) {}
         html5QrcodeScanner = null;
     }
+    // FIX BUG BATTERIA: Interruzione forzata dello stream video se la libreria non l'ha rilasciato
+    document.querySelectorAll('video').forEach(video => {
+        if (video.srcObject) {
+            const tracks = video.srcObject.getTracks();
+            tracks.forEach(track => track.stop());
+            video.srcObject = null;
+        }
+    });
 });
 
 function compressImageAsync(file) {

@@ -90,10 +90,15 @@ function renderPlants() {
         if (filterOrigin !== 'all' && p.origin !== filterOrigin) return false;
         if (filterFertility !== 'all' && getModernFertility(p.autofertile) !== filterFertility) return false;
 
+        // FIX LOGICA FILTRO TEMPERATURE:
+        // "Muoiono sotto i X°C" significa mostrare le piante che NON resistono a X°C.
+        // Se p.minTemp è <= X, la pianta resiste. Quindi la nascondiamo (ritorna false).
         if (vulnCold !== null && !isNaN(vulnCold)) {
             if (p.minTemp === undefined || p.minTemp === null || p.minTemp <= vulnCold) return false;
         }
         
+        // "Muoiono sopra i Y°C" significa mostrare le piante che NON resistono a Y°C.
+        // Se p.maxTemp è >= Y, la pianta resiste. Quindi la nascondiamo (ritorna false).
         if (vulnHot !== null && !isNaN(vulnHot)) {
             if (p.maxTemp === undefined || p.maxTemp === null || p.maxTemp >= vulnHot) return false;
         }
@@ -155,11 +160,12 @@ function renderPlants() {
         return;
     }
 
+    // FIX DOM: Evitiamo innerHTML = '' che causa pesanti ricalcoli (reflow e repaint) durante la digitazione.
     if (isNewSearchOrFilter) {
         currentPlantsChunkIndex = 0;
-        grid.innerHTML = '';
+        while (grid.firstChild) grid.removeChild(grid.firstChild);
     } else {
-        grid.innerHTML = '';
+        while (grid.firstChild) grid.removeChild(grid.firstChild);
     }
 
     let elementsToRenderNow = currentPlantsChunkIndex > 0 ? currentPlantsChunkIndex : PLANTS_CHUNK_SIZE;
@@ -307,7 +313,7 @@ function renderArchive() {
         return;
     }
 
-    grid.innerHTML = '';
+    while (grid.firstChild) grid.removeChild(grid.firstChild);
     
     let elementsToRenderNow = currentArchiveChunkIndex > 0 ? currentArchiveChunkIndex : ARCHIVE_CHUNK_SIZE;
     currentArchiveChunkIndex = 0;

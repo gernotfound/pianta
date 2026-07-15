@@ -143,27 +143,37 @@ async function addDiaryLog() {
     const saveBtn = document.querySelector('.diary-section button[onclick="addDiaryLog()"]');
     if (saveBtn) {
         saveBtn.disabled = true;
-        saveBtn.innerText = "⏳ Salvataggio...";
+        saveBtn.innerText = "⏳ Preparazione...";
     }
 
     try {
         const photoInput = document.getElementById('log-photos');
         let photosArray = [];
+        
+        // FIX UI THREAD BLOCK: Compressione sequenziale con feedback per foto multiple
         if (photoInput && photoInput.files && photoInput.files.length > 0) {
-            let compressionPromises = [];
-            for (let i = 0; i < photoInput.files.length; i++) {
+            const yieldThread = () => new Promise(r => setTimeout(r, 15));
+            let total = photoInput.files.length;
+            
+            for (let i = 0; i < total; i++) {
+                if (saveBtn) saveBtn.innerText = `⏳ Compressione foto ${i+1}/${total}...`;
+                await yieldThread(); // Lascia respirare l'interfaccia
+                
                 if (typeof compressImageAsync === 'function') {
-                    compressionPromises.push(compressImageAsync(photoInput.files[i]).catch(err => {
-                        console.error(err);
-                        return null;
-                    }));
+                    try {
+                        const blob = await compressImageAsync(photoInput.files[i]);
+                        if (blob) photosArray.push(blob);
+                    } catch (err) {
+                        console.error(`Errore compressione foto ${i+1}`, err);
+                    }
                 } else {
-                    compressionPromises.push(Promise.resolve(photoInput.files[i]));
+                    photosArray.push(photoInput.files[i]);
                 }
             }
-            let results = await Promise.all(compressionPromises);
-            photosArray = results.filter(r => r !== null);
+            if (saveBtn) saveBtn.innerText = `⏳ Salvataggio finale...`;
+            await yieldThread();
         }
+        
         await finalizeDiaryLog(date, type, note, height, harvest, ph, newPlacement, newPotSize, graftName, photosArray);
     } catch (err) {
         console.error(err);

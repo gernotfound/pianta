@@ -27,6 +27,23 @@ function goToMacroStep2() {
     const searchEl = document.getElementById('macro-search');
     if (searchEl) searchEl.value = "";
     renderMacroSelectionGrid();
+
+    const typeSelect = document.getElementById('macro-type-select');
+    const type = typeSelect ? typeSelect.value : '';
+    const btnNext = document.getElementById('btn-macro-step2-next');
+    
+    if (btnNext) {
+        if (type === 'Elimina piante') {
+            btnNext.innerHTML = `🗑️ Elimina Piante (<span id="macro-selected-count">0</span>)`;
+            btnNext.style.backgroundColor = '#d32f2f';
+        } else if (type === 'Archivia piante') {
+            btnNext.innerHTML = `📦 Archivia Piante (<span id="macro-selected-count">0</span>)`;
+            btnNext.style.backgroundColor = '#f57f17';
+        } else {
+            btnNext.innerHTML = `Compila Dati (<span id="macro-selected-count">0</span>) ➡️`;
+            btnNext.style.backgroundColor = '';
+        }
+    }
 }
 
 function backToMacroStep1() {
@@ -98,9 +115,78 @@ function goToMacroStep3() {
         if (typeof Swal !== 'undefined') return Swal.fire({icon: 'warning', title: 'Seleziona piante', text: 'Seleziona almeno una pianta!', confirmButtonColor: '#f57f17'});
         else return alert('Seleziona almeno una pianta');
     }
+
+    const typeSelect = document.getElementById('macro-type-select');
+    const type = typeSelect ? typeSelect.value : '';
+    
+    if (type === 'Elimina piante' || type === 'Archivia piante') {
+        confirmAndExecuteMassAction(type);
+        return;
+    }
+
     document.getElementById('macro-step-2').classList.add('hidden');
     document.getElementById('macro-step-3').classList.remove('hidden');
     renderMacroInputs();
+}
+
+function confirmAndExecuteMassAction(type) {
+    const isDelete = type === 'Elimina piante';
+    const actionText = isDelete ? 'eliminare definitivamente' : 'archiviare';
+    const btnColor = isDelete ? '#d32f2f' : '#f57f17';
+    const confirmBtnText = isDelete ? 'Sì, elimina' : 'Sì, archivia';
+    
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Sei sicuro?',
+            text: `Stai per ${actionText} ${selectedBatchPlants.size} piante!`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: btnColor,
+            cancelButtonColor: '#607d8b',
+            confirmButtonText: confirmBtnText,
+            cancelButtonText: 'Annulla'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                executeMassAction(type);
+            }
+        });
+    } else {
+        if (confirm(`Stai per ${actionText} ${selectedBatchPlants.size} piante. Procedere?`)) {
+            executeMassAction(type);
+        }
+    }
+}
+
+async function executeMassAction(type) {
+    const isDelete = type === 'Elimina piante';
+    
+    selectedBatchPlants.forEach(pid => {
+        if (isDelete) {
+            plantsDatabase = plantsDatabase.filter(p => String(p.id) !== String(pid));
+        } else {
+            const p = plantsDatabase.find(x => String(x.id) === String(pid));
+            if (p) p.status = 'archived';
+        }
+    });
+    
+    unsavedChanges = true;
+    if (typeof saveToLocal === 'function') await saveToLocal();
+    
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            icon: 'success',
+            title: isDelete ? 'Piante eliminate' : 'Piante archiviate',
+            text: `Operazione completata con successo!`,
+            timer: 2000,
+            showConfirmButton: false
+        });
+    } else {
+        alert("Operazione completata.");
+    }
+    
+    resetMacroView();
+    if (typeof renderMyData === 'function') renderMyData();
+    if (typeof renderPlants === 'function') renderPlants();
 }
 
 function backToMacroStep2() {

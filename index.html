@@ -703,6 +703,8 @@
                 <option value="Rinvaso / Sistemazione">🪴 Rinvaso / Cambio sistemazione</option>
                 <option value="Irrigazione">💧 Irrigazione speciale</option>
                 <option value="Trattamento">🛡️ Trattamento fitosanitario</option>
+                <option value="Archivia piante">📦 Archivia piante</option>
+                <option value="Elimina piante">🗑️ Elimina piante</option>
             </select>
             <button class="btn btn-accent" style="width: 100%; font-size: 16px; padding: 12px;" onclick="goToMacroStep2()">Continua ➡️</button>
         </div>
@@ -720,7 +722,7 @@
             
             <div style="display: flex; gap: 10px; margin-top: 20px;">
                 <button class="btn btn-grey" style="flex:1;" onclick="backToMacroStep1()">⬅️ Indietro</button>
-                <button class="btn btn-accent" style="flex:2;" onclick="goToMacroStep3()">Compila Dati (<span id="macro-selected-count">0</span>) ➡️</button>
+                <button id="btn-macro-step2-next" class="btn btn-accent" style="flex:2;" onclick="goToMacroStep3()">Compila Dati (<span id="macro-selected-count">0</span>) ➡️</button>
             </div>
         </div>
 

@@ -199,16 +199,16 @@
             <button class="btn btn-blue" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('gallery')">
                 <span style="font-size:22px;">🖼️</span> Archivio Foto
             </button>
-            <button class="btn" style="background:#1565c0; margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('scanner')">
+            <button class="btn" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('scanner')">
                 <span style="font-size:22px;">🏷️</span> Scanner QR
             </button>
-            <button class="btn" style="background:var(--accent); margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('macro')">
+            <button class="btn" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('macro')">
                 <span style="font-size:22px;">☑️</span> Azioni Macro
             </button>
             <button class="btn btn-danger" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px;" onclick="navigateTo('archive')">
                 <span style="font-size:22px;">🥀</span> Piante Perse
             </button>
-            <button class="btn" style="background:#00897b; color: white; margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px; grid-column: span 2;" onclick="navigateTo('map')">
+            <button class="btn" style="margin:0; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight: bold; font-size: 14px; grid-column: span 2;" onclick="navigateTo('map')">
                 <span style="font-size:22px;">🗺️</span> Mappa Globale
             </button>
         </div>
@@ -248,8 +248,8 @@
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
             <button class="btn btn-danger" style="margin:0;" onclick="logout()" id="btn-logout">🚪 Log Out</button>
-            <button class="btn" style="background-color: #217346; margin:0;" onclick="exportToCSV()">📊 Esporta Excel</button>
-            <button class="btn" style="background-color: #d32f2f; margin:0; grid-column: span 2;" onclick="deleteAccount()" id="btn-delete-account">⚠️ Elimina Definitivamente Account</button>
+            <button class="btn" style="margin:0;" onclick="exportToCSV()">📊 Esporta Excel</button>
+            <button class="btn btn-danger" style="margin:0; grid-column: span 2;" onclick="deleteAccount()" id="btn-delete-account">⚠️ Elimina Definitivamente Account</button>
             
             <button class="btn btn-blue" onclick="toggleGeneralList()" style="grid-column: span 2; margin:0;" id="btn-toggle-list">📋 Elenco Piante (Testo)</button>
             <div id="general-list-container" class="hidden" style="grid-column: span 2;">
@@ -275,7 +275,7 @@
 
     <div id="system-status-modal" class="fade-in" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100000; justify-content:center; align-items:center;">
         <div style="background:white; padding:25px; border-radius:12px; max-width:400px; width:90%; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
-            <h3 style="margin-top:0; color:var(--primary); font-size: 22px;">Stato Sistema</h3>
+            <h3 style="margin-top:0; color:var(--primary); font-size: 22px;">Stato Sistema <span style="font-size: 14px; color: #777; font-weight: normal;">v4.7.0</span></h3>
             <p style="font-size: 14px; color: #555; margin-bottom: 20px;">Diagnostica e sincronizzazione in tempo reale.</p>
             
             <div style="margin-bottom: 15px; padding: 12px; background: #f9f9f9; border-radius: 8px; border: 1px solid #eee;">

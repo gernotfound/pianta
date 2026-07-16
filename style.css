@@ -188,44 +188,11 @@ header {
 }
 
 .btn-danger {
-    background-color: var(--danger);
+    background-color: #d84315;
 }
 
 .btn-danger:hover:not(:disabled) {
-    background-color: #9a0007;
-}
-
-.btn-warning {
-    background-color: var(--accent);
-    color: #000;
-}
-
-.btn-warning:hover:not(:disabled) {
-    background-color: #e65100;
-}
-
-.btn-blue {
-    background-color: var(--blue);
-}
-
-.btn-blue:hover:not(:disabled) {
-    background-color: #115293;
-}
-
-.btn-purple {
-    background-color: var(--purple);
-}
-
-.btn-purple:hover:not(:disabled) {
-    background-color: #6a1b9a;
-}
-
-.btn-grey {
-    background-color: var(--grey);
-}
-
-.btn-grey:hover:not(:disabled) {
-    background-color: #455a64;
+    background-color: #bf360c;
 }
 
 .search-sort-bar {

@@ -261,8 +261,12 @@ function getImageUrl(imageObj) {
             window.fetchingImages[imageObj] = true;
             loadImageFromFirestore(imageObj).then(b64 => {
                 if (b64) {
-                    window.imageCache[imageObj] = b64;
-                    triggerReRender();
+                    // Ottimizzazione RAM estrema: non salviamo il lungo Base64 in RAM, 
+                    // ma lo convertiamo in un ObjectURL del browser.
+                    fetch(b64).then(res => res.blob()).then(blob => {
+                        window.imageCache[imageObj] = URL.createObjectURL(blob);
+                        triggerReRender();
+                    }).catch(e => console.error("Errore blob img:", e));
                 }
             });
         }
@@ -327,9 +331,45 @@ async function saveToLocal() {
 
         try {
             standardizeDatabaseIds();
-            // Rimuoviamo le immagini pesanti prima di salvare il metadata
-            // Il salvataggio delle immagini avviene separatamente in media.js/plants-form.js
-            const plantsMeta = plantsDatabase.map(p => {
+            
+            const mainDocRef = window.firebaseDoc(window.firebaseDb, "users", firestoreUid);
+            await window.firebaseSetDoc(mainDocRef, {
+                title: gardenTitle,
+                notes: gardenNotes,
+                schemaVersion: 2
+            }, { merge: true });
+
+            const currentPlantIds = new Set(plantsDatabase.map(p => String(p.id)));
+            const currentExpenseIds = new Set(generalExpenses.map(e => String(e.id)));
+            const currentWishlistIds = new Set(wishlist.map(w => String(w.id)));
+
+            // 1. Elimina documenti rimossi dalla memoria
+            for (const id in dbSyncHashes.Plants) {
+                if (!currentPlantIds.has(id)) {
+                    const docRef = window.firebaseDoc(window.firebaseDb, "users", firestoreUid, "plants", id);
+                    await window.firebaseDeleteDoc(docRef).catch(e=>console.warn(e));
+                    delete dbSyncHashes.Plants[id];
+                }
+            }
+            for (const id in dbSyncHashes.Expenses) {
+                if (!currentExpenseIds.has(id)) {
+                    const docRef = window.firebaseDoc(window.firebaseDb, "users", firestoreUid, "expenses", id);
+                    await window.firebaseDeleteDoc(docRef).catch(e=>console.warn(e));
+                    delete dbSyncHashes.Expenses[id];
+                }
+            }
+            for (const id in dbSyncHashes.Wishlist) {
+                if (!currentWishlistIds.has(id)) {
+                    const docRef = window.firebaseDoc(window.firebaseDb, "users", firestoreUid, "wishlist", id);
+                    await window.firebaseDeleteDoc(docRef).catch(e=>console.warn(e));
+                    delete dbSyncHashes.Wishlist[id];
+                }
+            }
+
+            // 2. Salva solo i record nuovi o modificati (delta sync)
+            const promises = [];
+
+            for (const p of plantsDatabase) {
                 const pMeta = { ...p };
                 if (p.photo) pMeta.photo = p.id + '_main';
                 if (p.fruitPhoto) pMeta.fruitPhoto = p.id + '_fruit';
@@ -342,27 +382,39 @@ async function saveToLocal() {
                         return lMeta;
                     });
                 }
-                return pMeta;
-            });
+                
+                const hash = generateFastHash(pMeta);
+                if (dbSyncHashes.Plants[p.id] !== hash) {
+                    const docRef = window.firebaseDoc(window.firebaseDb, "users", firestoreUid, "plants", pMeta.id);
+                    promises.push(window.firebaseSetDoc(docRef, pMeta).then(() => {
+                        dbSyncHashes.Plants[p.id] = hash;
+                    }));
+                }
+            }
 
-            const wishlistMeta = wishlist.map(w => {
+            for (const e of generalExpenses) {
+                const hash = generateFastHash(e);
+                if (dbSyncHashes.Expenses[e.id] !== hash) {
+                    const docRef = window.firebaseDoc(window.firebaseDb, "users", firestoreUid, "expenses", e.id);
+                    promises.push(window.firebaseSetDoc(docRef, e).then(() => {
+                        dbSyncHashes.Expenses[e.id] = hash;
+                    }));
+                }
+            }
+
+            for (const w of wishlist) {
                 const wMeta = { ...w };
                 if (w.photo) wMeta.photo = w.id + '_wishlist';
-                return wMeta;
-            });
+                const hash = generateFastHash(wMeta);
+                if (dbSyncHashes.Wishlist[w.id] !== hash) {
+                    const docRef = window.firebaseDoc(window.firebaseDb, "users", firestoreUid, "wishlist", w.id);
+                    promises.push(window.firebaseSetDoc(docRef, wMeta).then(() => {
+                        dbSyncHashes.Wishlist[w.id] = hash;
+                    }));
+                }
+            }
 
-            const data = {
-                title: gardenTitle,
-                notes: gardenNotes,
-                plants: plantsMeta,
-                expenses: generalExpenses,
-                wishlist: wishlistMeta
-            };
-
-            const docRef = window.firebaseDoc(window.firebaseDb, "users", firestoreUid);
-            await window.firebaseSetDoc(docRef, data);
-            
-            showAutoSaveToast();
+            await Promise.all(promises);
             resolve(true);
         } catch(e) {
             console.error("[Firestore] Errore salvataggio:", e);
@@ -381,15 +433,57 @@ async function loadFromLocal(isSilent = false) {
         const docRef = window.firebaseDoc(window.firebaseDb, "users", firestoreUid);
         const docSnap = await window.firebaseGetDoc(docRef);
         
+        let schemaVersion = 1;
+
         if (docSnap.exists()) {
             const data = docSnap.data();
             gardenTitle = data.title || "🌿 Gestione Piante Tropicali - Pro";
             gardenNotes = data.notes || "";
-            plantsDatabase = Array.isArray(data.plants) ? data.plants : [];
-            generalExpenses = Array.isArray(data.expenses) ? data.expenses : [];
-            wishlist = Array.isArray(data.wishlist) ? data.wishlist : [];
+            schemaVersion = data.schemaVersion || 1;
             
-            standardizeDatabaseIds();
+            if (schemaVersion === 1) {
+                // Migrazione silente al nuovo schema a sottocollezioni
+                plantsDatabase = Array.isArray(data.plants) ? data.plants : [];
+                generalExpenses = Array.isArray(data.expenses) ? data.expenses : [];
+                wishlist = Array.isArray(data.wishlist) ? data.wishlist : [];
+                standardizeDatabaseIds();
+                await saveToLocal(); // Salva nel nuovo formato!
+            } else {
+                // Caricamento nuovo schema (Subcollections)
+                const plantsCol = window.firebaseCollection(window.firebaseDb, "users", firestoreUid, "plants");
+                const expensesCol = window.firebaseCollection(window.firebaseDb, "users", firestoreUid, "expenses");
+                const wishlistCol = window.firebaseCollection(window.firebaseDb, "users", firestoreUid, "wishlist");
+
+                const [pSnap, eSnap, wSnap] = await Promise.all([
+                    window.firebaseGetDocs(plantsCol),
+                    window.firebaseGetDocs(expensesCol),
+                    window.firebaseGetDocs(wishlistCol)
+                ]);
+
+                plantsDatabase = [];
+                dbSyncHashes.Plants = {};
+                pSnap.forEach(doc => {
+                    const p = doc.data();
+                    plantsDatabase.push(p);
+                    dbSyncHashes.Plants[p.id] = generateFastHash(p);
+                });
+
+                generalExpenses = [];
+                dbSyncHashes.Expenses = {};
+                eSnap.forEach(doc => {
+                    const e = doc.data();
+                    generalExpenses.push(e);
+                    dbSyncHashes.Expenses[e.id] = generateFastHash(e);
+                });
+
+                wishlist = [];
+                dbSyncHashes.Wishlist = {};
+                wSnap.forEach(doc => {
+                    const w = doc.data();
+                    wishlist.push(w);
+                    dbSyncHashes.Wishlist[w.id] = generateFastHash(w);
+                });
+            }
 
             if (isSilent) {
                 finalizeSilentLoad();
@@ -397,13 +491,13 @@ async function loadFromLocal(isSilent = false) {
                 finalizeLoad(true);
             }
         } else {
-            // Nuova utenza, nessun documento
+            // Nuova utenza
             gardenTitle = "🌿 Il mio giardino";
             gardenNotes = "";
             plantsDatabase = [];
             generalExpenses = [];
             wishlist = [];
-            await saveToLocal(); // Crea doc iniziale
+            await saveToLocal(); 
             finalizeLoad(true);
         }
     } catch(e) {

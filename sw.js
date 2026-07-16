@@ -1,4 +1,4 @@
-const CACHE_NAME = 'piante-pro-v4.5.1';
+const CACHE_NAME = 'piante-pro-v4.5.2';
 
 const offlineFallbackHtml = `<!DOCTYPE html>
 <html lang="it">
@@ -87,7 +87,7 @@ self.addEventListener('fetch', event => {
 
     const urlObj = new URL(req.url);
 
-    if (urlObj.hostname.includes('api.open-meteo.com') || urlObj.hostname.includes('tile.openstreetmap.org')) {
+    if (urlObj.hostname === 'api.open-meteo.com' || urlObj.hostname === 'tile.openstreetmap.org' || urlObj.hostname.endsWith('.tile.openstreetmap.org')) {
         event.respondWith(
             fetch(req).catch(() => new Response(
                 JSON.stringify({ error: 'Rete non disponibile per risorsa esterna' }),

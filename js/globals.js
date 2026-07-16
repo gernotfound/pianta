@@ -549,9 +549,6 @@ window.addEventListener('beforeunload', function (e) {
     if (isFormDirty) {
         e.preventDefault();
         e.returnValue = 'Hai dati non salvati nel modulo! Sei sicuro di voler uscire?';
-    } else if (unsavedChanges) {
-        e.preventDefault();
-        e.returnValue = 'Hai delle modifiche non salvate in ZIP!';
     }
 });
 
@@ -578,9 +575,13 @@ function logout() {
             plantsDatabase = [];
             generalExpenses = [];
             wishlist = [];
-            gardenTitle = "🌿 Gestione Piante Tropicali - Pro";
+            gardenTitle = "🌿 Il mio giardino";
             gardenNotes = "";
             firestoreUid = null;
+            
+            // Disattiva gli avvisi del browser prima di ricaricare
+            isFormDirty = false;
+            unsavedChanges = false;
             
             window.location.hash = '#/startup';
             window.location.reload();

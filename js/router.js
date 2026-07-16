@@ -167,6 +167,11 @@ function goToPlantsTab() {
         }
     } else {
         currentTab = 'plants';
+        if (plantsTabState.view === 'edit-plant') {
+            plantsTabState = { view: 'plants', param: null };
+            editingMode = false;
+            isFormDirty = false;
+        }
         let targetUrl = `#/${plantsTabState.view}${plantsTabState.param ? '/' + plantsTabState.param : ''}`;
         history.pushState(plantsTabState, '', targetUrl);
         executeTabSwitch(plantsTabState.view, plantsTabState.param);
@@ -180,7 +185,11 @@ function navigateTab(tab) {
         goToPlantsTab();
     } else if (tab === 'add-plant') {
         currentTab = 'add-plant';
-        if (!isFormDirty && !editingMode) {
+        if (editingMode) {
+            editingMode = false;
+            isFormDirty = false;
+        }
+        if (!isFormDirty) {
             if (typeof _internalOpenPlantForm === 'function') _internalOpenPlantForm();
         }
         history.pushState({ view: 'add-plant' }, '', '#/add-plant');
@@ -341,7 +350,11 @@ function executeTabSwitch(view, param = null) {
             break;
 
         case 'add-plant':
-            if (!editingMode && !isFormDirty && typeof _internalOpenPlantForm === 'function') {
+            if (editingMode) {
+                editingMode = false;
+                isFormDirty = false;
+            }
+            if (!isFormDirty && typeof _internalOpenPlantForm === 'function') {
                 _internalOpenPlantForm();
             }
             setTimeout(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, 10);

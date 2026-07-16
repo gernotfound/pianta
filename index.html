@@ -155,7 +155,7 @@
     <span class="toast-label">Salvato</span>
 </div>
 
-<div id="update-toast" class="hidden" role="button" tabindex="0" aria-label="Aggiorna applicazione" style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background-color: var(--blue); color: white; padding: 12px 20px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 99999; font-size: 14px; font-weight: bold; cursor: pointer;" onclick="safeReload();" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); safeReload();}">
+<div id="update-toast" class="hidden" role="button" tabindex="0" aria-label="Aggiorna applicazione" style="position: fixed; bottom: 100px; top: auto; left: 50%; transform: translateX(-50%); background-color: var(--blue); color: white; padding: 12px 20px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 99999; font-size: 14px; font-weight: bold; cursor: pointer;" onclick="safeReload();" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); safeReload();}">
     🔄 Aggiornamento disponibile! Tocca qui
 </div>
 
@@ -168,7 +168,7 @@
         <h2>Benvenuto nel tuo giardino virtuale</h2>
         
         <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px;">
-            <button class="btn btn-add-main" onclick="createNewGarden()" aria-label="Crea nuovo giardino">🌱 Crea nuovo giardino</button>
+            <button class="btn btn-add-main" onclick="if(typeof createNewGarden === 'function') createNewGarden(); else alert('Attendi il caricamento dell\'app...');" aria-label="Crea nuovo giardino">🌱 Crea nuovo giardino</button>
             <button id="btn-install-pwa" class="btn btn-purple" style="display: none;" onclick="installPWA()" aria-label="Installa applicazione">📥 Installa l'Applicazione</button>
         </div>
 
@@ -537,9 +537,9 @@
                             <label for="p-autofertile">🌸 Fertilità:</label>
                             <select id="p-autofertile">
                                 <option value="Sconosciuta">Sconosciuta</option>
-                                <option value="Autofertile">Autofertili</option>
+                                <option value="Autofertile">Autofertile</option>
                                 <option value="Parzialmente autofertile">Parzialmente autofertile</option>
-                                <option value="Autosterile">Autosterili</option>
+                                <option value="Autosterile">Autosterile</option>
                             </select>
                         </div>
                     </div>

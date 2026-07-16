@@ -608,6 +608,13 @@ function initAppListeners() {
         });
     }
 
+    if (window.firebaseGetRedirectResult && window.firebaseAuth) {
+        window.firebaseGetRedirectResult(window.firebaseAuth).catch(err => {
+            console.error("Errore durante la risoluzione del redirect:", err);
+            if (typeof Swal !== 'undefined') Swal.fire('Errore di Accesso', err.message, 'error');
+        });
+    }
+
     if (window.firebaseOnAuthStateChanged) {
         window.firebaseOnAuthStateChanged(window.firebaseAuth, (user) => {
             if (user) {

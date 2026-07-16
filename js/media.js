@@ -1,6 +1,16 @@
 let cropperInstance = null;
 let cropType = '';
 
+window.blobToBase64 = function(blob) {
+    return new Promise((resolve, reject) => {
+        if (!blob) return resolve("");
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+};
+
 function triggerSmartUpload(type) {
     let inputId = type === 'main' ? 'p-photo-hidden' : 'p-fruit-photo-hidden';
     const inputEl = document.getElementById(inputId);

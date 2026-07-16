@@ -193,8 +193,20 @@ async function finalizeDiaryLog(date, type, note, height, harvest, ph, placement
     if (!plant) return;
     if (!Array.isArray(plant.logs)) plant.logs = [];
 
+    const newLogId = typeof generateId === 'function' ? generateId() : crypto.randomUUID();
+
+    // Carica su Firestore le foto del diario
+    if (photosArray && photosArray.length > 0 && typeof saveImageToFirestore === 'function' && window.blobToBase64) {
+        for (let i = 0; i < photosArray.length; i++) {
+            const b64 = await window.blobToBase64(photosArray[i]);
+            const imgId = `${newLogId}_photo_${i}`;
+            await saveImageToFirestore(imgId, b64);
+            if (window.imageCache) window.imageCache[imgId] = b64;
+        }
+    }
+
     plant.logs.push({
-        id: typeof generateId === 'function' ? generateId() : crypto.randomUUID(),
+        id: newLogId,
         date: date,
         type: type,
         height: height,
@@ -204,7 +216,7 @@ async function finalizeDiaryLog(date, type, note, height, harvest, ph, placement
         potSize: potSize,
         graftName: graftName,
         note: note,
-        photos: photosArray
+        photos: photosArray // Lasciamo i Blob in RAM, saveToLocal esporterà gli ID
     });
 
     unsavedChanges = true;

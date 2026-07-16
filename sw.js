@@ -1,4 +1,4 @@
-const CACHE_NAME = 'piante-pro-v3.1.0';
+const CACHE_NAME = 'piante-pro-v4.0.0';
 
 const offlineFallbackHtml = `<!DOCTYPE html>
 <html lang="it">
@@ -27,6 +27,7 @@ const urlsToCache = [
     './index.html',
     './style.css',
     './manifest.json',
+    './js/firebase-config.js',
     './js/globals.js',
     './js/router.js',
     './js/ui.js',

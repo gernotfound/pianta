@@ -511,7 +511,9 @@ async function addWishlistItem() {
     if (addBtn) { addBtn.disabled = true; addBtn.innerText = "⏳ Attendere..."; }
 
     try {
+        const newItemId = typeof generateId === 'function' ? generateId() : crypto.randomUUID();
         let photoBlob = null;
+
         if (photoInput && photoInput.files && photoInput.files.length > 0) {
             try {
                 if (typeof compressImageAsync === 'function') {
@@ -519,14 +521,21 @@ async function addWishlistItem() {
                 } else {
                     photoBlob = photoInput.files[0];
                 }
+                
+                if (photoBlob && window.blobToBase64 && typeof saveImageToFirestore === 'function') {
+                    const b64 = await window.blobToBase64(photoBlob);
+                    const imgId = `${newItemId}_wishlist`;
+                    await saveImageToFirestore(imgId, b64);
+                    if (window.imageCache) window.imageCache[imgId] = b64;
+                }
             } catch(e) {
-                console.error("Errore compressione foto wishlist", e);
+                console.error("Errore compressione/salvataggio foto wishlist", e);
             }
         }
 
         if (!wishlist) wishlist = [];
         wishlist.push({ 
-            id: typeof generateId === 'function' ? generateId() : crypto.randomUUID(), 
+            id: newItemId, 
             name, price, notes, photo: photoBlob 
         });
         

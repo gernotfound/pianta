@@ -223,15 +223,52 @@ function generateFastHash(obj) {
     return hash;
 }
 
+window.imageCache = {};
+window.fetchingImages = {};
+
+let renderDebounceTimer = null;
+function triggerReRender() {
+    clearTimeout(renderDebounceTimer);
+    renderDebounceTimer = setTimeout(() => {
+        if (typeof currentTab !== 'undefined') {
+            if (currentTab === 'home' && typeof renderMyData === 'function') renderMyData();
+            if (currentTab === 'plants' && typeof renderPlants === 'function') renderPlants();
+            if (currentTab === 'wishlist' && typeof renderWishlist === 'function') renderWishlist();
+            if (currentTab === 'events' && typeof renderGlobalChart === 'function') renderGlobalChart();
+        }
+        if (typeof renderGallery === 'function' && document.getElementById('gallery-grid') && document.getElementById('gallery-grid').innerHTML !== '') {
+            renderGallery();
+        }
+    }, 300);
+}
+
 function getImageUrl(imageObj) {
     if (!imageObj) return '';
-    if (typeof imageObj === 'string') return sanitizeImageSource(imageObj);
+    if (typeof imageObj === 'string' && imageObj.startsWith('data:')) return sanitizeImageSource(imageObj);
     if (imageObj instanceof Blob || imageObj instanceof File) {
         if (!imageObj._url) {
             imageObj._url = URL.createObjectURL(imageObj);
         }
         return sanitizeImageSource(imageObj._url);
     }
+    
+    if (typeof imageObj === 'string') {
+        if (window.imageCache[imageObj]) {
+            return window.imageCache[imageObj];
+        }
+        
+        if (!window.fetchingImages[imageObj]) {
+            window.fetchingImages[imageObj] = true;
+            loadImageFromFirestore(imageObj).then(b64 => {
+                if (b64) {
+                    window.imageCache[imageObj] = b64;
+                    triggerReRender();
+                }
+            });
+        }
+        return typeof OFFLINE_PLACEHOLDER !== 'undefined' ? OFFLINE_PLACEHOLDER : '';
+    }
+    
     return '';
 }
 
@@ -263,87 +300,14 @@ function cleanupPlantImages(plant) {
 }
 
 // ==========================================
-// MOTORE DATABASE OTTIMIZZATO (INDEXEDDB)
+// MOTORE DATABASE OTTIMIZZATO (FIRESTORE)
 // ==========================================
-function initDB() {
-    return new Promise((resolve, reject) => {
-        if (!window.indexedDB) {
-            return reject("IndexedDB non supportato");
-        }
-        let request;
-        try {
-            request = indexedDB.open(APP_CONFIG.DB_NAME, APP_CONFIG.DB_VERSION);
-        } catch (e) {
-            return reject("Impossibile inizializzare IndexedDB");
-        }
-
-        request.onupgradeneeded = function(e) {
-            let db = e.target.result;
-            if (!db.objectStoreNames.contains('System')) db.createObjectStore('System');
-            if (!db.objectStoreNames.contains('Plants')) db.createObjectStore('Plants', { keyPath: 'id' });
-            if (!db.objectStoreNames.contains('Expenses')) db.createObjectStore('Expenses', { keyPath: 'id' });
-            if (!db.objectStoreNames.contains('Wishlist')) db.createObjectStore('Wishlist', { keyPath: 'id' });
-        };
-        request.onsuccess = function(e) {
-            resolve(e.target.result);
-        };
-        request.onerror = function(e) {
-            reject(e.target.error);
-        };
-    });
-}
-
-function syncStore(store, ramArray, storeName) {
-    return new Promise((resolve, reject) => {
-        if (!Array.isArray(ramArray)) return resolve();
-        
-        let reqKeys = store.getAllKeys();
-        reqKeys.onsuccess = function() {
-            let dbKeys = reqKeys.result;
-            let ramKeys = ramArray.map(item => String(item.id));
-            
-            dbKeys.forEach(key => {
-                if (!ramKeys.includes(String(key))) {
-                    store.delete(key);
-                    delete dbSyncHashes[storeName][key];
-                }
-            });
-            
-            ramArray.forEach(item => {
-                let currentHash = generateFastHash(item);
-                if (dbSyncHashes[storeName][item.id] !== currentHash) {
-                    store.put(item);
-                    dbSyncHashes[storeName][item.id] = currentHash;
-                }
-            });
-            
-            resolve();
-        };
-        reqKeys.onerror = (e) => reject(e.target.error);
-    });
-}
-
-function standardizeDatabaseIds() {
-    if (Array.isArray(plantsDatabase)) {
-        plantsDatabase.forEach(p => {
-            if (p.id) p.id = String(p.id);
-            if (p.mother) p.mother = String(p.mother);
-            if (p.father) p.father = String(p.father);
-            if (Array.isArray(p.logs)) {
-                p.logs.forEach(l => { if (l.id) l.id = String(l.id); });
-            }
-        });
-    }
-    if (Array.isArray(generalExpenses)) {
-        generalExpenses.forEach(e => { if (e.id) e.id = String(e.id); });
-    }
-    if (Array.isArray(wishlist)) {
-        wishlist.forEach(w => { if (w.id) w.id = String(w.id); });
-    }
-}
+let firestoreUid = null;
 
 async function saveToLocal() {
     return new Promise(async (resolve) => {
+        if (!firestoreUid) return resolve(false);
+
         if (!Array.isArray(plantsDatabase)) plantsDatabase = [];
         if (!Array.isArray(generalExpenses)) generalExpenses = [];
         if (!Array.isArray(wishlist)) wishlist = [];
@@ -351,89 +315,113 @@ async function saveToLocal() {
         standardizeDatabaseIds();
 
         try {
-            let db = await initDB();
-            let tx = db.transaction(['System', 'Plants', 'Expenses', 'Wishlist'], 'readwrite');
-            
-            tx.objectStore('System').put({ title: gardenTitle, notes: gardenNotes }, 'metadata');
-            
-            syncStore(tx.objectStore('Plants'), plantsDatabase, 'Plants').catch(e => {});
-            syncStore(tx.objectStore('Expenses'), generalExpenses, 'Expenses').catch(e => {});
-            syncStore(tx.objectStore('Wishlist'), wishlist, 'Wishlist').catch(e => {});
-            
-            tx.oncomplete = function() {
-                showAutoSaveToast();
-                if (gardenSyncChannel) gardenSyncChannel.postMessage('RELOAD_DB');
-                resolve(true);
-            };
-            tx.onerror = function(e) {
-                console.error("[DB] Transazione fallita:", e.target.error);
-                if (e.target.error && e.target.error.name === 'QuotaExceededError') {
-                    if (typeof Swal !== 'undefined') Swal.fire({icon: 'error', title: 'Memoria Piena!', text: 'Spazio esaurito nel browser. Elimina foto vecchie o archivia piante.', confirmButtonColor: '#d32f2f'});
+            // Rimuoviamo le immagini pesanti prima di salvare il metadata
+            // Il salvataggio delle immagini avviene separatamente in media.js/plants-form.js
+            const plantsMeta = plantsDatabase.map(p => {
+                const pMeta = { ...p };
+                if (p.photo) pMeta.photo = p.id + '_main';
+                if (p.fruitPhoto) pMeta.fruitPhoto = p.id + '_fruit';
+                if (pMeta.logs) {
+                    pMeta.logs = pMeta.logs.map((log, idx) => {
+                        const lMeta = { ...log };
+                        if (lMeta.photos && lMeta.photos.length > 0) {
+                            lMeta.photos = lMeta.photos.map((_, i) => `${log.id}_photo_${i}`);
+                        }
+                        return lMeta;
+                    });
                 }
-                resolve(false);
+                return pMeta;
+            });
+
+            const wishlistMeta = wishlist.map(w => {
+                const wMeta = { ...w };
+                if (w.photo) wMeta.photo = w.id + '_wishlist';
+                return wMeta;
+            });
+
+            const data = {
+                title: gardenTitle,
+                notes: gardenNotes,
+                plants: plantsMeta,
+                expenses: generalExpenses,
+                wishlist: wishlistMeta
             };
+
+            const docRef = window.firebaseDoc(window.firebaseDb, "users", firestoreUid);
+            await window.firebaseSetDoc(docRef, data);
+            
+            showAutoSaveToast();
+            resolve(true);
         } catch(e) {
-            console.error("[DB] Errore critico in saveToLocal:", e);
+            console.error("[Firestore] Errore salvataggio:", e);
             resolve(false);
         }
     });
 }
 
 async function loadFromLocal(isSilent = false) {
-    try {
-        let db = await initDB();
-        
-        let tx = db.transaction(['System', 'Plants', 'Expenses', 'Wishlist'], 'readonly');
-        let reqSys = tx.objectStore('System').get('metadata');
-        let reqPl = tx.objectStore('Plants').getAll();
-        let reqExp = tx.objectStore('Expenses').getAll();
-        let reqWish = tx.objectStore('Wishlist').getAll();
-        
-        tx.oncomplete = function() {
-            let sysData = reqSys.result;
-            
-            if (!sysData && (!reqPl.result || reqPl.result.length === 0)) {
-                const fallback = localStorage.getItem('garden_full_backup_v1');
-                if (fallback) {
-                    try {
-                        let fd = JSON.parse(fallback);
-                        sysData = { title: fd.title, notes: fd.notes };
-                        if (fd.plants) reqPl.result = Array.isArray(fd.plants) ? fd.plants : [];
-                        if (fd.expenses) reqExp.result = Array.isArray(fd.expenses) ? fd.expenses : [];
-                        if (fd.wishlist) reqWish.result = Array.isArray(fd.wishlist) ? fd.wishlist : [];
-                    } catch(e) {}
-                }
-            }
-            
-            if (sysData || (reqPl.result && reqPl.result.length > 0)) {
-                gardenTitle = sysData && sysData.title ? sysData.title : "🌿 Gestione Piante Tropicali - Pro";
-                gardenNotes = sysData && sysData.notes ? sysData.notes : "";
-                plantsDatabase = Array.isArray(reqPl.result) ? reqPl.result : [];
-                generalExpenses = Array.isArray(reqExp.result) ? reqExp.result : [];
-                wishlist = Array.isArray(reqWish.result) ? reqWish.result : [];
-                
-                standardizeDatabaseIds();
-
-                plantsDatabase.forEach(p => dbSyncHashes.Plants[p.id] = generateFastHash(p));
-                generalExpenses.forEach(e => dbSyncHashes.Expenses[e.id] = generateFastHash(e));
-                wishlist.forEach(w => dbSyncHashes.Wishlist[w.id] = generateFastHash(w));
-
-                if (isSilent) {
-                    finalizeSilentLoad();
-                } else {
-                    finalizeLoad(true);
-                }
-            } else {
-                if (!isSilent) finalizeLoad(false);
-            }
-        };
-        tx.onerror = function() {
-            if (!isSilent) fallbackLoad();
-        };
-
-    } catch(e) {
-        if (!isSilent) fallbackLoad();
+    if (!firestoreUid) {
+        if (!isSilent) finalizeLoad(false);
+        return;
     }
+    
+    try {
+        const docRef = window.firebaseDoc(window.firebaseDb, "users", firestoreUid);
+        const docSnap = await window.firebaseGetDoc(docRef);
+        
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            gardenTitle = data.title || "🌿 Gestione Piante Tropicali - Pro";
+            gardenNotes = data.notes || "";
+            plantsDatabase = Array.isArray(data.plants) ? data.plants : [];
+            generalExpenses = Array.isArray(data.expenses) ? data.expenses : [];
+            wishlist = Array.isArray(data.wishlist) ? data.wishlist : [];
+            
+            standardizeDatabaseIds();
+
+            if (isSilent) {
+                finalizeSilentLoad();
+            } else {
+                finalizeLoad(true);
+            }
+        } else {
+            // Nuova utenza, nessun documento
+            gardenTitle = "🌿 Il mio giardino";
+            gardenNotes = "";
+            plantsDatabase = [];
+            generalExpenses = [];
+            wishlist = [];
+            await saveToLocal(); // Crea doc iniziale
+            finalizeLoad(true);
+        }
+    } catch(e) {
+        console.error("[Firestore] Errore caricamento:", e);
+        if (!isSilent) finalizeLoad(false);
+    }
+}
+
+async function saveImageToFirestore(imageId, base64String) {
+    if (!firestoreUid || !imageId) return;
+    try {
+        const imgRef = window.firebaseDoc(window.firebaseDb, "users", firestoreUid, "images", imageId);
+        await window.firebaseSetDoc(imgRef, { data: base64String });
+    } catch(e) {
+        console.error("Errore salvataggio immagine in Firestore:", e);
+    }
+}
+
+async function loadImageFromFirestore(imageId) {
+    if (!firestoreUid || !imageId) return null;
+    try {
+        const imgRef = window.firebaseDoc(window.firebaseDb, "users", firestoreUid, "images", imageId);
+        const docSnap = await window.firebaseGetDoc(imgRef);
+        if (docSnap.exists()) {
+            return docSnap.data().data;
+        }
+    } catch(e) {
+        console.warn("Impossibile caricare immagine da Firestore:", e);
+    }
+    return null;
 }
 
 function finalizeSilentLoad() {
@@ -477,32 +465,6 @@ function finalizeLoad(hasData = true) {
     if(typeof initRouter === 'function') initRouter(hasData);
 }
 
-function fallbackLoad() {
-    const fallback = localStorage.getItem('garden_full_backup_v1');
-    if (fallback) {
-        try {
-            let data = JSON.parse(fallback);
-            gardenTitle = data.title || "🌿 Gestione Piante Tropicali - Pro";
-            gardenNotes = data.notes || "";
-            plantsDatabase = Array.isArray(data.plants) ? data.plants : [];
-            generalExpenses = Array.isArray(data.expenses) ? data.expenses : [];
-            wishlist = Array.isArray(data.wishlist) ? data.wishlist : [];
-            
-            standardizeDatabaseIds();
-
-            plantsDatabase.forEach(p => dbSyncHashes.Plants[p.id] = generateFastHash(p));
-            generalExpenses.forEach(e => dbSyncHashes.Expenses[e.id] = generateFastHash(e));
-            wishlist.forEach(w => dbSyncHashes.Wishlist[w.id] = generateFastHash(w));
-
-            finalizeLoad(true);
-            return;
-        } catch(e) {
-            console.error("[Recupero] Errore critico nel parsing dei dati di fallback:", e);
-        }
-    }
-    finalizeLoad(false);
-}
-
 // FIX UI: La funzione è stata svuotata per non mostrare più il popup
 function showAutoSaveToast(message = 'Salvato') {
     return;
@@ -522,8 +484,31 @@ window.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('online', updateConnectionStatusIndicator);
     window.addEventListener('offline', updateConnectionStatusIndicator);
 
-    loadFromLocal();
-    
+    const loginBtn = document.getElementById('btn-google-login');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', () => {
+            if (window.firebaseSignIn && window.firebaseAuth && window.firebaseProvider) {
+                window.firebaseSignIn(window.firebaseAuth, window.firebaseProvider)
+                    .catch(err => {
+                        console.error("Login fallito:", err);
+                        if (typeof Swal !== 'undefined') Swal.fire('Errore', 'Login fallito: ' + err.message, 'error');
+                    });
+            }
+        });
+    }
+
+    if (window.firebaseOnAuthStateChanged) {
+        window.firebaseOnAuthStateChanged(window.firebaseAuth, (user) => {
+            if (user) {
+                firestoreUid = user.uid;
+                loadFromLocal();
+            } else {
+                firestoreUid = null;
+                finalizeLoad(false);
+            }
+        });
+    }
+
     const notesArea = document.getElementById('global-garden-notes');
     if (notesArea) {
         notesArea.addEventListener('blur', async () => {
@@ -561,33 +546,29 @@ window.addEventListener('beforeunload', function (e) {
 function logout() {
     if (typeof Swal === 'undefined') return;
     Swal.fire({
-        title: 'Sei sicuro di voler ripartire da zero?',
-        text: "Tutti i dati verranno eliminati. Se non hai fatto un Backup (ZIP), li perderai per sempre.",
+        title: 'Sei sicuro di voler uscire?',
+        text: "Verrai disconnesso dal tuo account Google.",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d32f2f',
         cancelButtonColor: '#607d8b',
-        confirmButtonText: 'Sì, cancella ed esci',
+        confirmButtonText: 'Sì, esci',
         cancelButtonText: 'Annulla'
     }).then(async (result) => {
         if (result.isConfirmed) {
             try {
-                let db = await initDB();
-                let tx = db.transaction(['System', 'Plants', 'Expenses', 'Wishlist'], 'readwrite');
-                tx.objectStore('System').clear();
-                tx.objectStore('Plants').clear();
-                tx.objectStore('Expenses').clear();
-                tx.objectStore('Wishlist').clear();
-            } catch(e) {}
-            localStorage.removeItem('garden_full_backup_v1');
+                if (window.firebaseSignOut && window.firebaseAuth) {
+                    await window.firebaseSignOut(window.firebaseAuth);
+                }
+            } catch(e) {
+                console.error("Errore logout:", e);
+            }
             plantsDatabase = [];
             generalExpenses = [];
             wishlist = [];
             gardenTitle = "🌿 Gestione Piante Tropicali - Pro";
             gardenNotes = "";
-            dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} };
-            
-            if (gardenSyncChannel) gardenSyncChannel.postMessage('RELOAD_DB');
+            firestoreUid = null;
             
             window.location.hash = '#/startup';
             window.location.reload();
@@ -596,23 +577,5 @@ function logout() {
 }
 
 function createNewGarden() {
-    gardenTitle = "🌿 Il mio giardino";
-    plantsDatabase = [];
-    generalExpenses = [];
-    wishlist = [];
-    gardenNotes = "";
-    dbSyncHashes = { Plants: {}, Expenses: {}, Wishlist: {} };
-    
-    saveToLocal().then(() => {
-        const titleEl = document.getElementById('main-title');
-        if(titleEl) titleEl.innerText = gardenTitle;
-        
-        const startScreen = document.getElementById('startup-screen');
-        const navBar = document.getElementById('bottom-nav');
-        
-        if(startScreen) startScreen.classList.add('hidden');
-        if(navBar) navBar.classList.remove('hidden-nav');
-        
-        if(typeof navigateTo === 'function') navigateTo('home');
-    });
+    // Funzione deprecata: Firebase creerà il giardino vuoto al login
 }

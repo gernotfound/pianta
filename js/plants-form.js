@@ -500,19 +500,35 @@ async function savePlant() {
             }
         }
 
+        let savedPlantId = (editingMode && currentPlantIdStr !== null) ? currentPlantIdStr : (typeof generateId === 'function' ? generateId() : crypto.randomUUID());
+
         if (window.smartCropBlobs && window.smartCropBlobs['main']) {
             finalMainPhoto = window.smartCropBlobs['main'];
+            if (window.blobToBase64 && typeof saveImageToFirestore === 'function') {
+                const b64 = await window.blobToBase64(finalMainPhoto);
+                await saveImageToFirestore(savedPlantId + "_main", b64);
+                if (window.imageCache) window.imageCache[savedPlantId + "_main"] = b64;
+            }
         } else if (existingPlant && !mainPhotoRemoved) {
             finalMainPhoto = existingPlant.photo || "";
+        } else if (mainPhotoRemoved) {
+            finalMainPhoto = "";
+            if (typeof saveImageToFirestore === 'function') await saveImageToFirestore(savedPlantId + "_main", "");
         }
         
         if (window.smartCropBlobs && window.smartCropBlobs['fruit']) {
             finalFruitPhoto = window.smartCropBlobs['fruit'];
+            if (window.blobToBase64 && typeof saveImageToFirestore === 'function') {
+                const b64 = await window.blobToBase64(finalFruitPhoto);
+                await saveImageToFirestore(savedPlantId + "_fruit", b64);
+                if (window.imageCache) window.imageCache[savedPlantId + "_fruit"] = b64;
+            }
         } else if (existingPlant && !fruitPhotoRemoved) {
             finalFruitPhoto = existingPlant.fruitPhoto || "";
+        } else if (fruitPhotoRemoved) {
+            finalFruitPhoto = "";
+            if (typeof saveImageToFirestore === 'function') await saveImageToFirestore(savedPlantId + "_fruit", "");
         }
-
-        let savedPlantId = (editingMode && currentPlantIdStr !== null) ? currentPlantIdStr : (typeof generateId === 'function' ? generateId() : crypto.randomUUID());
         
         const originVal = document.getElementById('p-origin') ? document.getElementById('p-origin').value : 'Da seme';
         const fidelityVal = document.getElementById('p-genetic-fidelity') ? document.getElementById('p-genetic-fidelity').value : 'Non ancora valutato';

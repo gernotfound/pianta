@@ -304,6 +304,19 @@ function cleanupPlantImages(plant) {
 // ==========================================
 let firestoreUid = null;
 
+function standardizeDatabaseIds() {
+    if (Array.isArray(plantsDatabase)) {
+        plantsDatabase.forEach(p => {
+            if (p.id) p.id = String(p.id);
+            if (Array.isArray(p.logs)) {
+                p.logs.forEach(l => {
+                    if (l.id) l.id = String(l.id);
+                });
+            }
+        });
+    }
+}
+
 async function saveToLocal() {
     return new Promise(async (resolve) => {
         if (!firestoreUid) return resolve(false);
@@ -312,9 +325,8 @@ async function saveToLocal() {
         if (!Array.isArray(generalExpenses)) generalExpenses = [];
         if (!Array.isArray(wishlist)) wishlist = [];
 
-        standardizeDatabaseIds();
-
         try {
+            standardizeDatabaseIds();
             // Rimuoviamo le immagini pesanti prima di salvare il metadata
             // Il salvataggio delle immagini avviene separatamente in media.js/plants-form.js
             const plantsMeta = plantsDatabase.map(p => {

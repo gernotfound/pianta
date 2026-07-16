@@ -303,13 +303,17 @@ function executeTabSwitch(view, param = null) {
 
     switch (view) {
         case 'home':
-            if (typeof renderMyData === 'function') renderMyData();
-            setTimeout(() => { window.scrollTo({ top: homeScrollPosition || 0, behavior: 'instant' }); }, 10);
+            requestAnimationFrame(() => {
+                if (typeof renderMyData === 'function') renderMyData();
+                setTimeout(() => { window.scrollTo({ top: homeScrollPosition || 0, behavior: 'instant' }); }, 10);
+            });
             break;
 
         case 'plants':
-            if (typeof renderPlants === 'function') renderPlants();
-            setTimeout(() => { window.scrollTo({ top: plantsScrollPosition || 0, behavior: 'instant' }); }, 10);
+            requestAnimationFrame(() => {
+                if (typeof renderPlants === 'function') renderPlants();
+                setTimeout(() => { window.scrollTo({ top: plantsScrollPosition || 0, behavior: 'instant' }); }, 10);
+            });
             break;
 
         case 'settings':

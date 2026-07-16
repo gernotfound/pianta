@@ -2,8 +2,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
 import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { 
-    getFirestore, 
-    enableMultiTabIndexedDbPersistence, 
+    initializeFirestore,
+    persistentLocalCache,
+    persistentMultipleTabManager,
     doc, 
     setDoc, 
     getDoc, 
@@ -26,15 +27,12 @@ const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
-const db = getFirestore(app);
 
-// Abilita la persistenza offline multi-tab per le PWA
-enableMultiTabIndexedDbPersistence(db).catch((err) => {
-    if (err.code == 'failed-precondition') {
-        console.warn("Multiple tabs open, persistence can only be enabled in one tab at a a time.");
-    } else if (err.code == 'unimplemented') {
-        console.warn("The current browser does not support all of the features required to enable persistence");
-    }
+// Inizializza Firestore con la cache offline moderna multi-tab
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager()
+  })
 });
 
 // Esponiamo al window object per renderli accessibili globalmente dai file non a moduli

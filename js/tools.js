@@ -600,6 +600,8 @@ async function addWishlistItem() {
         const newItemId = typeof generateId === 'function' ? generateId() : crypto.randomUUID();
         let photoBlob = null;
 
+        let savedPhotoId = null;
+
         if (photoInput && photoInput.files && photoInput.files.length > 0) {
             try {
                 if (typeof compressImageAsync === 'function') {
@@ -613,6 +615,7 @@ async function addWishlistItem() {
                     const imgId = `${newItemId}_wishlist`;
                     await saveImageToFirestore(imgId, b64);
                     if (window.imageCache) window.imageCache[imgId] = b64;
+                    savedPhotoId = imgId;
                 }
             } catch(e) {
                 console.error("Errore compressione/salvataggio foto wishlist", e);
@@ -622,7 +625,7 @@ async function addWishlistItem() {
         if (!wishlist) wishlist = [];
         wishlist.push({ 
             id: newItemId, 
-            name, price, notes, photo: photoBlob 
+            name, price, notes, photo: savedPhotoId 
         });
         
         unsavedChanges = true;

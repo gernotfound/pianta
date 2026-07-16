@@ -276,17 +276,10 @@ function getImageUrl(imageObj) {
     return '';
 }
 
-function revokeBlob(blobObj) {
-    if (!blobObj) return;
-    try {
-        if (typeof blobObj === 'string' && blobObj.startsWith('blob:')) {
-            URL.revokeObjectURL(blobObj);
-        } else if (blobObj instanceof Blob && blobObj._url) {
-            URL.revokeObjectURL(blobObj._url);
-            delete blobObj._url;
-        }
-    } catch(e) {
-        console.warn("Errore revoca blob", e);
+function revokeBlob(imageId) {
+    if (imageId && window.imageCache && window.imageCache[imageId]) {
+        URL.revokeObjectURL(window.imageCache[imageId]);
+        delete window.imageCache[imageId];
     }
 }
 
@@ -347,22 +340,34 @@ async function saveToLocal() {
             for (const id in dbSyncHashes.Plants) {
                 if (!currentPlantIds.has(id)) {
                     const docRef = window.firebaseDoc(window.firebaseDb, "users", firestoreUid, "plants", id);
-                    await window.firebaseDeleteDoc(docRef).catch(e=>console.warn(e));
-                    delete dbSyncHashes.Plants[id];
+                    try {
+                        await window.firebaseDeleteDoc(docRef);
+                        delete dbSyncHashes.Plants[id];
+                    } catch(e) {
+                        console.warn("Rinvio eliminazione pianta offline:", e);
+                    }
                 }
             }
             for (const id in dbSyncHashes.Expenses) {
                 if (!currentExpenseIds.has(id)) {
                     const docRef = window.firebaseDoc(window.firebaseDb, "users", firestoreUid, "expenses", id);
-                    await window.firebaseDeleteDoc(docRef).catch(e=>console.warn(e));
-                    delete dbSyncHashes.Expenses[id];
+                    try {
+                        await window.firebaseDeleteDoc(docRef);
+                        delete dbSyncHashes.Expenses[id];
+                    } catch(e) {
+                        console.warn("Rinvio eliminazione spesa offline:", e);
+                    }
                 }
             }
             for (const id in dbSyncHashes.Wishlist) {
                 if (!currentWishlistIds.has(id)) {
                     const docRef = window.firebaseDoc(window.firebaseDb, "users", firestoreUid, "wishlist", id);
-                    await window.firebaseDeleteDoc(docRef).catch(e=>console.warn(e));
-                    delete dbSyncHashes.Wishlist[id];
+                    try {
+                        await window.firebaseDeleteDoc(docRef);
+                        delete dbSyncHashes.Wishlist[id];
+                    } catch(e) {
+                        console.warn("Rinvio eliminazione wishlist offline:", e);
+                    }
                 }
             }
 
@@ -584,7 +589,7 @@ async function saveGardenNotes() {
     }
 }
 
-window.addEventListener('DOMContentLoaded', () => {
+function initAppListeners() {
     if (window.appInitialized) return;
     updateConnectionStatusIndicator();
     window.addEventListener('online', updateConnectionStatusIndicator);
@@ -621,7 +626,13 @@ window.addEventListener('DOMContentLoaded', () => {
             if (notesArea.value !== gardenNotes) await saveGardenNotes();
         });
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAppListeners);
+} else {
+    initAppListeners();
+}
 
 ['input', 'change'].forEach(evt => {
     document.addEventListener(evt, (e) => {

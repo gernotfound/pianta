@@ -28,7 +28,7 @@ function initRouter(hasData) {
             sysModal.style.display = 'none';
         }
 
-        if (isFormDirty && currentTab === 'add-plant') {
+        if (isFormDirty && (currentTab === 'add-plant' || plantsTabState.view === 'edit-plant' || currentTab === 'expenses' || currentTab === 'wishlist' || currentTab === 'diary')) {
             history.pushState({ view: 'add-plant' }, '', currentAppRoute);
 
             if (typeof Swal === 'undefined') return;
@@ -178,7 +178,28 @@ function goToPlantsTab() {
     }
 }
 
-function navigateTab(tab) {
+async function navigateTab(tab) {
+    if (isFormDirty) {
+        if (typeof Swal !== 'undefined') {
+            const res = await Swal.fire({
+                title: 'Dati non salvati!',
+                text: 'Sei sicuro di voler cambiare scheda e perdere i dati?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sì, cambia',
+                cancelButtonText: 'Annulla'
+            });
+            if (!res.isConfirmed) return;
+        } else {
+            if (!confirm('Hai dei dati non salvati! Sei sicuro di voler cambiare scheda?')) return;
+        }
+        isFormDirty = false;
+        editingMode = false;
+        plantsTabState = { view: 'plants', param: null };
+    }
+
     if (tab === 'home') {
         goToHomeTab();
     } else if (tab === 'plants') {

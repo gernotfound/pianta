@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
-import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, deleteUser, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { 
     initializeFirestore,
     persistentLocalCache,
@@ -10,7 +10,8 @@ import {
     setDoc, 
     getDoc, 
     collection, 
-    getDocs 
+    getDocs,
+    deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -26,6 +27,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const auth = getAuth(app);
+setPersistence(auth, browserLocalPersistence).catch((err) => {
+    console.warn("Auth persistence error:", err);
+});
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 
@@ -51,5 +55,7 @@ window.firebaseCollection = collection;
 window.firebaseGetDocs = getDocs;
 window.firebaseOnAuthStateChanged = onAuthStateChanged;
 window.firebaseWaitForPendingWrites = waitForPendingWrites;
+window.firebaseDeleteUser = deleteUser;
+window.firebaseDeleteDoc = deleteDoc;
 
 console.log("[Firebase] Configured and exported to window");

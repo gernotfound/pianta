@@ -603,6 +603,60 @@ function logout() {
     });
 }
 
+function deleteAccount() {
+    if (typeof Swal === 'undefined') return;
+    Swal.fire({
+        title: 'ELIMINAZIONE DEFINITIVA',
+        text: "Vuoi davvero eliminare il tuo account, il tuo giardino e tutti i tuoi dati dal Cloud? Questa azione è IRREVERSIBILE.",
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonColor: '#d32f2f',
+        cancelButtonColor: '#607d8b',
+        confirmButtonText: 'Sì, elimina tutto',
+        cancelButtonText: 'Annulla'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Eliminazione in corso...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            try {
+                if (window.firebaseAuth && window.firebaseAuth.currentUser && window.firebaseDb && firestoreUid) {
+                    // 1. Elimina i dati da Firestore
+                    const userDocRef = window.firebaseDoc(window.firebaseDb, "users", firestoreUid);
+                    await window.firebaseDeleteDoc(userDocRef);
+                    
+                    // 2. Elimina l'utente dall'Auth
+                    await window.firebaseDeleteUser(window.firebaseAuth.currentUser);
+                }
+            } catch(e) {
+                console.error("Errore eliminazione account:", e);
+                // Se l'errore è auth/requires-recent-login
+                if (e.code === 'auth/requires-recent-login') {
+                    Swal.fire('Sicurezza Google', 'Per motivi di sicurezza, Google richiede un accesso recente per poter eliminare l\'account. Fai Log Out, accedi di nuovo e riprova l\'eliminazione.', 'warning');
+                    return;
+                } else {
+                    Swal.fire('Errore', 'Impossibile eliminare l\'account: ' + e.message, 'error');
+                    return;
+                }
+            }
+            plantsDatabase = [];
+            generalExpenses = [];
+            wishlist = [];
+            gardenTitle = "🌿 Il mio giardino";
+            gardenNotes = "";
+            firestoreUid = null;
+            isFormDirty = false;
+            unsavedChanges = false;
+            
+            window.location.hash = '#/startup';
+            window.location.reload();
+        }
+    });
+}
+
 function createNewGarden() {
     // Funzione deprecata: Firebase creerà il giardino vuoto al login
 }

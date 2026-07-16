@@ -565,7 +565,21 @@ function logout() {
         cancelButtonText: 'Annulla'
     }).then(async (result) => {
         if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Sincronizzazione...',
+                text: 'Attendere prego, stiamo salvando i tuoi dati nel cloud.',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
             try {
+                // Attendi al massimo 5 secondi per caricare i salvataggi offline pendenti
+                if (window.firebaseWaitForPendingWrites && window.firebaseDb) {
+                    const syncPromise = window.firebaseWaitForPendingWrites(window.firebaseDb);
+                    const timeoutPromise = new Promise(resolve => setTimeout(resolve, 5000));
+                    await Promise.race([syncPromise, timeoutPromise]);
+                }
+                
                 if (window.firebaseSignOut && window.firebaseAuth) {
                     await window.firebaseSignOut(window.firebaseAuth);
                 }

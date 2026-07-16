@@ -5,6 +5,7 @@ import {
     initializeFirestore,
     persistentLocalCache,
     persistentMultipleTabManager,
+    waitForPendingWrites,
     doc, 
     setDoc, 
     getDoc, 
@@ -49,5 +50,6 @@ window.firebaseGetDoc = getDoc;
 window.firebaseCollection = collection;
 window.firebaseGetDocs = getDocs;
 window.firebaseOnAuthStateChanged = onAuthStateChanged;
+window.firebaseWaitForPendingWrites = waitForPendingWrites;
 
 console.log("[Firebase] Configured and exported to window");

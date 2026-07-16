@@ -1,4 +1,4 @@
-const CACHE_NAME = 'piante-pro-v4.1.1';
+const CACHE_NAME = 'piante-pro-v4.1.2';
 
 const offlineFallbackHtml = `<!DOCTYPE html>
 <html lang="it">
@@ -101,7 +101,7 @@ self.addEventListener('fetch', event => {
         event.respondWith(
             fetch(req)
                 .then(networkResponse => {
-                    if (networkResponse && (networkResponse.status === 200 || networkResponse.status === 0)) {
+                    if (networkResponse && networkResponse.status === 200) {
                         const responseClone = networkResponse.clone();
                         caches.open(CACHE_NAME).then(cache => cache.put('./index.html', responseClone));
                     }
@@ -122,7 +122,7 @@ self.addEventListener('fetch', event => {
             }
 
             const fetchPromise = fetch(req).then(networkResponse => {
-                if (networkResponse && (networkResponse.status === 200 || networkResponse.status === 0)) {
+                if (networkResponse && networkResponse.status === 200) {
                     const responseClone = networkResponse.clone();
                     caches.open(CACHE_NAME).then(cache => {
                         cache.put(req, responseClone);

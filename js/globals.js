@@ -593,8 +593,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const loginBtn = document.getElementById('btn-google-login');
     if (loginBtn) {
         loginBtn.addEventListener('click', () => {
-            if (window.firebaseSignIn && window.firebaseAuth && window.firebaseProvider) {
-                window.firebaseSignIn(window.firebaseAuth, window.firebaseProvider)
+            if (window.firebaseSignInRedirect && window.firebaseAuth && window.firebaseProvider) {
+                window.firebaseSignInRedirect(window.firebaseAuth, window.firebaseProvider)
                     .catch(err => {
                         console.error("Login fallito:", err);
                         if (typeof Swal !== 'undefined') Swal.fire('Errore', 'Login fallito: ' + err.message, 'error');

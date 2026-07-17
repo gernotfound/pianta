@@ -9,8 +9,10 @@ import {
     doc, 
     setDoc, 
     getDoc, 
+    getDocFromCache,
     collection, 
     getDocs,
+    getDocsFromCache,
     deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -51,8 +53,10 @@ window.firebaseSignOut = signOut;
 window.firebaseDoc = doc;
 window.firebaseSetDoc = setDoc;
 window.firebaseGetDoc = getDoc;
+window.firebaseGetDocFromCache = getDocFromCache;
 window.firebaseCollection = collection;
 window.firebaseGetDocs = getDocs;
+window.firebaseGetDocsFromCache = getDocsFromCache;
 window.firebaseOnAuthStateChanged = onAuthStateChanged;
 window.firebaseWaitForPendingWrites = waitForPendingWrites;
 window.firebaseDeleteUser = deleteUser;

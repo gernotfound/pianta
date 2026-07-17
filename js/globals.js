@@ -149,12 +149,12 @@ function updateConnectionStatusIndicator() {
     const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
     const homeIndicator = document.getElementById('connection-status-indicator');
     if (homeIndicator) {
-        homeIndicator.textContent = isOnline ? 'Online' : 'Offline';
+        homeIndicator.textContent = isOnline ? '🟢 Online' : '🔴 Offline';
         homeIndicator.style.background = isOnline ? '#2e7d32' : '#d32f2f';
     }
     const modalConnStatus = document.getElementById('modal-conn-status');
     if (modalConnStatus) {
-        modalConnStatus.textContent = isOnline ? 'Online' : 'Offline';
+        modalConnStatus.textContent = isOnline ? '🟢 Online' : '🔴 Offline';
         modalConnStatus.style.background = isOnline ? '#2e7d32' : '#d32f2f';
     }
 }
@@ -436,7 +436,32 @@ async function loadFromLocal(isSilent = false) {
     
     try {
         const docRef = window.firebaseDoc(window.firebaseDb, "users", firestoreUid);
-        const docSnap = await window.firebaseGetDoc(docRef);
+        
+        const fetchWithTimeout = (promise, ms) => {
+            return new Promise((resolve, reject) => {
+                const timer = setTimeout(() => reject(new Error("TIMEOUT")), ms);
+                promise.then(res => { clearTimeout(timer); resolve(res); })
+                       .catch(err => { clearTimeout(timer); reject(err); });
+            });
+        };
+
+        let docSnap;
+        try {
+            if (!navigator.onLine) {
+                docSnap = await window.firebaseGetDocFromCache(docRef);
+            } else {
+                docSnap = await fetchWithTimeout(window.firebaseGetDoc(docRef), 3000);
+            }
+        } catch (err) {
+            console.warn("Rete lenta o offline, fallback cache per doc utente:", err);
+            try {
+                docSnap = await window.firebaseGetDocFromCache(docRef);
+            } catch (cacheErr) {
+                console.error("Cache fallita:", cacheErr);
+                if (!isSilent) finalizeLoad(false);
+                return;
+            }
+        }
         
         let schemaVersion = 1;
 
@@ -459,11 +484,29 @@ async function loadFromLocal(isSilent = false) {
                 const expensesCol = window.firebaseCollection(window.firebaseDb, "users", firestoreUid, "expenses");
                 const wishlistCol = window.firebaseCollection(window.firebaseDb, "users", firestoreUid, "wishlist");
 
-                const [pSnap, eSnap, wSnap] = await Promise.all([
-                    window.firebaseGetDocs(plantsCol),
-                    window.firebaseGetDocs(expensesCol),
-                    window.firebaseGetDocs(wishlistCol)
-                ]);
+                let pSnap, eSnap, wSnap;
+                try {
+                    if (!navigator.onLine) {
+                        [pSnap, eSnap, wSnap] = await Promise.all([
+                            window.firebaseGetDocsFromCache(plantsCol),
+                            window.firebaseGetDocsFromCache(expensesCol),
+                            window.firebaseGetDocsFromCache(wishlistCol)
+                        ]);
+                    } else {
+                        [pSnap, eSnap, wSnap] = await fetchWithTimeout(Promise.all([
+                            window.firebaseGetDocs(plantsCol),
+                            window.firebaseGetDocs(expensesCol),
+                            window.firebaseGetDocs(wishlistCol)
+                        ]), 3000);
+                    }
+                } catch(err) {
+                    console.warn("Rete lenta o timeout, fallback cache per collezioni...");
+                    [pSnap, eSnap, wSnap] = await Promise.all([
+                        window.firebaseGetDocsFromCache(plantsCol),
+                        window.firebaseGetDocsFromCache(expensesCol),
+                        window.firebaseGetDocsFromCache(wishlistCol)
+                    ]);
+                }
 
                 plantsDatabase = [];
                 dbSyncHashes.Plants = {};

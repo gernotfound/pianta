@@ -124,10 +124,10 @@ async function openSystemStatusModal() {
     const isOnline = navigator.onLine;
     
     if (isOnline) {
-        connSpan.innerText = 'Online';
+        connSpan.innerText = '🟢 Online';
         connSpan.style.background = '#2e7d32';
     } else {
-        connSpan.innerText = 'Offline';
+        connSpan.innerText = '🔴 Offline';
         connSpan.style.background = '#d32f2f';
     }
 

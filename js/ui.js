@@ -162,7 +162,7 @@ async function openSystemStatusModal() {
             
             const now = new Date();
             const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-            weatherDesc.innerHTML = `L'API Meteo è in funzione. Il monitoraggio per Vento e Gelo è attivo.<br><strong>Ultimo controllo:</strong> oggi alle ${timeStr}.`;
+            weatherDesc.innerHTML = `L'API Meteo è in funzione. Il monitoraggio per Vento, Gelo e Grandine è attivo.<br><strong>Ultimo controllo:</strong> oggi alle ${timeStr}.`;
         } else {
             throw new Error("Risposta non valida dal server");
         }

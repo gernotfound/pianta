@@ -561,23 +561,37 @@ async function fetchWeatherData(lat, lng) {
     return null;
 }
 
-async function checkWeatherAlert() {
-    renderWeatherDashboard();
-}
-
 async function renderWeatherDashboard() {
     const container = document.getElementById('weather-alerts-container');
     if (!container) return;
 
     if (!plantsDatabase) plantsDatabase = [];
     const activePlants = plantsDatabase.filter(p => p.status !== 'archived');
-    if (activePlants.length === 0) {
-        container.style.display = 'none';
-        return;
-    }
     
     const savedWindThreshold = localStorage.getItem('windAlertThreshold');
     const activeWindThreshold = savedWindThreshold !== null ? parseFloat(savedWindThreshold) : (typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.WIND_ALERT_KMH : 40);
+
+    let html = `
+    <div style="background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e8f5e9; padding-bottom: 10px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+            <h3 style="margin: 0; color: #2e7d32; display:flex; align-items:center; gap:8px;">🌤️ Allerta meteo</h3>
+            <div style="display: flex; gap: 10px; align-items: center; background: #e3f2fd; padding: 6px 12px; border-radius: 20px; font-size: 13px;">
+                <label for="wind-threshold-input" style="color: #1565c0; margin:0; font-weight: bold;">Soglia Vento (km/h):</label>
+                <input type="number" id="wind-threshold-input" value="${activeWindThreshold}" style="width: 50px; padding: 4px; font-size: 13px; border: 1px solid #90caf9; border-radius: 4px; text-align: center; background: white;" onchange="saveWindThreshold()">
+                <span id="wind-save-confirm" style="color: #2e7d32; display: none; font-weight: bold;">✔️</span>
+            </div>
+        </div>`;
+
+    container.style.display = 'block';
+
+    if (activePlants.length === 0) {
+        html += `
+            <div style="background: #f1f8e9; padding: 20px; border-radius: 8px; border: 1px solid #c5e1a5; text-align: center;">
+                <p style="color: #666; font-size: 14px; margin-bottom: 0;">Aggiungi la tua prima pianta per attivare le allerte meteo automatiche (vento, gelo, grandine).</p>
+            </div></div>`;
+        container.innerHTML = html;
+        return;
+    }
 
     const locations = [];
     activePlants.forEach(p => {
@@ -593,18 +607,21 @@ async function renderWeatherDashboard() {
     });
 
     if (locations.length === 0) {
-        container.style.display = 'none';
+        html += `
+            <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; border: 1px solid #90caf9; text-align: center;">
+                <p style="color: #666; font-size: 14px; margin-bottom: 0;">Nessuna pianta ha una posizione impostata sulla mappa.<br>Modifica una pianta e clicca su <strong>"Usa GPS"</strong> per attivare le allerte meteo localizzate per vento, gelo e grandine.</p>
+            </div></div>`;
+        container.innerHTML = html;
         return;
     }
 
-    container.style.display = 'block';
-    
     if (!navigator.onLine) {
-        container.innerHTML = `<div style="text-align:center; padding:15px; background:#fff3e0; border-radius:8px; border:1px solid #ffcc80; color:#e65100; font-size:14px;"><strong>Attenzione:</strong> Sei offline. Le allerte meteo non sono aggiornate.</div>`;
+        html += `<div style="text-align:center; padding:15px; background:#fff3e0; border-radius:8px; border:1px solid #ffcc80; color:#e65100; font-size:14px;"><strong>Attenzione:</strong> Sei offline. Le allerte meteo non sono aggiornate.</div></div>`;
+        container.innerHTML = html;
         return;
     }
 
-    container.innerHTML = `<div style="text-align:center; padding:20px;"><div class="spinner"></div> Caricamento dati meteo...</div>`;
+    container.innerHTML = html + `<div style="text-align:center; padding:20px;"><div class="spinner"></div> Caricamento dati meteo...</div></div>`;
 
     let windAlerts = [];
     let frostAlerts = []; 
@@ -659,16 +676,7 @@ async function renderWeatherDashboard() {
         }
     }
 
-    let html = `
-    <div style="background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e8f5e9; padding-bottom: 10px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-            <h3 style="margin: 0; color: #2e7d32; display:flex; align-items:center; gap:8px;">🌤️ Allerta meteo</h3>
-            <div style="display: flex; gap: 10px; align-items: center; background: #e3f2fd; padding: 6px 12px; border-radius: 20px; font-size: 13px;">
-                <label for="wind-threshold-input" style="color: #1565c0; margin:0; font-weight: bold;">Soglia Vento (km/h):</label>
-                <input type="number" id="wind-threshold-input" value="${activeWindThreshold}" style="width: 50px; padding: 4px; font-size: 13px; border: 1px solid #90caf9; border-radius: 4px; text-align: center; background: white;" onchange="saveWindThreshold()">
-                <span id="wind-save-confirm" style="color: #2e7d32; display: none; font-weight: bold;">✔️</span>
-            </div>
-        </div>`;
+    html = html.replace(`<div style="text-align:center; padding:20px;"><div class="spinner"></div> Caricamento dati meteo...</div></div>`, '');
 
     if (windAlerts.length > 0) {
         html += `<div style="background:#fff3e0; padding:15px; border-radius:8px; border-left: 5px solid #ff9800; margin-bottom:15px; color:#e65100;">
@@ -717,9 +725,7 @@ async function renderWeatherDashboard() {
     }
 
     if (windAlerts.length === 0 && frostAlerts.length === 0 && hailAlerts.length === 0) {
-        html += `<div style="color:#2e7d32; font-weight:bold; font-size:14px; padding:12px; background:#e8f5e9; border-radius:8px; border-left: 5px solid #2e7d32; display: flex; align-items: center; gap: 8px;">
-                    <span>✅ Nessun rischio rilevato per vento, gelo o grandine nei prossimi 7 giorni.</span>
-                 </div>`;
+        html += `<div style="text-align:center; color:#4caf50; padding:15px; font-size: 14px;">Nessuna allerta meteo critica prevista nei prossimi giorni per le tue piante. ☀️</div>`;
     }
 
     html += `</div>`;

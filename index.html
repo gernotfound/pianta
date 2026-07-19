@@ -249,7 +249,6 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
             <button class="btn btn-danger" style="margin:0;" onclick="logout()" id="btn-logout">🚪 Log Out</button>
             <button class="btn" style="margin:0;" onclick="exportToCSV()">📊 Esporta Excel</button>
-            <button class="btn btn-danger" style="margin:0; grid-column: span 2;" onclick="deleteAccount()" id="btn-delete-account">⚠️ Elimina Definitivamente Account</button>
             
             <button class="btn btn-blue" onclick="toggleGeneralList()" style="grid-column: span 2; margin:0;" id="btn-toggle-list">📋 Elenco Piante (Testo)</button>
             <div id="general-list-container" class="hidden" style="grid-column: span 2;">
@@ -270,6 +269,7 @@
             <textarea id="global-garden-notes" style="flex-grow: 1; min-height: 200px; border: 1px solid #ccc; border-radius: 5px; padding: 10px; resize: vertical;"></textarea>
         </div>
 
+        <button class="btn btn-danger" style="margin-top:25px; width:100%;" onclick="deleteAccount()" id="btn-delete-account">⚠️ Elimina Definitivamente Account</button>
 
     </div>
 
@@ -587,11 +587,11 @@
                         <div style="grid-column: span 2; display: flex; gap: 15px; flex-wrap: wrap;">
                             <div style="flex: 1; min-width: 150px;">
                                 <label for="p-min-temp">🌡️ Temperatura minima (°C):</label>
-                                <input type="text" inputmode="decimal" id="p-min-temp" placeholder="es. 5">
+                                <input type="number" id="p-min-temp" placeholder="es. 5">
                             </div>
                             <div style="flex: 1; min-width: 150px;">
                                 <label for="p-max-temp">🌡️ Temperatura massima (°C):</label>
-                                <input type="text" inputmode="decimal" id="p-max-temp" placeholder="es. 38">
+                                <input type="number" id="p-max-temp" placeholder="es. 38">
                             </div>
                         </div>
                         

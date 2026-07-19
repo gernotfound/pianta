@@ -690,6 +690,10 @@ document.addEventListener('visibilitychange', async () => {
     if (document.visibilityState === 'hidden') {
         const notesArea = document.getElementById('global-garden-notes');
         if (notesArea && notesArea.value !== gardenNotes) await saveGardenNotes();
+    } else if (document.visibilityState === 'visible') {
+        if (typeof parseHashAndNavigate === 'function') {
+            parseHashAndNavigate(true);
+        }
     }
 });
 
@@ -755,13 +759,19 @@ function deleteAccount() {
     if (typeof Swal === 'undefined') return;
     Swal.fire({
         title: 'ELIMINAZIONE DEFINITIVA',
-        text: "Vuoi davvero eliminare il tuo account, il tuo giardino e tutti i tuoi dati dal Cloud? Questa azione è IRREVERSIBILE.",
+        text: "Vuoi davvero eliminare il tuo account, il tuo giardino e tutti i tuoi dati dal Cloud? Questa azione è IRREVERSIBILE. Scrivi 'elimina account' per confermare:",
+        input: 'text',
         icon: 'error',
         showCancelButton: true,
         confirmButtonColor: '#d32f2f',
         cancelButtonColor: '#607d8b',
         confirmButtonText: 'Sì, elimina tutto',
-        cancelButtonText: 'Annulla'
+        cancelButtonText: 'Annulla',
+        inputValidator: (value) => {
+            if (value.toLowerCase() !== 'elimina account') {
+                return "Devi scrivere 'elimina account' per confermare!";
+            }
+        }
     }).then(async (result) => {
         if (result.isConfirmed) {
             Swal.fire({

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
 import { useStore } from './store';
@@ -61,6 +61,7 @@ function App() {
         <Route path="events" element={<Events />} />
         <Route path="settings" element={<Settings />} />
         <Route path="tools" element={<Tools />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
     <ReloadPrompt />

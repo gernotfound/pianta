@@ -13,11 +13,11 @@ export default defineConfig({
         name: "Pianta Pro",
         short_name: "Pianta",
         description: "App gestionale per collezionisti di piante tropicali.",
-        theme_color: "#121212",
-        background_color: "#121212",
+        theme_color: "#000000",
+        background_color: "#000000",
         display: "standalone",
         display_override: ["standalone", "minimal-ui", "browser"],
-        start_url: "/",
+        start_url: ".",
         icons: [
           {
             src: "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥑</text></svg>",

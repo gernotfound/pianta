@@ -1201,34 +1201,20 @@ input:focus, select:focus, textarea:focus {
 }
 
 @media (max-width: 768px) {
-    body {
-        padding: 0 !important;
-        margin: 0 !important;
-        background-color: var(--surface) !important;
-    }
-
     .container {
         max-width: 100% !important;
         width: 100% !important;
-        padding: 0 !important;
-        margin: 0 !important;
+        padding: 0 10px !important;
     }
 
+    /* Le card e le sezioni mantengono lo stesso stile del desktop (bordi, background, ecc.) */
     .dashboard-panel, #form-container, #global-map-page, #my-data-page, #archive-page, #plant-detail-view, #expenses-view, #wishlist-view, #gallery-view, #macro-view, #events-view, #settings-view, #labels-scanner-view {
-        border: none !important;
-        border-radius: 0 !important;
-        padding: 15px 15px 100px 15px !important;
-        box-shadow: none !important;
-        margin: 0 !important;
+        padding: 15px !important;
         width: 100% !important;
-        min-height: 100vh;
-        background-color: var(--surface) !important;
     }
 
     .dashboard-panel {
         min-height: auto;
-        border-bottom: 1px solid var(--surface-border)eee !important;
-        padding-bottom: 10px !important;
     }
 
     #plants-grid, #archive-grid, #wishlist-grid {

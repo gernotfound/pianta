@@ -17,6 +17,8 @@ import ReloadPrompt from './components/ReloadPrompt';
 function App() {
   const setPlants = useStore(state => state.setPlants);
   const setDeferredPrompt = useStore(state => state.setDeferredPrompt);
+  const setGardenData = useStore(state => state.setGardenData);
+  const setUser = useStore(state => state.setUser);
 
   useEffect(() => {
     // PWA Install Prompt Listener (Global)
@@ -27,27 +29,56 @@ function App() {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     // Firebase Auth Listener
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    let unsubscribePlants = null;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+      setUser(user);
       if (user) {
         console.log("Utente loggato:", user.uid);
-        // Here we would normally fetch the user's document from Firestore
-        // For now, let's load some mock data to test the UI
-        setPlants([
-          { id: '1', name: 'Monstera', scientific: 'Monstera deliciosa', status: 'active', placement: 'Vaso' },
-          { id: '2', name: 'Pothos', scientific: 'Epipremnum aureum', status: 'active', placement: 'Vaso' },
-          { id: '3', name: 'Ficus (Morto)', scientific: 'Ficus elastica', status: 'archived', placement: 'Piena terra' }
-        ]);
+        
+        try {
+          const { doc, getDoc, collection, onSnapshot } = await import('firebase/firestore');
+          const { db } = await import('./firebase');
+          
+          // 1. Fetch User Data (gardenTitle, etc)
+          const userDocRef = doc(db, 'users', user.uid);
+          const userSnap = await getDoc(userDocRef);
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            setGardenData(userData.gardenTitle || "🌿 Gestione Piante Tropicali - Pro", userData.gardenNotes || "");
+          }
+  
+          // 2. Listen to Plants Collection
+          const plantsColRef = collection(db, 'users', user.uid, 'plants');
+          unsubscribePlants = onSnapshot(plantsColRef, (snapshot) => {
+            const plantsData = snapshot.docs.map(docSnap => ({
+               id: docSnap.id,
+               ...docSnap.data()
+            }));
+            setPlants(plantsData);
+          }, (error) => {
+            console.error("Errore lettura database piante:", error);
+          });
+        } catch(e) {
+          console.error("Firebase fetch error:", e);
+        }
+        
       } else {
         console.log("Nessun utente loggato");
         setPlants([]); // Empty on logout
+        if (unsubscribePlants) {
+          unsubscribePlants();
+          unsubscribePlants = null;
+        }
       }
     });
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      unsubscribe();
+      unsubscribeAuth();
+      if (unsubscribePlants) unsubscribePlants();
     };
-  }, [setPlants, setDeferredPrompt]);
+  }, [setPlants, setDeferredPrompt, setGardenData, setUser]);
 
   return (
     <>

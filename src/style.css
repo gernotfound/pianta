@@ -1232,7 +1232,7 @@ input:focus, select:focus, textarea:focus {
     }
 
     #plants-grid, #archive-grid, #wishlist-grid {
-        padding: 10px 15px 100px 15px;
+        padding: 10px 0 100px 0;
         gap: 15px;
     }
 

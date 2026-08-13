@@ -20,6 +20,8 @@ export const useStore = create((set) => ({
   
   // Actions
   setPlants: (plants) => set({ plantsDatabase: plants }),
+  setExpenses: (expenses) => set({ generalExpenses: expenses }),
+  setWishlist: (wishlist) => set({ wishlist: wishlist }),
   setGardenData: (title, notes) => set({ gardenTitle: title, gardenNotes: notes }),
   setCurrentPlant: (id) => set({ currentPlantId: id }),
   setEditingMode: (isEditing) => set({ editingMode: isEditing }),

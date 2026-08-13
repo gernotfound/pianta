@@ -1,14 +1,41 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { loadImageFromFirestore } from '../services/imageService';
 
 const OFFLINE_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23e0e0e0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%23757575'%3ENessuna Foto%3C/text%3E%3C/svg%3E";
 
 const PlantCard = ({ plant }) => {
   const navigate = useNavigate();
+  const [imgSrc, setImgSrc] = useState(OFFLINE_PLACEHOLDER);
+  
+  useEffect(() => {
+      let isMounted = true;
+      const loadPhoto = async () => {
+          const rawPhoto = plant.fruitPhoto || plant.photo;
+          if (!rawPhoto) {
+              if (isMounted) setImgSrc(OFFLINE_PLACEHOLDER);
+              return;
+          }
+          
+          if (rawPhoto.startsWith('http') || rawPhoto.startsWith('data:')) {
+              if (isMounted) setImgSrc(rawPhoto);
+              return;
+          }
+          
+          // Fetch from Firestore/IndexedDB cache
+          const base64Data = await loadImageFromFirestore(rawPhoto);
+          if (isMounted && base64Data) {
+              setImgSrc(base64Data);
+          }
+      };
+      
+      loadPhoto();
+      
+      return () => { isMounted = false; };
+  }, [plant.fruitPhoto, plant.photo]);
   
   const archiveStyle = plant.status === 'archived' ? { borderLeftColor: 'var(--danger)', opacity: 0.85 } : {};
   const nameColor = plant.status === 'archived' ? 'var(--danger)' : 'var(--primary)';
-  const rawPhoto = plant.fruitPhoto || plant.photo;
-  const imgSrc = rawPhoto ? rawPhoto : OFFLINE_PLACEHOLDER; // For now we assume rawPhoto is URL. We'll handle IndexedDB later.
   const origLabel = plant.origin || 'Non so / Altro';
 
   return (

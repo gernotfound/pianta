@@ -34,6 +34,11 @@ function App() {
 
     // Firebase Auth Listener
     let unsubscribePlants = null;
+    let unsubscribeExpenses = null;
+    let unsubscribeWishlist = null;
+
+    const setExpenses = useStore.getState().setExpenses;
+    const setWishlist = useStore.getState().setWishlist;
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
@@ -64,6 +69,27 @@ function App() {
           }, (error) => {
             console.error("Errore lettura database piante:", error);
           });
+
+          // 3. Listen to Expenses Collection
+          const expensesColRef = collection(db, 'users', currentUser.uid, 'expenses');
+          unsubscribeExpenses = onSnapshot(expensesColRef, (snapshot) => {
+            const expensesData = snapshot.docs.map(docSnap => ({
+               id: docSnap.id,
+               ...docSnap.data()
+            }));
+            setExpenses(expensesData);
+          }, (error) => console.error("Errore lettura spese:", error));
+
+          // 4. Listen to Wishlist Collection
+          const wishlistColRef = collection(db, 'users', currentUser.uid, 'wishlist');
+          unsubscribeWishlist = onSnapshot(wishlistColRef, (snapshot) => {
+            const wishlistData = snapshot.docs.map(docSnap => ({
+               id: docSnap.id,
+               ...docSnap.data()
+            }));
+            setWishlist(wishlistData);
+          }, (error) => console.error("Errore lettura wishlist:", error));
+
         } catch(e) {
           console.error("Firebase fetch error:", e);
         }
@@ -71,9 +97,19 @@ function App() {
       } else {
         console.log("Nessun utente loggato");
         setPlants([]); // Empty on logout
+        setExpenses([]);
+        setWishlist([]);
         if (unsubscribePlants) {
           unsubscribePlants();
           unsubscribePlants = null;
+        }
+        if (unsubscribeExpenses) {
+          unsubscribeExpenses();
+          unsubscribeExpenses = null;
+        }
+        if (unsubscribeWishlist) {
+          unsubscribeWishlist();
+          unsubscribeWishlist = null;
         }
       }
       
@@ -84,6 +120,8 @@ function App() {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       unsubscribeAuth();
       if (unsubscribePlants) unsubscribePlants();
+      if (unsubscribeExpenses) unsubscribeExpenses();
+      if (unsubscribeWishlist) unsubscribeWishlist();
     };
   }, [setPlants, setDeferredPrompt, setGardenData, setUser, setAuthLoading]);
 

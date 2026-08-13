@@ -30,30 +30,30 @@ const PlantCard = ({ plant }) => {
       />
       
       <h3 style={{ margin: '0 0 2px 0', color: nameColor, fontSize: '20px', lineHeight: '1.2' }}>{plant.name}</h3>
-      <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#666', fontStyle: 'italic' }}>{plant.scientific || '\u00A0'}</p>
+      <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--text-muted)', fontStyle: 'italic' }}>{plant.scientific || '\u00A0'}</p>
       
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '15px', alignItems: 'center' }}>
         <span style={{ background: 'var(--secondary)', color: 'white', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
           {origLabel}
         </span>
         {plant.status === 'archived' && (
-          <span style={{ background: '#ffebee', color: '#d32f2f', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
+          <span style={{ background: 'rgba(211, 47, 47, 0.2)', color: '#ff8a80', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
             Archiviata
           </span>
         )}
         {plant.minTemp !== undefined && plant.minTemp !== null && (
-          <span style={{ background: '#e3f2fd', color: '#1565c0', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
+          <span style={{ background: 'rgba(21, 101, 192, 0.2)', color: '#82b1ff', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
             ❄️ Min: {plant.minTemp}°C
           </span>
         )}
         {plant.maxTemp !== undefined && plant.maxTemp !== null && (
-          <span style={{ background: '#ffebee', color: '#d32f2f', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
+          <span style={{ background: 'rgba(211, 47, 47, 0.2)', color: '#ff8a80', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
             🔥 Max: {plant.maxTemp}°C
           </span>
         )}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '12px', color: '#555' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
         <div><strong>📍 Posizione:</strong><br/>{plant.location || 'Non specificata'}</div>
         <div><strong>🪴 Vaso/Terra:</strong><br/>{plant.placement || 'Vaso'}</div>
       </div>

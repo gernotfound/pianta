@@ -17,7 +17,7 @@ const PlantsGrid = () => {
 
   return (
     <div className="fade-in">
-      <div className="search-sort-bar" style={{ borderRadius: '8px', marginBottom: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', padding: '15px', background: 'white' }}>
+      <div className="search-sort-bar" style={{ borderRadius: '8px', marginBottom: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', padding: '15px', background: 'var(--surface)' }}>
         <div className="search-input-wrapper">
             <span className="search-icon">🔍</span>
             <input 
@@ -33,7 +33,7 @@ const PlantsGrid = () => {
                 tabIndex="0" 
                 aria-label="Cancella ricerca" 
                 onClick={() => setSearchTerm('')} 
-                style={{ position:'absolute', right:'15px', top:'50%', transform:'translateY(-50%)', background:'#ddd', color:'#555', borderRadius:'50%', width:'22px', height:'22px', textAlign:'center', lineHeight:'22px', fontSize:'12px', cursor:'pointer', fontWeight:'bold' }}
+                style={{ position:'absolute', right:'15px', top:'50%', transform:'translateY(-50%)', background:'var(--surface-border)', color:'var(--text)', borderRadius:'50%', width:'22px', height:'22px', textAlign:'center', lineHeight:'22px', fontSize:'12px', cursor:'pointer', fontWeight:'bold' }}
               >✖</span>
             )}
         </div>
@@ -45,10 +45,10 @@ const PlantsGrid = () => {
       </div>
 
       {filteredPlants.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '50px 20px', background: 'white', borderRadius: '12px', border: '2px dashed #ccc', marginTop: '20px', boxShadow: '0 4px 10px rgba(0,0,0,0.02)' }}>
+        <div style={{ textAlign: 'center', padding: '50px 20px', background: 'var(--surface)', borderRadius: '12px', border: '2px dashed var(--surface-border)', marginTop: '20px', boxShadow: '0 4px 10px rgba(0,0,0,0.02)' }}>
             <span style={{ fontSize: '50px' }} aria-hidden="true">🌱</span>
             <h3 style={{ color: 'var(--primary)', marginBottom: '10px' }}>Il tuo giardino è vuoto</h3>
-            <p style={{ color: '#666', fontSize: '15px', marginBottom: '25px' }}>Inizia ad aggiungere le tue piante per tenere traccia della loro crescita e degli eventi.</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '15px', marginBottom: '25px' }}>Inizia ad aggiungere le tue piante per tenere traccia della loro crescita e degli eventi.</p>
             <button className="btn" style={{ fontSize: '16px', padding: '12px 25px' }} onClick={() => navigate('/add-plant')}>➕ Aggiungi la prima Pianta</button>
         </div>
       ) : (

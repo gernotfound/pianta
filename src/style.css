@@ -20,6 +20,7 @@
 
 html {
     scroll-behavior: smooth;
+    background-color: var(--bg);
 }
 
 body {
@@ -128,7 +129,7 @@ header {
 
 .edit-title-btn:hover {
     transform: scale(1.15);
-    background: #f0f0f0;
+    background: var(--surface);
 }
 
 .sys-buttons {
@@ -139,7 +140,7 @@ header {
 .ui-divider {
     border: 0;
     height: 1px;
-    background: #eeeeee;
+    background: var(--surface);
     margin: 15px 0;
 }
 
@@ -156,7 +157,7 @@ header {
 }
 
 .btn-text:hover {
-    background: #f0f0f0;
+    background: var(--surface);
     color: var(--text);
 }
 
@@ -223,7 +224,7 @@ header {
     position: absolute;
     left: 15px;
     font-size: 16px;
-    color: #888;
+    color: var(--text-muted);
     pointer-events: none;
 }
 
@@ -342,7 +343,7 @@ header {
     padding: 8px 14px;
     border-radius: 20px;
     border: 1px solid var(--surface-border);
-    background: #f5f5f5;
+    background: var(--surface);
     font-size: 13px;
     cursor: pointer;
     color: var(--text);
@@ -353,7 +354,7 @@ header {
 }
 
 .chip-radio:hover + label {
-    background: #e0e0e0;
+    background: var(--surface);
 }
 
 .chip-radio:checked + label {
@@ -380,7 +381,7 @@ header {
 }
 
 .data-card {
-    background: #f9f9f9;
+    background: var(--surface);
     padding: 15px;
     border-radius: 8px;
     border-left: 4px solid var(--grey);
@@ -410,7 +411,7 @@ header {
 }
 
 .plant-card {
-    background: #f4faf5;
+    background: var(--surface);
     border-left: 5px solid var(--primary);
     padding: 15px;
     border-radius: 10px;
@@ -435,7 +436,7 @@ header {
     object-fit: cover;
     border-radius: 6px;
     margin-bottom: 12px;
-    background: #eee;
+    background: var(--surface);
 }
 
 .plant-card h3 {
@@ -492,7 +493,7 @@ header {
 .plant-card.selected-for-batch {
     border: 4px solid var(--accent);
     transform: scale(1.02);
-    background-color: #fff8e1;
+    background-color: var(--surface);
     position: relative;
 }
 
@@ -525,7 +526,7 @@ header {
     object-fit: cover;
     border-radius: 4px;
     margin-bottom: 5px;
-    background: #eee;
+    background: var(--surface);
 }
 
 .macro-mini-card h4 {
@@ -539,7 +540,7 @@ header {
 
 .macro-mini-card.selected, .macro-mini-card:focus-visible {
     border-color: var(--accent);
-    background: #fff8e1;
+    background: var(--surface);
     transform: scale(1.05);
 }
 
@@ -560,7 +561,7 @@ header {
     border-radius: 4px;
     object-fit: cover;
     border: 1px solid var(--surface-border);
-    background: #eee;
+    background: var(--surface);
 }
 
 .macro-input-row div {
@@ -641,7 +642,7 @@ input:focus, select:focus, textarea:focus {
     border-radius: 10px;
     overflow: hidden;
     border: 1px solid var(--surface-border);
-    background: #fafafa;
+    background: var(--surface);
 }
 
 .accordion-item {
@@ -659,13 +660,13 @@ input:focus, select:focus, textarea:focus {
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
-    background: #f9f9f9;
+    background: var(--surface);
     transition: background 0.3s;
     outline: none;
 }
 
 .accordion-header:hover, .accordion-header:focus-visible {
-    background: #f1f8e9;
+    background: var(--surface);
 }
 
 .accordion-header h3 {
@@ -687,7 +688,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .accordion-item.open .accordion-header {
-    background: #e8f5e9;
+    background: var(--surface);
     border-bottom: 1px solid #c8e6c9;
 }
 
@@ -718,7 +719,7 @@ input:focus, select:focus, textarea:focus {
     aspect-ratio: 1 / 1;
     border: 2px dashed var(--secondary);
     border-radius: 12px;
-    background: #f9f9f9;
+    background: var(--surface);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -732,7 +733,7 @@ input:focus, select:focus, textarea:focus {
 
 .smart-upload-container:hover, .smart-upload-container:focus-visible {
     border-color: var(--primary);
-    background: #f1f8e9;
+    background: var(--surface);
 }
 
 .upload-placeholder {
@@ -751,7 +752,7 @@ input:focus, select:focus, textarea:focus {
     position: absolute;
     top: 0;
     left: 0;
-    background: #eee;
+    background: var(--surface);
 }
 
 .remove-photo-btn {
@@ -821,7 +822,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .diary-section {
-    background: #fafafa;
+    background: var(--surface);
     padding: 20px;
     border-radius: 12px;
     margin-top: 0;
@@ -857,7 +858,7 @@ input:focus, select:focus, textarea:focus {
     border-left: 4px solid var(--accent);
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    border: 1px solid #f5f5f5;
+    border: 1px solid var(--surface);
 }
 
 .timeline-date {
@@ -924,7 +925,7 @@ input:focus, select:focus, textarea:focus {
     border-radius: 6px;
     margin-bottom: 5px;
     border: 1px solid var(--surface-border);
-    background: #eee;
+    background: var(--surface);
 }
 
 .leaflet-popup-content h4 {
@@ -976,7 +977,7 @@ input:focus, select:focus, textarea:focus {
     border: none !important;
     border-radius: 12px;
     overflow: hidden;
-    background: #f9f9f9;
+    background: var(--surface);
     padding-bottom: 15px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
@@ -1052,7 +1053,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 #html5-qrcode-anchor-scan-type-change:hover {
-    background: #e3f2fd;
+    background: var(--surface);
     transform: translateY(-1px);
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
@@ -1102,7 +1103,7 @@ input:focus, select:focus, textarea:focus {
 .nav-item.active {
     color: var(--primary);
     font-weight: bold;
-    background: #e8f5e9;
+    background: var(--surface);
 }
 
 .nav-icon {
@@ -1126,7 +1127,7 @@ input:focus, select:focus, textarea:focus {
 
 .nav-item-macro.active {
     color: var(--accent);
-    background: #fff3e0;
+    background: var(--surface);
 }
 
 .nav-item:focus-visible {
@@ -1292,3 +1293,7 @@ input:focus, select:focus, textarea:focus {
         margin-bottom: 0;
     }
 }
+.pwa-toast-container { position: fixed; bottom: 85px; right: 0; left: 0; display: flex; justify-content: center; z-index: 10000; padding: 0 20px; }
+.pwa-toast { background: var(--surface); border: 1px solid var(--surface-border); box-shadow: 0 4px 15px rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 10px; }
+.pwa-message { font-size: 14px; font-weight: 500; color: var(--text); }
+.pwa-buttons { display: flex; gap: 10px; justify-content: flex-end; }

@@ -12,11 +12,20 @@ import Events from './pages/Events';
 import Settings from './pages/Settings';
 import PlantDetail from './pages/PlantDetail';
 import Tools from './pages/Tools';
+import ReloadPrompt from './components/ReloadPrompt';
 
 function App() {
   const setPlants = useStore(state => state.setPlants);
+  const setDeferredPrompt = useStore(state => state.setDeferredPrompt);
 
   useEffect(() => {
+    // PWA Install Prompt Listener (Global)
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
     // Firebase Auth Listener
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -34,10 +43,14 @@ function App() {
       }
     });
 
-    return () => unsubscribe();
-  }, [setPlants]);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      unsubscribe();
+    };
+  }, [setPlants, setDeferredPrompt]);
 
   return (
+    <>
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
@@ -50,6 +63,8 @@ function App() {
         <Route path="tools" element={<Tools />} />
       </Route>
     </Routes>
+    <ReloadPrompt />
+    </>
   );
 }
 

@@ -1,26 +1,13 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import { registerSW } from 'virtual:pwa-register'
+import { HashRouter } from 'react-router-dom'
 import App from './App.jsx'
 import './style.css'
 
-// Register the PWA service worker
-const updateSW = registerSW({
-  onNeedRefresh() {
-    if (confirm("Nuovo aggiornamento disponibile. Ricaricare?")) {
-      updateSW(true);
-    }
-  },
-  onOfflineReady() {
-    console.log("App pronta per l'uso offline");
-  },
-})
-
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
+    <HashRouter>
       <App />
-    </BrowserRouter>
+    </HashRouter>
   </StrictMode>,
 )

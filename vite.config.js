@@ -3,17 +3,18 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  base: './',
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'], // Add icons here as needed
       manifest: {
         name: "Pianta Pro",
         short_name: "Pianta",
         description: "App gestionale per collezionisti di piante tropicali.",
-        theme_color: "#2e7d32",
-        background_color: "#f1f8e9",
+        theme_color: "#121212",
+        background_color: "#121212",
         display: "standalone",
         display_override: ["standalone", "minimal-ui", "browser"],
         start_url: "/",

@@ -12,6 +12,7 @@ import Events from './pages/Events';
 import Settings from './pages/Settings';
 import PlantDetail from './pages/PlantDetail';
 import Tools from './pages/Tools';
+import Login from './pages/Login';
 import ReloadPrompt from './components/ReloadPrompt';
 
 function App() {
@@ -19,6 +20,9 @@ function App() {
   const setDeferredPrompt = useStore(state => state.setDeferredPrompt);
   const setGardenData = useStore(state => state.setGardenData);
   const setUser = useStore(state => state.setUser);
+  const authLoading = useStore(state => state.authLoading);
+  const setAuthLoading = useStore(state => state.setAuthLoading);
+  const user = useStore(state => state.user);
 
   useEffect(() => {
     // PWA Install Prompt Listener (Global)
@@ -31,17 +35,18 @@ function App() {
     // Firebase Auth Listener
     let unsubscribePlants = null;
 
-    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      if (user) {
-        console.log("Utente loggato:", user.uid);
+    const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      
+      if (currentUser) {
+        console.log("Utente loggato:", currentUser.uid);
         
         try {
           const { doc, getDoc, collection, onSnapshot } = await import('firebase/firestore');
           const { db } = await import('./firebase');
           
           // 1. Fetch User Data (gardenTitle, etc)
-          const userDocRef = doc(db, 'users', user.uid);
+          const userDocRef = doc(db, 'users', currentUser.uid);
           const userSnap = await getDoc(userDocRef);
           if (userSnap.exists()) {
             const userData = userSnap.data();
@@ -49,7 +54,7 @@ function App() {
           }
   
           // 2. Listen to Plants Collection
-          const plantsColRef = collection(db, 'users', user.uid, 'plants');
+          const plantsColRef = collection(db, 'users', currentUser.uid, 'plants');
           unsubscribePlants = onSnapshot(plantsColRef, (snapshot) => {
             const plantsData = snapshot.docs.map(docSnap => ({
                id: docSnap.id,
@@ -71,6 +76,8 @@ function App() {
           unsubscribePlants = null;
         }
       }
+      
+      setAuthLoading(false);
     });
 
     return () => {
@@ -78,7 +85,24 @@ function App() {
       unsubscribeAuth();
       if (unsubscribePlants) unsubscribePlants();
     };
-  }, [setPlants, setDeferredPrompt, setGardenData, setUser]);
+  }, [setPlants, setDeferredPrompt, setGardenData, setUser, setAuthLoading]);
+
+  if (authLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: 'var(--bg)', color: 'var(--primary)' }}>
+        <h2>Caricamento...</h2>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <>
+        <Login />
+        <ReloadPrompt />
+      </>
+    );
+  }
 
   return (
     <>

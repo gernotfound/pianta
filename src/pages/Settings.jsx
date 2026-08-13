@@ -1,6 +1,6 @@
 import { useStore } from '../store';
-import { auth, provider } from '../firebase';
-import { signInWithPopup, signOut } from 'firebase/auth';
+import { auth } from '../firebase';
+import { signOut } from 'firebase/auth';
 
 const Settings = () => {
   const deferredPrompt = useStore(state => state.deferredPrompt);
@@ -17,14 +17,6 @@ const Settings = () => {
     }
   };
 
-  const handleLogin = async () => {
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Errore di login:", error);
-    }
-  };
-
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -38,25 +30,13 @@ const Settings = () => {
       <h2 style={{ color: 'var(--primary)', marginTop: 0 }}>Impostazioni</h2>
       
       <div className="card" style={{ marginTop: '20px' }}>
-        <h3>Account e Sincronizzazione</h3>
-        <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '15px' }}>
-          Accedi con Google per sincronizzare il tuo database delle piante nel cloud.
-        </p>
-        
-        {user ? (
-          <div>
-            <div style={{ padding: '10px', background: 'var(--bg)', borderRadius: '8px', fontSize: '14px', marginBottom: '15px' }}>
-              👤 Loggato come: <strong>{user.email || user.uid}</strong>
-            </div>
-            <button className="btn btn-outline" onClick={handleLogout} style={{ width: '100%' }}>
-              Esci
-            </button>
-          </div>
-        ) : (
-          <button className="btn btn-primary" onClick={handleLogin}>
-            🔐 Accedi con Google
-          </button>
-        )}
+        <h3>Account</h3>
+        <div style={{ padding: '10px', background: 'var(--bg)', borderRadius: '8px', fontSize: '14px', marginBottom: '15px' }}>
+          👤 Loggato come: <strong>{user?.email || user?.uid}</strong>
+        </div>
+        <button className="btn btn-outline" onClick={handleLogout} style={{ width: '100%' }}>
+          Esci
+        </button>
       </div>
 
       <div className="card" style={{ marginTop: '20px' }}>

@@ -31,6 +31,16 @@ body {
     padding: 20px;
 }
 
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+#root {
+    width: 100%;
+    min-height: 100vh;
+}
+
 *:focus-visible {
     outline: 3px solid var(--accent);
     outline-offset: 2px;

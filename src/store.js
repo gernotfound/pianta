@@ -16,6 +16,7 @@ export const useStore = create((set) => ({
   selectedBatchPlants: new Set(),
   deferredPrompt: null,
   user: null,
+  authLoading: true,
   
   // Actions
   setPlants: (plants) => set({ plantsDatabase: plants }),
@@ -24,6 +25,7 @@ export const useStore = create((set) => ({
   setEditingMode: (isEditing) => set({ editingMode: isEditing }),
   setDeferredPrompt: (prompt) => set({ deferredPrompt: prompt }),
   setUser: (user) => set({ user }),
+  setAuthLoading: (isLoading) => set({ authLoading: isLoading }),
   
   // ... more actions will be added as we migrate
 }));

@@ -52,7 +52,7 @@ const PlantsGrid = () => {
             <button className="btn" style={{ fontSize: '16px', padding: '12px 25px' }} onClick={() => navigate('/add-plant')}>➕ Aggiungi la prima Pianta</button>
         </div>
       ) : (
-        <div id="plants-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '15px', marginTop: '15px' }}>
+        <div id="plants-grid">
           {filteredPlants.map(plant => (
             <PlantCard key={plant.id} plant={plant} />
           ))}

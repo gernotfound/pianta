@@ -1211,10 +1211,14 @@ input:focus, select:focus, textarea:focus {
 }
 
 @media (max-width: 768px) {
+    body {
+        padding: 0 !important;
+    }
+    
     .container {
         max-width: 100% !important;
         width: 100% !important;
-        padding: 0 10px !important;
+        padding: 0 15px !important;
     }
 
     /* Le card e le sezioni mantengono lo stesso stile del desktop (bordi, background, ecc.) */

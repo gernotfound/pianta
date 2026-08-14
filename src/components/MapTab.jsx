@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useNavigate } from 'react-router-dom';
@@ -15,17 +15,22 @@ let DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
+function FitBounds({ markers }) {
+    const map = useMap();
+    useEffect(() => {
+        if (markers.length > 0) {
+            const bounds = L.latLngBounds(markers.map(m => [parseFloat(m.lat), parseFloat(m.lng)]));
+            map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+        }
+    }, [markers, map]);
+    return null;
+}
+
 const MapTab = ({ plants }) => {
     const navigate = useNavigate();
     const [mapCenter, setMapCenter] = useState([41.9028, 12.4964]); // Default to Rome
     
     const mappedPlants = plants.filter(p => p.lat && p.lng && !isNaN(parseFloat(p.lat)) && !isNaN(parseFloat(p.lng)));
-
-    useEffect(() => {
-        if (mappedPlants.length > 0) {
-            setMapCenter([parseFloat(mappedPlants[0].lat), parseFloat(mappedPlants[0].lng)]);
-        }
-    }, [mappedPlants]);
 
     return (
         <div>
@@ -40,6 +45,7 @@ const MapTab = ({ plants }) => {
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
                     />
+                    <FitBounds markers={mappedPlants} />
                     {mappedPlants.map(plant => (
                         <Marker key={plant.id} position={[parseFloat(plant.lat), parseFloat(plant.lng)]}>
                             <Popup>

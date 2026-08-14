@@ -73,7 +73,7 @@ const Settings = () => {
         
         {deferredPrompt ? (
           <button className="btn btn-primary" onClick={promptInstall} style={{ width: '100%' }}>
-            📱 Installa Pianta Pro
+            📱 Installa Pianta
           </button>
         ) : (
           <div style={{ padding: '10px', background: 'var(--bg)', borderRadius: '8px', fontSize: '14px', textAlign: 'center' }}>

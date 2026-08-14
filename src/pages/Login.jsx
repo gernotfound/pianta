@@ -40,9 +40,9 @@ const Login = () => {
         width: '100%'
       }}>
         <div style={{ fontSize: '60px', marginBottom: '20px' }}>🥑</div>
-        <h1 style={{ color: 'var(--primary)', marginBottom: '10px', marginTop: 0 }}>Pianta Pro</h1>
+        <h1 style={{ color: 'var(--primary)', marginBottom: '10px', marginTop: 0 }}>Pianta</h1>
         <p style={{ color: 'var(--text-muted)', marginBottom: '30px', fontSize: '15px' }}>
-          Il tuo giardino tropicale nel cloud. Accedi per gestire le tue piante da qualsiasi dispositivo.
+          Pianta nel cloud. Accedi per gestire le tue piante da qualsiasi dispositivo.
         </p>
 
         {error && (

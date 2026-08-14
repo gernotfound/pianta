@@ -10,7 +10,7 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'], // Add icons here as needed
       manifest: {
-        name: "Pianta Pro",
+        name: "Pianta",
         short_name: "Pianta",
         description: "App gestionale per collezionisti di piante tropicali.",
         theme_color: "#000000",

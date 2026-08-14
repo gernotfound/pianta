@@ -11,6 +11,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import PlantCharts from '../components/PlantCharts';
 
 let DefaultIcon = L.icon({
     iconUrl: icon,
@@ -31,33 +32,40 @@ const PlantDetail = () => {
 
   const [imgMain, setImgMain] = useState(OFFLINE_PLACEHOLDER);
   const [imgFruit, setImgFruit] = useState(OFFLINE_PLACEHOLDER);
-  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
-      type: 'Innaffiatura',
+      type: 'Misurazione',
       date: new Date().toISOString().slice(0, 10),
       height: '',
       ph: '',
       harvest: '',
-      placement: '',
+      placement: 'Vaso',
       potSize: '',
       graftName: '',
       note: ''
   });
 
+  const [speciesNote, setSpeciesNote] = useState('');
+  const [plantNote, setPlantNote] = useState('');
+
   useEffect(() => {
       let isMounted = true;
-      const loadPhotos = async () => {
-          if (plant?.photo) {
-              const b64 = await loadImageFromFirestore(plant.photo);
-              if (isMounted && b64) setImgMain(b64);
-          }
-          if (plant?.fruitPhoto) {
-              const b64F = await loadImageFromFirestore(plant.fruitPhoto);
-              if (isMounted && b64F) setImgFruit(b64F);
-          }
-      };
-      if (plant) loadPhotos();
+      if (plant) {
+          setSpeciesNote(plant.speciesNote || '');
+          setPlantNote(plant.plantNote || '');
+
+          const loadPhotos = async () => {
+              if (plant.photo) {
+                  const b64 = await loadImageFromFirestore(plant.photo);
+                  if (isMounted && b64) setImgMain(b64);
+              }
+              if (plant.fruitPhoto) {
+                  const b64F = await loadImageFromFirestore(plant.fruitPhoto);
+                  if (isMounted && b64F) setImgFruit(b64F);
+              }
+          };
+          loadPhotos();
+      }
       return () => { isMounted = false; };
   }, [plant]);
 
@@ -112,7 +120,6 @@ const PlantDetail = () => {
       
       try {
           await updateDoc(doc(db, 'users', user.uid, 'plants', plant.id), { logs: updatedLogs });
-          setIsEventModalOpen(false);
           setNewEvent({ ...newEvent, note: '', height: '', ph: '', harvest: '', potSize: '', graftName: '' });
           Swal.fire({icon: 'success', title: 'Evento aggiunto!', timer: 1000, showConfirmButton: false});
       } catch (e) {
@@ -120,218 +127,239 @@ const PlantDetail = () => {
       }
   };
 
-  const sortedLogs = [...(plant.logs || [])].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const autoSaveSpeciesNote = async () => {
+      if (speciesNote !== (plant.speciesNote || '')) {
+          await updateDoc(doc(db, 'users', user.uid, 'plants', plant.id), { speciesNote });
+      }
+  };
 
+  const autoSavePlantNote = async () => {
+      if (plantNote !== (plant.plantNote || '')) {
+          await updateDoc(doc(db, 'users', user.uid, 'plants', plant.id), { plantNote });
+      }
+  };
+
+  const sortedLogs = [...(plant.logs || [])].sort((a, b) => new Date(b.date) - new Date(a.date));
   const hasMap = plant.lat && plant.lng && !isNaN(parseFloat(plant.lat)) && !isNaN(parseFloat(plant.lng));
 
   return (
     <div className="section active fade-in" style={{ paddingBottom: '100px' }}>
       
-      {/* Hero Header */}
-      <div style={{ position: 'relative', margin: '-20px -20px 20px -20px', height: '320px', background: 'var(--surface)' }}>
-          {plant.photo ? (
-              <img src={imgMain} alt="Pianta" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          ) : (
-              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>Nessuna Foto</div>
-          )}
-          
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 40%, rgba(0,0,0,0.9) 100%)' }}></div>
-
-          <button 
-              style={{ position: 'absolute', top: '20px', left: '20px', background: 'rgba(30, 30, 30, 0.6)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '10px 15px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 'bold' }} 
-              onClick={() => navigate(-1)}
-          >
-              ⬅️ Indietro
-          </button>
-
-          {plant.fruitPhoto && (
-              <div style={{ position: 'absolute', top: '20px', right: '20px', width: '80px', height: '80px', borderRadius: '16px', overflow: 'hidden', border: '2px solid var(--primary)', boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }}>
-                  <img src={imgFruit} alt="Frutto" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-          )}
-
-          <div style={{ position: 'absolute', bottom: '20px', left: '20px', right: '20px' }}>
-              <h1 style={{ margin: '0 0 5px 0', color: '#fff', fontSize: '28px', textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>{plant.name}</h1>
-              {plant.scientific && <h3 style={{ margin: 0, color: 'var(--primary)', fontStyle: 'italic', fontWeight: '500', fontSize: '16px' }}>{plant.scientific}</h3>}
+      {/* Detail Header from Legacy */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+          <h2 style={{ margin: 0, color: 'var(--primary)' }}>{plant.name}</h2>
+          <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+              <button className="btn btn-blue" style={{ margin: 0 }} onClick={() => setIsQrModalOpen(true)}>🏷️ QR</button>
+              <button className="btn btn-warning" style={{ margin: 0 }} onClick={() => navigate(`/edit-plant/${plant.id}`)}>✏️ Modifica</button>
+              <button className="btn btn-danger" style={{ margin: 0 }} onClick={handleDelete}>🗑️ Elimina</button>
+              <button className="btn" style={{ margin: 0 }} onClick={() => navigate(-1)}>⬅️ Indietro</button>
           </div>
       </div>
 
-      {/* Action Bar */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '25px' }}>
-          <button style={{ flex: 1, padding: '12px', borderRadius: '12px', background: 'var(--surface)', border: '1px solid var(--surface-border)', color: 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setIsQrModalOpen(true)}>
-              🏷️ QR Code
-          </button>
-          <button style={{ flex: 1, padding: '12px', borderRadius: '12px', background: 'var(--surface)', border: '1px solid var(--surface-border)', color: 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => navigate(`/edit-plant/${plant.id}`)}>
-              ✏️ Modifica
-          </button>
-          <button style={{ padding: '12px 20px', borderRadius: '12px', background: 'rgba(255, 82, 82, 0.1)', border: '1px solid var(--danger)', color: 'var(--danger)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={handleDelete} aria-label="Elimina pianta">
-              🗑️
-          </button>
-      </div>
-
-      {/* Info Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', marginBottom: '30px', padding: '0 5px' }}>
-          <div className="info-widget">
-              <div className="widget-label" style={{ fontSize: '13px', color: 'var(--grey)', marginBottom: '4px' }}>🌱 Origine</div>
-              <div className="widget-value" style={{ fontSize: '15px', color: 'var(--text)' }}>{plant.origin || 'N/D'}</div>
-          </div>
-          <div className="info-widget">
-              <div className="widget-label" style={{ fontSize: '13px', color: 'var(--grey)', marginBottom: '4px' }}>🪴 Sistemazione</div>
-              <div className="widget-value" style={{ fontSize: '15px', color: 'var(--text)' }}>{plant.placement || 'N/D'} {plant.potSize ? `(${plant.potSize}L)` : ''}</div>
-          </div>
-          <div className="info-widget">
-              <div className="widget-label" style={{ fontSize: '13px', color: 'var(--grey)', marginBottom: '4px' }}>🪨 Substrato</div>
-              <div className="widget-value" style={{ fontSize: '15px', color: 'var(--text)' }}>{plant.soil || 'N/D'}</div>
-          </div>
-          <div className="info-widget">
-              <div className="widget-label" style={{ fontSize: '13px', color: 'var(--grey)', marginBottom: '4px' }}>🧪 pH Ottimale</div>
-              <div className="widget-value" style={{ fontSize: '15px', color: 'var(--text)' }}>{plant.phMin || '?'} - {plant.phMax || '?'}</div>
-          </div>
-          <div className="info-widget">
-              <div className="widget-label" style={{ fontSize: '13px', color: 'var(--grey)', marginBottom: '4px' }}>🌡️ Temperature</div>
-              <div className="widget-value" style={{ fontSize: '15px', color: 'var(--text)' }}>{plant.minTemp || '?'}°C / {plant.maxTemp || '?'}°C</div>
-          </div>
-      </div>
-
-      {/* Map */}
-      {hasMap && (
-          <div style={{ marginBottom: '30px' }}>
-              <h3 style={{ margin: '0 0 15px 0', color: 'var(--primary)', fontSize: '18px' }}>📍 Posizione</h3>
-              <div style={{ height: '220px', width: '100%', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--surface-border)', zIndex: 1 }}>
-                  <MapContainer center={[parseFloat(plant.lat), parseFloat(plant.lng)]} zoom={15} style={{ height: '100%', width: '100%', zIndex: 1 }}>
-                      <TileLayer
-                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-                      />
-                      <Marker position={[parseFloat(plant.lat), parseFloat(plant.lng)]} />
-                  </MapContainer>
-              </div>
-          </div>
-      )}
-
-      {/* Events Timeline */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h3 style={{ margin: 0, color: 'var(--primary)', fontSize: '18px' }}>Diario Eventi</h3>
-          <button className="btn btn-blue" style={{ margin: 0, padding: '8px 15px', borderRadius: '20px', fontSize: '13px' }} onClick={() => setIsEventModalOpen(true)}>➕ Aggiungi</button>
-      </div>
-
-      {sortedLogs.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px 20px', background: 'var(--surface)', borderRadius: '16px', border: '1px dashed var(--surface-border)' }}>
-              <span style={{ fontSize: '40px' }} aria-hidden="true">📓</span>
-              <p style={{ color: 'var(--text-muted)', margin: '10px 0 0 0' }}>Nessun evento registrato. Inizia a tracciare innaffiature e rinvasi!</p>
-          </div>
-      ) : (
-          <ul className="timeline">
-              {sortedLogs.map((log, i) => (
-                  <li key={i} className="timeline-item" style={{ paddingBottom: '25px' }}>
-                      <div className="timeline-icon" style={{ width: '36px', height: '36px', fontSize: '16px', top: '0', boxShadow: '0 0 0 4px var(--bg)' }}>📝</div>
-                      <div className="timeline-content" style={{ background: 'var(--surface)', padding: '15px', borderRadius: '16px', border: '1px solid var(--surface-border)', marginLeft: '10px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                              <div className="timeline-type" style={{ margin: 0, fontSize: '15px', color: 'var(--primary)' }}>{log.type}</div>
-                              <div className="timeline-date" style={{ color: 'var(--grey)', fontSize: '12px', fontWeight: 'normal' }}>{new Date(log.date).toLocaleDateString('it-IT')}</div>
-                          </div>
-                          
-                          {log.height && <div className="timeline-details" style={{ fontSize: '14px', color: 'var(--text)' }}>📏 Altezza: <strong>{log.height} cm</strong></div>}
-                          {log.ph && <div className="timeline-details" style={{ fontSize: '14px', color: 'var(--text)' }}>🧪 pH: <strong>{log.ph}</strong></div>}
-                          {log.harvest && <div className="timeline-details" style={{ fontSize: '14px', color: 'var(--text)' }}>🧺 Resa: <strong>{log.harvest}</strong></div>}
-                          {log.placement && <div className="timeline-details" style={{ fontSize: '14px', color: 'var(--text)' }}>🪴 <strong>{log.placement}</strong> {log.potSize ? `(${log.potSize}L)` : ''}</div>}
-                          {log.graftName && <div className="timeline-details" style={{ fontSize: '14px', color: 'var(--text)' }}>🔪 Innesto: <strong>{log.graftName}</strong></div>}
-                          
-                          {log.note && (
-                              <div className="timeline-note" style={{ marginTop: '10px', padding: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', color: 'var(--text-muted)', fontSize: '13px', fontStyle: 'italic' }}>
-                                  "{log.note}"
-                              </div>
-                          )}
+      {/* Info and Map Container from Legacy */}
+      <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', marginBottom: '30px' }}>
+          <div style={{ flex: '3 1 300px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {/* Plant Info block */}
+              <div style={{ background: 'var(--surface)', padding: '15px', borderRadius: '5px', border: '1px solid var(--surface-border)', fontSize: '15px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
+                      <div className="info-widget">
+                          <div className="widget-label" style={{ fontSize: '13px', color: 'var(--grey)', marginBottom: '4px' }}>🌱 Origine</div>
+                          <div className="widget-value" style={{ fontSize: '15px', color: 'var(--text)' }}>{plant.origin || 'N/D'}</div>
                       </div>
-                  </li>
-              ))}
-          </ul>
-      )}
+                      <div className="info-widget">
+                          <div className="widget-label" style={{ fontSize: '13px', color: 'var(--grey)', marginBottom: '4px' }}>🪴 Sistemazione</div>
+                          <div className="widget-value" style={{ fontSize: '15px', color: 'var(--text)' }}>{plant.placement || 'N/D'} {plant.potSize ? `(${plant.potSize}L)` : ''}</div>
+                      </div>
+                      <div className="info-widget">
+                          <div className="widget-label" style={{ fontSize: '13px', color: 'var(--grey)', marginBottom: '4px' }}>🪨 Substrato</div>
+                          <div className="widget-value" style={{ fontSize: '15px', color: 'var(--text)' }}>{plant.soil || 'N/D'}</div>
+                      </div>
+                      <div className="info-widget">
+                          <div className="widget-label" style={{ fontSize: '13px', color: 'var(--grey)', marginBottom: '4px' }}>🧪 pH Ottimale</div>
+                          <div className="widget-value" style={{ fontSize: '15px', color: 'var(--text)' }}>{plant.phMin || '?'} - {plant.phMax || '?'}</div>
+                      </div>
+                      <div className="info-widget">
+                          <div className="widget-label" style={{ fontSize: '13px', color: 'var(--grey)', marginBottom: '4px' }}>🌡️ Temperature</div>
+                          <div className="widget-value" style={{ fontSize: '15px', color: 'var(--text)' }}>{plant.minTemp || '?'}°C / {plant.maxTemp || '?'}°C</div>
+                      </div>
+                  </div>
+              </div>
 
-      {/* Modal Aggiungi Evento */}
-      {isEventModalOpen && (
-          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div className="card" style={{ width: '90%', maxWidth: '400px', maxHeight: '90vh', overflowY: 'auto' }}>
-                  <h3 style={{ marginTop: 0, color: 'var(--primary)' }}>Nuovo Evento</h3>
-                  
-                  <label>Tipo di Evento:</label>
-                  <select value={newEvent.type} onChange={e => setNewEvent({...newEvent, type: e.target.value})} style={{ width: '100%', marginBottom: '15px' }}>
-                      <option value="Innaffiatura">Innaffiatura</option>
-                      <option value="Concimazione">Concimazione</option>
-                      <option value="Misurazione">Misurazione (Altezza)</option>
-                      <option value="Misurazione pH">Misurazione pH</option>
-                      <option value="Rinvaso / Sistemazione">Rinvaso / Sistemazione</option>
-                      <option value="Trattamento">Trattamento</option>
-                      <option value="Problema / Malattia">Problema / Malattia</option>
-                      <option value="Raccolto">Raccolto</option>
-                      <option value="Fioritura">Fioritura</option>
-                      <option value="Innesto">Innesto</option>
-                      <option value="Generico">Nota Generica</option>
-                  </select>
+              {/* Photos Container 50/50 from Legacy */}
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                  {plant.photo && (
+                      <img src={imgMain} alt="Pianta" style={{ flex: 1, height: '200px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--surface-border)' }} />
+                  )}
+                  {plant.fruitPhoto && (
+                      <img src={imgFruit} alt="Frutto" style={{ flex: 1, height: '200px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--surface-border)' }} />
+                  )}
+              </div>
+              
+              <div style={{ marginTop: '10px' }}>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px', color: 'var(--primary)' }}>📋 Note specie (condivise):</label>
+                  <textarea 
+                      rows="3" 
+                      style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--surface-border)', resize: 'vertical', background: 'var(--bg)', color: 'var(--text)' }} 
+                      placeholder="Caratteristiche comuni alla specie (si salvano in automatico)..."
+                      value={speciesNote}
+                      onChange={e => setSpeciesNote(e.target.value)}
+                      onBlur={autoSaveSpeciesNote}
+                  ></textarea>
+              </div>
+          </div>
 
-                  <label>Data:</label>
-                  <input type="date" value={newEvent.date} onChange={e => setNewEvent({...newEvent, date: e.target.value})} style={{ width: '100%', marginBottom: '15px' }} />
+          <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <div style={{ background: 'var(--surface)', padding: '10px', borderRadius: '5px', border: '1px solid var(--surface-border)', display: 'flex', flexDirection: 'column' }}>
+                  <h4 style={{ margin: '0 0 8px 0', fontSize: '13px', color: 'var(--primary)' }}>📍 Mappa</h4>
+                  <div style={{ flex: 1, minHeight: '150px', borderRadius: '5px', border: '1px solid var(--surface-border)', zIndex: 1, overflow: 'hidden' }}>
+                      {hasMap ? (
+                          <MapContainer center={[parseFloat(plant.lat), parseFloat(plant.lng)]} zoom={13} style={{ height: '100%', width: '100%' }}>
+                              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OSM' />
+                              <Marker position={[parseFloat(plant.lat), parseFloat(plant.lng)]} />
+                          </MapContainer>
+                      ) : (
+                          <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>Posizione non impostata</div>
+                      )}
+                  </div>
+              </div>
+              
+              <div style={{ background: 'var(--surface)', padding: '10px', borderRadius: '5px', border: '1px solid var(--surface-border)' }}>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px', fontSize: '13px', color: 'var(--primary)' }}>📋 Note pianta:</label>
+                  <textarea 
+                      rows="4" 
+                      style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--surface-border)', resize: 'vertical', background: 'var(--bg)', color: 'var(--text)' }} 
+                      placeholder="Appunti su questa singola pianta (si salvano in automatico)..."
+                      value={plantNote}
+                      onChange={e => setPlantNote(e.target.value)}
+                      onBlur={autoSavePlantNote}
+                  ></textarea>
+              </div>
+          </div>
+      </div>
+
+      {/* Detail Grid from Legacy (Diary + Charts) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+          <div>
+              <div style={{ background: 'var(--surface)', padding: '20px', borderRadius: '12px', border: '1px solid var(--surface-border)' }}>
+                  <h3 style={{ margin: '0 0 15px 0', color: 'var(--text)' }}>📝 Aggiungi evento al diario</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                      <div>
+                          <label style={{ color: 'var(--text)' }}>Data:</label>
+                          <input type="date" value={newEvent.date} onChange={e => setNewEvent({...newEvent, date: e.target.value})} style={{ width: '100%', background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--surface-border)', padding: '8px', borderRadius: '4px' }} />
+                      </div>
+                      <div>
+                          <label style={{ color: 'var(--text)' }}>Tipo di evento:</label>
+                          <select value={newEvent.type} onChange={e => setNewEvent({...newEvent, type: e.target.value})} style={{ width: '100%', background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--surface-border)', padding: '8px', borderRadius: '4px' }}>
+                              <option value="Misurazione">📏 Misurazione altezza</option>
+                              <option value="Misurazione pH">🧪 Misurazione pH</option>
+                              <option value="Concimazione">🧪 Concimazione / Nutrimento</option>
+                              <option value="Stato di Salute">Stato di salute</option>
+                              <option value="Fioritura">🌸 Fioritura</option>
+                              <option value="Fruttificazione">🍋 Fruttificazione</option>
+                              <option value="Raccolto">🧺 Raccolto</option>
+                              <option value="Rinvaso / Sistemazione">🪴 Rinvaso / Cambio sistemazione</option>
+                              <option value="Innesto">🔪 Innesto (cambio varietà)</option>
+                              <option value="Spostamento">🚚 Spostamento</option>
+                              <option value="Trattamento">Trattamento</option>
+                              <option value="Innaffiatura">💧 Innaffiatura</option>
+                          </select>
+                      </div>
+                  </div>
 
                   {newEvent.type === 'Misurazione' && (
-                      <div>
-                          <label>Altezza (cm):</label>
-                          <input type="number" inputMode="decimal" value={newEvent.height} onChange={e => setNewEvent({...newEvent, height: e.target.value})} style={{ width: '100%', marginBottom: '15px' }} />
+                      <div style={{ marginBottom: '10px' }}>
+                          <label style={{ color: 'var(--text)' }}>Altezza:</label>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <input type="number" inputMode="decimal" value={newEvent.height} onChange={e => setNewEvent({...newEvent, height: e.target.value})} style={{ flexGrow: 1, background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--surface-border)', padding: '8px', borderRadius: '4px' }} />
+                              <span style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '16px' }}>cm</span>
+                          </div>
                       </div>
                   )}
 
                   {newEvent.type === 'Misurazione pH' && (
-                      <div>
-                          <label>Valore pH:</label>
-                          <input type="number" inputMode="decimal" value={newEvent.ph} onChange={e => setNewEvent({...newEvent, ph: e.target.value})} style={{ width: '100%', marginBottom: '15px' }} />
+                      <div style={{ marginBottom: '10px' }}>
+                          <label style={{ color: 'var(--text)' }}>Valore pH (da 0 a 14):</label>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <input type="number" inputMode="decimal" value={newEvent.ph} onChange={e => setNewEvent({...newEvent, ph: e.target.value})} style={{ flexGrow: 1, background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--surface-border)', padding: '8px', borderRadius: '4px' }} />
+                              <span style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '16px' }}>pH</span>
+                          </div>
                       </div>
                   )}
 
                   {newEvent.type === 'Raccolto' && (
-                      <div>
-                          <label>Resa / Quantità:</label>
-                          <input type="text" value={newEvent.harvest} onChange={e => setNewEvent({...newEvent, harvest: e.target.value})} placeholder="es. 3 frutti, 500g" style={{ width: '100%', marginBottom: '15px' }} />
+                      <div style={{ marginBottom: '10px' }}>
+                          <label style={{ color: 'var(--text)' }}>Quantità raccolto:</label>
+                          <input type="text" value={newEvent.harvest} onChange={e => setNewEvent({...newEvent, harvest: e.target.value})} placeholder="es. 2 kg, 15 frutti..." style={{ width: '100%', background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--surface-border)', padding: '8px', borderRadius: '4px' }} />
                       </div>
                   )}
 
                   {newEvent.type === 'Rinvaso / Sistemazione' && (
-                      <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-                          <div style={{ flex: 1 }}>
-                              <label>Nuova Sist.:</label>
-                              <select value={newEvent.placement} onChange={e => setNewEvent({...newEvent, placement: e.target.value})} style={{ width: '100%' }}>
-                                  <option value="">Seleziona...</option>
+                      <div style={{ marginBottom: '10px', background: 'rgba(46, 125, 50, 0.1)', padding: '10px', borderRadius: '5px', border: '1px solid var(--primary)' }}>
+                          <label style={{ color: 'var(--primary)', fontWeight: 'bold' }}>Nuova sistemazione:</label>
+                          <div style={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
+                              <select value={newEvent.placement} onChange={e => setNewEvent({...newEvent, placement: e.target.value})} style={{ flex: 1, background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--surface-border)', padding: '8px', borderRadius: '4px' }}>
                                   <option value="Vaso">Vaso</option>
                                   <option value="Piena terra">Piena terra</option>
                                   <option value="Idroponica">Idroponica</option>
                               </select>
+                              {newEvent.placement === 'Vaso' && (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flex: 1 }}>
+                                      <input type="number" inputMode="decimal" value={newEvent.potSize} onChange={e => setNewEvent({...newEvent, potSize: e.target.value})} placeholder="es. 20" style={{ width: '100%', background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--surface-border)', padding: '8px', borderRadius: '4px' }} />
+                                      <span style={{ fontSize: '14px', color: 'var(--text)' }}>Litri</span>
+                                  </div>
+                              )}
                           </div>
-                          {newEvent.placement === 'Vaso' && (
-                              <div style={{ flex: 1 }}>
-                                  <label>Litri:</label>
-                                  <input type="number" inputMode="decimal" value={newEvent.potSize} onChange={e => setNewEvent({...newEvent, potSize: e.target.value})} style={{ width: '100%' }} />
-                              </div>
-                          )}
                       </div>
                   )}
 
                   {newEvent.type === 'Innesto' && (
-                      <div>
-                          <label>Nuovo Nome/Varietà:</label>
-                          <input type="text" value={newEvent.graftName} onChange={e => setNewEvent({...newEvent, graftName: e.target.value})} style={{ width: '100%', marginBottom: '15px' }} />
+                      <div style={{ marginBottom: '10px', background: 'rgba(245, 127, 23, 0.1)', padding: '10px', borderRadius: '5px', border: '1px solid #f57f17' }}>
+                          <label style={{ color: '#f57f17', fontWeight: 'bold' }}>Nuovo nome pianta:</label>
+                          <input type="text" value={newEvent.graftName} onChange={e => setNewEvent({...newEvent, graftName: e.target.value})} style={{ width: '100%', marginTop: '5px', background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--surface-border)', padding: '8px', borderRadius: '4px' }} placeholder="es. Avocado Beacon" />
                       </div>
                   )}
 
-                  <label>Note aggiuntive:</label>
-                  <textarea value={newEvent.note} onChange={e => setNewEvent({...newEvent, note: e.target.value})} rows="3" style={{ width: '100%', marginBottom: '20px' }}></textarea>
+                  <label style={{ color: 'var(--text)' }}>Note (opzionali):</label>
+                  <textarea value={newEvent.note} onChange={e => setNewEvent({...newEvent, note: e.target.value})} rows="2" style={{ width: '100%', marginBottom: '15px', background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--surface-border)', padding: '8px', borderRadius: '4px' }}></textarea>
 
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                      <button className="btn btn-primary" style={{ flex: 1, margin: 0 }} onClick={handleSaveEvent}>Salva</button>
-                      <button className="btn btn-outline" style={{ flex: 1, margin: 0 }} onClick={() => setIsEventModalOpen(false)}>Annulla</button>
-                  </div>
+                  <button className="btn btn-primary" style={{ width: '100%', padding: '12px' }} onClick={handleSaveEvent}>Salva evento</button>
+              </div>
+
+              {/* Timeline (Legacy Diario Eventi) */}
+              <div style={{ marginTop: '20px' }}>
+                  <h3 style={{ color: 'var(--text)' }}>Cronologia Eventi</h3>
+                  {sortedLogs.length === 0 ? (
+                      <div style={{ padding: '20px', background: 'var(--surface)', borderRadius: '5px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                          Nessun evento registrato.
+                      </div>
+                  ) : (
+                      <ul className="timeline">
+                          {sortedLogs.map((log, i) => (
+                              <li key={i} className="timeline-item">
+                                  <div className="timeline-icon">📝</div>
+                                  <div className="timeline-content">
+                                      <div className="timeline-date">{new Date(log.date).toLocaleDateString('it-IT')}</div>
+                                      <div className="timeline-type" style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{log.type}</div>
+                                      {log.height && <div className="timeline-details">📏 Altezza: {log.height} cm</div>}
+                                      {log.ph && <div className="timeline-details">🧪 pH: {log.ph}</div>}
+                                      {log.harvest && <div className="timeline-details">🧺 Resa: {log.harvest}</div>}
+                                      {log.placement && <div className="timeline-details">🪴 {log.placement} {log.potSize ? `(${log.potSize}L)` : ''}</div>}
+                                      {log.graftName && <div className="timeline-details">🔪 Nome innesto: {log.graftName}</div>}
+                                      {log.note && <div className="timeline-note">{log.note}</div>}
+                                  </div>
+                              </li>
+                          ))}
+                      </ul>
+                  )}
               </div>
           </div>
-      )}
 
-      {/* Modal QR Code */}
+          <div>
+              <PlantCharts logs={plant.logs} />
+          </div>
+      </div>
+
+      {/* Modal QR Code (mantenuto per comodità) */}
       {isQrModalOpen && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div className="card" style={{ width: '90%', maxWidth: '300px', textAlign: 'center' }}>

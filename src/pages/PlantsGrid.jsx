@@ -8,10 +8,12 @@ const PlantsGrid = () => {
   const plantsDatabase = useStore(state => state.plantsDatabase);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredPlants = plantsDatabase.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (p.species && p.species.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredPlants = plantsDatabase
+    .filter(p => 
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      (p.species && p.species.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const uniqueSpecies = new Set(filteredPlants.map(p => p.species).filter(Boolean)).size;
 

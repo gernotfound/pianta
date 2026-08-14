@@ -1,16 +1,16 @@
 :root {
-    --primary: #81c784;
-    --secondary: #2e7d32;
+    --primary: #00e676; /* Verde acceso fluo stile Logbook */
+    --secondary: #00c853;
     --accent: #ffb74d;
     --bg: #000000;
     --surface: #1e1e1e;
     --surface-border: #333333;
     --text: #e8f5e9;
     --text-muted: #aaaaaa;
-    --danger: #d32f2f;
-    --blue: #1976d2;
-    --purple: #8e24aa;
-    --grey: #607d8b;
+    --danger: #ff5252;
+    --blue: #448aff;
+    --purple: #e040fb;
+    --grey: #90a4ae;
     --nav-bg: rgba(30, 30, 30, 0.95);
 }
 

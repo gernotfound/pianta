@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../store';
 import { useNavigate } from 'react-router-dom';
+import WeatherAlerts from '../components/WeatherAlerts';
 
 const Events = () => {
   const navigate = useNavigate();
@@ -43,6 +44,7 @@ const Events = () => {
 
   return (
     <div className="fade-in section active" style={{ paddingBottom: '100px' }}>
+      <WeatherAlerts />
       <h2 style={{ marginTop: 0, color: 'var(--primary)', paddingBottom: '5px' }}>Timeline Eventi Globali</h2>
       
       <div style={{ marginBottom: '20px', display: 'flex', gap: '10px', alignItems: 'center', background: 'var(--surface)', padding: '15px', borderRadius: '8px' }}>

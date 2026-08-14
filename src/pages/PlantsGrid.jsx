@@ -47,7 +47,7 @@ const PlantsGrid = () => {
         return 0;
     });
 
-  const uniqueSpecies = new Set(filteredPlants.map(p => p.species).filter(Boolean)).size;
+
 
   return (
     <div className="fade-in">
@@ -74,9 +74,6 @@ const PlantsGrid = () => {
         <button className="btn btn-blue" style={{ margin: 0, whiteSpace: 'nowrap' }} aria-label="Apri filtri" onClick={() => setIsFilterOpen(true)}>Filtri 🛠️</button>
       </div>
 
-      <div id="dashboard-stats" aria-live="polite">
-          Piante mostrate: <span>{filteredPlants.length}</span> | Specie uniche: <span>{uniqueSpecies}</span>
-      </div>
 
       {filteredPlants.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '50px 20px', background: 'var(--surface)', borderRadius: '12px', border: '2px dashed var(--surface-border)', marginTop: '20px', boxShadow: '0 4px 10px rgba(0,0,0,0.02)' }}>

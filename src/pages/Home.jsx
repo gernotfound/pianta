@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from 'chart.js';
-import { Pie } from 'react-chartjs-2';
+import { Doughnut } from 'react-chartjs-2';
 import Swal from 'sweetalert2';
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
+ChartJS.defaults.color = '#e8f5e9'; // Set global text color to white/light green to prevent black text
 
 const Home = () => {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ const Home = () => {
               label: label,
               data: data,
               backgroundColor: [
-                  '#4caf50', '#ff9800', '#2196f3', '#9c27b0', '#f44336', '#009688', '#e91e63'
+                  '#81c784', '#4db6ac', '#64b5f6', '#ba68c8', '#ffb74d', '#e57373', '#90a4ae'
               ],
               borderWidth: 0,
               hoverOffset: 4
@@ -65,10 +66,22 @@ const Home = () => {
   const chartOptions = {
       responsive: true,
       maintainAspectRatio: false,
+      cutout: '70%',
       plugins: {
           legend: {
               position: 'bottom',
-              labels: { color: 'var(--text)' }
+              labels: { 
+                  color: '#e8f5e9',
+                  padding: 20,
+                  font: { family: 'Segoe UI', size: 12 }
+              }
+          },
+          tooltip: {
+              backgroundColor: 'rgba(30,30,30,0.9)',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              borderColor: '#333',
+              borderWidth: 1
           }
       }
   };
@@ -82,7 +95,7 @@ const Home = () => {
         </h1>
       </div>
       
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '25px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '35px' }}>
         <button className="btn btn-purple" style={{ margin:0, padding:'10px', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', fontWeight: 'bold', fontSize: '14px' }} onClick={() => navigate('/tools?tab=expenses')}>
           <span style={{ fontSize:'22px' }}>💰</span> Spese
         </button>
@@ -106,37 +119,49 @@ const Home = () => {
         </button>
       </div>
 
-      <h2 style={{ color: 'var(--grey)', borderBottom: '2px solid var(--surface-border)', paddingBottom: '10px', marginBottom: '20px' }}>📊 Dati e Statistiche</h2>
+      <div style={{ marginBottom: '25px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+          <div style={{ flex: 1, height: '1px', background: 'var(--surface-border)' }}></div>
+          <h2 style={{ margin: 0, color: 'var(--primary)', fontSize: '20px', textTransform: 'uppercase', letterSpacing: '1px' }}>Dati e Statistiche</h2>
+          <div style={{ flex: 1, height: '1px', background: 'var(--surface-border)' }}></div>
+      </div>
       
-      <div id="my-data-content" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-        
-        <div style={{ background: 'var(--surface)', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-            <h3 style={{ marginTop: 0, color: 'var(--primary)', textAlign: 'center' }}>Riepilogo</h3>
-            <ul style={{ listStyle: 'none', padding: 0, margin: '20px 0 0 0', fontSize: '16px', lineHeight: '2' }}>
-                <li>🌱 <strong>Piante Attive:</strong> {numActive}</li>
-                <li>🥀 <strong>Piante Archiviate:</strong> {numArchived}</li>
-                <li>🌳 <strong>Specie Uniche:</strong> {uniqueSpecies}</li>
-            </ul>
-        </div>
+      {/* 3 KPI Cards for Riepilogo */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+          <div style={{ background: 'var(--surface)', padding: '15px', borderRadius: '16px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+              <div style={{ fontSize: '24px', marginBottom: '5px' }}>🌱</div>
+              <div style={{ fontSize: '28px', fontWeight: '900', color: 'var(--primary)' }}>{numActive}</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Piante Attive</div>
+          </div>
+          <div style={{ background: 'var(--surface)', padding: '15px', borderRadius: '16px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+              <div style={{ fontSize: '24px', marginBottom: '5px' }}>🥀</div>
+              <div style={{ fontSize: '28px', fontWeight: '900', color: 'var(--danger)' }}>{numArchived}</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Archiviate</div>
+          </div>
+          <div style={{ background: 'var(--surface)', padding: '15px', borderRadius: '16px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+              <div style={{ fontSize: '24px', marginBottom: '5px' }}>🌳</div>
+              <div style={{ fontSize: '28px', fontWeight: '900', color: 'var(--blue)' }}>{uniqueSpecies}</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Specie Uniche</div>
+          </div>
+      </div>
 
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
         {Object.keys(originCounts).length > 0 && (
-            <div style={{ background: 'var(--surface)', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                <h3 style={{ marginTop: 0, color: 'var(--primary)', textAlign: 'center' }}>Origine</h3>
-                <div style={{ height: '200px', position: 'relative' }}>
-                    <Pie data={generateChartData('Origine', originCounts)} options={chartOptions} />
+            <div style={{ background: 'var(--surface)', padding: '25px 20px', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <h3 style={{ margin: '0 0 20px 0', color: 'var(--text)', fontSize: '16px', textTransform: 'uppercase', letterSpacing: '1px' }}>Origine</h3>
+                <div style={{ height: '220px', width: '100%', position: 'relative' }}>
+                    <Doughnut data={generateChartData('Origine', originCounts)} options={chartOptions} />
                 </div>
             </div>
         )}
 
         {Object.keys(placementCounts).length > 0 && (
-            <div style={{ background: 'var(--surface)', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                <h3 style={{ marginTop: 0, color: 'var(--primary)', textAlign: 'center' }}>Sistemazione</h3>
-                <div style={{ height: '200px', position: 'relative' }}>
-                    <Pie data={generateChartData('Sistemazione', placementCounts)} options={chartOptions} />
+            <div style={{ background: 'var(--surface)', padding: '25px 20px', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <h3 style={{ margin: '0 0 20px 0', color: 'var(--text)', fontSize: '16px', textTransform: 'uppercase', letterSpacing: '1px' }}>Sistemazione</h3>
+                <div style={{ height: '220px', width: '100%', position: 'relative' }}>
+                    <Doughnut data={generateChartData('Sistemazione', placementCounts)} options={chartOptions} />
                 </div>
             </div>
         )}
-
       </div>
     </div>
   );

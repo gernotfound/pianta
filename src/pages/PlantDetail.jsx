@@ -170,26 +170,26 @@ const PlantDetail = () => {
       </div>
 
       {/* Info Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '15px', marginBottom: '30px' }}>
-          <div style={{ background: 'var(--surface)', padding: '15px', borderRadius: '16px', border: '1px solid var(--surface-border)' }}>
-              <div style={{ fontSize: '12px', color: 'var(--grey)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 'bold' }}>🌱 Origine</div>
-              <div style={{ fontSize: '15px', fontWeight: '500', color: 'var(--text)' }}>{plant.origin || 'N/D'}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', marginBottom: '30px', padding: '0 5px' }}>
+          <div className="info-widget">
+              <div className="widget-label" style={{ fontSize: '13px', color: 'var(--grey)', marginBottom: '4px' }}>🌱 Origine</div>
+              <div className="widget-value" style={{ fontSize: '15px', color: 'var(--text)' }}>{plant.origin || 'N/D'}</div>
           </div>
-          <div style={{ background: 'var(--surface)', padding: '15px', borderRadius: '16px', border: '1px solid var(--surface-border)' }}>
-              <div style={{ fontSize: '12px', color: 'var(--grey)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 'bold' }}>🪴 Sistemazione</div>
-              <div style={{ fontSize: '15px', fontWeight: '500', color: 'var(--text)' }}>{plant.placement || 'N/D'} {plant.potSize ? `(${plant.potSize}L)` : ''}</div>
+          <div className="info-widget">
+              <div className="widget-label" style={{ fontSize: '13px', color: 'var(--grey)', marginBottom: '4px' }}>🪴 Sistemazione</div>
+              <div className="widget-value" style={{ fontSize: '15px', color: 'var(--text)' }}>{plant.placement || 'N/D'} {plant.potSize ? `(${plant.potSize}L)` : ''}</div>
           </div>
-          <div style={{ background: 'var(--surface)', padding: '15px', borderRadius: '16px', border: '1px solid var(--surface-border)' }}>
-              <div style={{ fontSize: '12px', color: 'var(--grey)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 'bold' }}>🪨 Substrato</div>
-              <div style={{ fontSize: '15px', fontWeight: '500', color: 'var(--text)' }}>{plant.soil || 'N/D'}</div>
+          <div className="info-widget">
+              <div className="widget-label" style={{ fontSize: '13px', color: 'var(--grey)', marginBottom: '4px' }}>🪨 Substrato</div>
+              <div className="widget-value" style={{ fontSize: '15px', color: 'var(--text)' }}>{plant.soil || 'N/D'}</div>
           </div>
-          <div style={{ background: 'var(--surface)', padding: '15px', borderRadius: '16px', border: '1px solid var(--surface-border)' }}>
-              <div style={{ fontSize: '12px', color: 'var(--grey)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 'bold' }}>🧪 pH Ottimale</div>
-              <div style={{ fontSize: '15px', fontWeight: '500', color: 'var(--text)' }}>{plant.phMin || '?'} - {plant.phMax || '?'}</div>
+          <div className="info-widget">
+              <div className="widget-label" style={{ fontSize: '13px', color: 'var(--grey)', marginBottom: '4px' }}>🧪 pH Ottimale</div>
+              <div className="widget-value" style={{ fontSize: '15px', color: 'var(--text)' }}>{plant.phMin || '?'} - {plant.phMax || '?'}</div>
           </div>
-          <div style={{ background: 'var(--surface)', padding: '15px', borderRadius: '16px', border: '1px solid var(--surface-border)' }}>
-              <div style={{ fontSize: '12px', color: 'var(--grey)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 'bold' }}>🌡️ Temperature</div>
-              <div style={{ fontSize: '15px', fontWeight: '500', color: 'var(--text)' }}>{plant.minTemp || '?'}°C / {plant.maxTemp || '?'}°C</div>
+          <div className="info-widget">
+              <div className="widget-label" style={{ fontSize: '13px', color: 'var(--grey)', marginBottom: '4px' }}>🌡️ Temperature</div>
+              <div className="widget-value" style={{ fontSize: '15px', color: 'var(--text)' }}>{plant.minTemp || '?'}°C / {plant.maxTemp || '?'}°C</div>
           </div>
       </div>
 

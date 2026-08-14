@@ -7,6 +7,19 @@ function ReloadPrompt() {
   } = useRegisterSW({
     onRegistered(r) {
       console.log('SW Registered', r);
+      if (r) {
+        // Controlla aggiornamenti ogni ora in background
+        setInterval(() => {
+          r.update();
+        }, 60 * 60 * 1000);
+
+        // Controlla aggiornamenti ogni volta che l'utente riapre o rimette a fuoco l'app
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            r.update();
+          }
+        });
+      }
     },
     onRegisterError(error) {
       console.log('SW registration error', error);

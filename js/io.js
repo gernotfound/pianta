@@ -1,17 +1,14 @@
-import { useStore } from '../store';
-import Swal from 'sweetalert2';
 
-export const exportToCSV = () => {
-    const plantsDatabase = useStore.getState().plantsDatabase;
-    const gardenTitle = useStore.getState().gardenTitle;
-
+function exportToCSV() {
     if (!plantsDatabase || plantsDatabase.length === 0) {
-        Swal.fire({
-            icon: 'info',
-            title: 'Nessun Dato',
-            text: 'Non c\'è nessuna pianta da esportare nel file Excel!',
-            confirmButtonColor: '#1976d2'
-        });
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'info',
+                title: 'Nessun Dato',
+                text: 'Non c\'è nessuna pianta da esportare nel file Excel!',
+                confirmButtonColor: '#1976d2'
+            });
+        }
         return;
     }
 
@@ -37,13 +34,13 @@ export const exportToCSV = () => {
         }
 
         let motherName = "";
-        if (p.mother) {
+        if (p.mother !== undefined && p.mother !== null && p.mother !== "") {
             let m = plantsDatabase.find(x => String(x.id) === String(p.mother));
             if (m) motherName = m.name;
         }
 
         let fatherName = "";
-        if (p.father) {
+        if (p.father !== undefined && p.father !== null && p.father !== "") {
             let f = plantsDatabase.find(x => String(x.id) === String(p.father));
             if (f) fatherName = f.name;
         }
@@ -53,21 +50,21 @@ export const exportToCSV = () => {
             let sortedLogs = [...p.logs].sort((a, b) => new Date(a.date) - new Date(b.date));
             eventsStr = sortedLogs.map(l => {
                 let detail = "";
-                if (l.type === 'Misurazione' && l.height !== null) detail = ` (${l.height}cm)`;
-                else if (l.type === 'Misurazione pH' && l.ph !== null) detail = ` (pH ${l.ph})`;
+                if (l.type === 'Misurazione' && l.height !== null) detail = ` (${typeof formatLocalFloat === 'function' ? formatLocalFloat(l.height) : l.height}cm)`;
+                else if (l.type === 'Misurazione pH' && l.ph !== null) detail = ` (pH ${typeof formatLocalFloat === 'function' ? formatLocalFloat(l.ph) : l.ph})`;
                 else if (l.type === 'Raccolto' && l.harvest) detail = ` (Resa: ${l.harvest})`;
                 else if (l.type === 'Rinvaso / Sistemazione' && l.placement) detail = ` (${l.placement} ${l.potSize ? l.potSize + 'L' : ''})`;
                 else if (l.type === 'Innesto' && l.graftName) detail = ` (Nuovo nome: ${l.graftName})`;
 
                 let noteStr = l.note ? ` - ${l.note}` : "";
-                let displayDate = new Date(l.date).toLocaleDateString('it-IT');
+                let displayDate = typeof formatDateIt === 'function' ? formatDateIt(l.date) : l.date;
                 return `[${displayDate}] ${l.type}${detail}${noteStr}`;
             }).join("\n");
         }
 
         let safePotSize = p.potSize || "";
-        let safePrice = p.price !== undefined && p.price !== null ? p.price.toString().replace('.', ',') : "";
-        let safeFertility = p.autofertile || "Sconosciuta";
+        let safePrice = p.price !== undefined && p.price !== null ? p.price.toFixed(2).replace('.', ',') : "";
+        let safeFertility = typeof getModernFertility === 'function' ? getModernFertility(p.autofertile) : (p.autofertile || "Sconosciuta");
         let safeMin = p.minTemp !== null && p.minTemp !== undefined ? p.minTemp.toString().replace('.', ',') : "";
         let safeMax = p.maxTemp !== null && p.maxTemp !== undefined ? p.maxTemp.toString().replace('.', ',') : "";
 
@@ -113,4 +110,4 @@ export const exportToCSV = () => {
     document.body.removeChild(link);
 
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-};
+}
